@@ -1,0 +1,2 @@
+# ch585
+CH585 is a BLE5.4 SOC with USB2.0 HS/NFC/2.4G 128KB SRAM and 512KB Flash
