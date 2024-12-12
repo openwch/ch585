@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+encoding//MIFARECLASSIC_COMMON/wch_nfca_mifare_classic.c=UTF-8
+encoding//MIFARECLASSIC_COMMON/wch_nfca_mifare_classic.h=UTF-8
+encoding//NFCA_COMMON/ISO14443-3A.c=UTF-8
+encoding//NFCA_COMMON/ISO14443-3A.h=UTF-8
+encoding//NFCA_COMMON/wch_nfca_crypto1.h=UTF-8
+encoding//NFCA_PCD_LIB/wch_nfca_pcd.h=UTF-8
+encoding//NFCA_PCD_LIB/wch_nfca_pcd_bsp.c=UTF-8
+encoding//NFCA_PCD_LIB/wch_nfca_pcd_bsp.h=UTF-8
+encoding//NFCA_PCD_LIB/wch_nfca_pcd_config.h=UTF-8
+encoding//NFCA_PICC_LIB/LIB_SRC/wch_nfca_picc.c=UTF-8
+encoding//NFCA_PICC_LIB/wch_nfca_picc_bsp.c=UTF-8
+encoding//NFCA_PICC_LIB/wch_nfca_picc_bsp.h=UTF-8
+encoding//NFCA_PICC_LIB/wch_nfca_picc_config.h=UTF-8
