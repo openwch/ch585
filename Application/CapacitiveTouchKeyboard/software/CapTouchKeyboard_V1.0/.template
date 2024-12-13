@@ -1,0 +1,17 @@
+Mcu Type=CH584/5
+Address=0x00000000
+Erase All=true
+Program=true
+Verify=true
+Reset=true
+
+Vendor=WCH
+Link=WCH-Link
+Toolchain=RISC-V
+Series=CH585
+RTOS=NoneOS
+MCU=CH585M
+Description=Website: http://www.wch.cn/downloads/CH585DS1_PDF.html?\nROM(byte): 448K, SRAM(byte): 128K, CHIP PINS: 48, GPIO PORTS: 40.\nThe CH585 is a RISC-V MCU microcontroller with integrated BLE wireless communication and high-speed USB and NFC. On-chip integration of 2Mbps low power Bluetooth BLE communication module, USB full speed controller and transceiver, USB high speed controller and transceiver (480Mbps), NFC near field pass Wireless interface, segment LCD driver module, LED dot matrix screen interface, 2 SPI, 4 serial ports, 14 ADC, touch key detection mode Block and other rich peripheral resources.
+
+PeripheralVersion=1.1
+Target Path=obj/CapTouchKeyboard_BLE.hex
