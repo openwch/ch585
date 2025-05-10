@@ -122,7 +122,7 @@ void SPI1_MasterDefInit(void);
  *
  * @param   c       - 时钟分频系数
  */
-void SPI1_CLKCfg(UINT8 c);
+void SPI1_CLKCfg(uint8_t c);
 
 /**
  * @brief   设置数据流模式
@@ -136,14 +136,14 @@ void SPI1_DataMode(ModeBitOrderTypeDef m);
  *
  * @param   d       - 发送字节
  */
-void  SPI1_MasterSendByte(UINT8 d);
+void  SPI1_MasterSendByte(uint8_t d);
 
 /**
  * @brief   接收单字节 (buffer)
  *
  * @param   none
  */
-UINT8 SPI1_MasterRecvByte(void);
+uint8_t SPI1_MasterRecvByte(void);
 
 /**
  * @brief   使用FIFO连续发送多字节
@@ -151,7 +151,7 @@ UINT8 SPI1_MasterRecvByte(void);
  * @param   pbuf    - 待发送的数据内容首地址
  * @param   len     - 请求发送的数据长度，最大4095
  */
-void SPI1_MasterTrans(UINT8 *pbuf, UINT16 len);
+void SPI1_MasterTrans(uint8_t *pbuf, uint16_t len);
 
 /**
  * @brief   使用FIFO连续接收多字节
@@ -159,7 +159,7 @@ void SPI1_MasterTrans(UINT8 *pbuf, UINT16 len);
  * @param   pbuf    - 待接收的数据首地址
  * @param   len     - 待接收的数据长度，最大4095
  */
-void SPI1_MasterRecv(UINT8 *pbuf, UINT16 len);
+void SPI1_MasterRecv(uint8_t *pbuf, uint16_t len);
 
 /**
  * @brief   设备模式默认初始化，建议设置MISO的GPIO对应为输入模式

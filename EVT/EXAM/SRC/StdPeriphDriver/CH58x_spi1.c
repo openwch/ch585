@@ -97,7 +97,8 @@ void SPI1_DataMode(ModeBitOrderTypeDef m)
 void SPI1_MasterSendByte(uint8_t d)
 {
     R8_SPI1_CTRL_MOD &= ~RB_SPI_FIFO_DIR;
-    R8_SPI1_BUFFER = d;
+    R16_SPI1_TOTAL_CNT = 1;         // 设置要发送的数据长度
+    R8_SPI1_FIFO = d;
     while(!(R8_SPI1_INT_FLAG & RB_SPI_FREE));
 }
 
@@ -112,7 +113,7 @@ void SPI1_MasterSendByte(uint8_t d)
  */
 uint8_t SPI1_MasterRecvByte(void)
 {
-    R8_SPI1_CTRL_MOD &= ~RB_SPI_FIFO_DIR;
+    R8_SPI1_CTRL_MOD |= RB_SPI_FIFO_DIR; // 设置数据方向为输入
     R8_SPI1_BUFFER = 0xFF; // 启动传输
     while(!(R8_SPI1_INT_FLAG & RB_SPI_FREE));
     return (R8_SPI1_BUFFER);

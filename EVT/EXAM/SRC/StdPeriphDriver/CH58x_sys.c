@@ -83,8 +83,8 @@ void SetSysClock(SYS_CLKTypeDef sc)
             }
             else
             {
-                R8_FLASH_SCK = R8_FLASH_SCK|(1<<4);
-                R8_FLASH_CFG = 0X03;
+                R8_FLASH_SCK = R8_FLASH_SCK & (~(1<<4));
+                R8_FLASH_CFG = 0X07;
             }
         }
         else
@@ -136,12 +136,14 @@ void highcode_init(void)
     R32_SAFE_MODE_CTRL |= RB_XROM_312M_SEL;
     R8_SAFE_MODE_CTRL &= ~RB_SAFE_AUTO_EN;
     sys_safe_access_enable();
-    R32_MISC_CTRL |= 5; //
+    R32_MISC_CTRL |= 5|(3<<25); //
     R8_PLL_CONFIG &= ~(1 << 5); //
     R8_HFCK_PWR_CTRL |= RB_CLK_RC16M_PON | RB_CLK_PLL_PON;
     R16_CLK_SYS_CFG = CLK_SOURCE_HSI_PLL_62_4MHz;
+    R8_FLASH_SCK = R8_FLASH_SCK & (~(1<<4));
     R8_FLASH_CFG = 0X02;
     R8_XT32M_TUNE = (R8_XT32M_TUNE&(~0x03))|0x01;
+    R8_CK32K_CONFIG |= RB_CLK_INT32K_PON;
     R8_SAFE_MODE_CTRL |= RB_SAFE_AUTO_EN;
     sys_safe_access_disable();
 }
@@ -212,6 +214,8 @@ void MachineMode_Call(MachineMode_Call_func func)
     while(gs_machine_mode_func != NULL);
 
     PFIC_DisableIRQ(SWI_IRQn);
+
+    _vector_base[SWI_IRQn] = sw_irqtable;
 
 //    if(i != 4)
 //    {
@@ -335,11 +339,13 @@ void SYS_ResetExecute(void)
  *
  * @return  none
  */
+__HIGH_CODE
 void SYS_DisableAllIrq(uint32_t *pirqv)
 {
     *pirqv = (PFIC->ISR[0] >> 8) | (PFIC->ISR[1] << 24);
     PFIC->IRER[0] = 0xffffffff;
     PFIC->IRER[1] = 0xffffffff;
+    asm volatile("fence.i");
 }
 
 /*********************************************************************
@@ -351,6 +357,7 @@ void SYS_DisableAllIrq(uint32_t *pirqv)
  *
  * @return  none
  */
+__HIGH_CODE
 void SYS_RecoverIrq(uint32_t irq_status)
 {
     PFIC->IENR[0] = (irq_status << 8);
@@ -600,4 +607,50 @@ void *__wrap_memcpy(void *dst, void *src, size_t size)
 {
     __MCPY(dst, src, (void *)((uint32_t)src+size));
     return dst;
+}
+
+/*********************************************************************
+ * @fn      IWDG_KR_Set
+ *
+ * @brief   启动看门狗/解除读保护/喂狗/重装载计数值
+ *
+ * @param   pr     - IWDG_PR
+ *
+ * @return  none
+ */
+void IWDG_KR_Set(IWDG_KR_Key kr)
+{
+    R32_IWDG_KR = kr;
+}
+
+/*********************************************************************
+ * @fn      IWDG_PR_Set
+ *
+ * @brief   配置预分频，关闭写保护位生效
+ *
+ * @param   pr
+ *
+ * @return  none
+ */
+void IWDG_PR_Set(IWDG_32K_PR pr)
+{
+    R32_IWDG_CFG |= (pr << 12);
+}
+
+/*********************************************************************
+ * @fn      IWDG_RLR_Set
+ *
+ * @brief   配置计数器重装载值，关闭写保护位生效
+ *
+ * @param   rlr
+ *
+ * @return  none
+ */
+void IWDG_RLR_Set(uint16_t rlr)
+{
+    uint32_t cfg;
+
+    cfg = R32_IWDG_CFG;
+    cfg = (R32_IWDG_CFG & ~0xFFF) | (rlr & 0xFFF);
+    R32_IWDG_CFG = cfg;
 }

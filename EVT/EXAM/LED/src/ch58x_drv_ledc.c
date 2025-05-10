@@ -40,3 +40,35 @@ void ch58x_led_controller_send(uint32_t *data, uint16_t length)
     R16_LED_DMA_LEN = length;
     R8_LED_CTRL_MOD |= RB_LED_DMA_EN;
 }
+
+/*********************************************************************
+ * @fn      LED_DMACfg
+ *
+ * @brief   配置DMA功能
+ *
+ * @param   s           - 是否打开DMA功能
+ * @param   startAddr   - DMA 起始地址
+ * @param   len         - DMA 发送长度
+ * @param   m           - 配置DMA模式
+ *
+ * @return  none
+ */
+void TMR_DMACfg(uint8_t s, uint32_t startAddr, uint16_t len, DMAModeTypeDef m)
+{
+    if(s == DISABLE)
+    {
+        R8_LED_CTRL_MOD &= ~RB_LED_DMA_EN;
+    }
+    else
+    {
+        R32_LED_DMA_BEG = ((uint32_t)(startAddr)& RB_LED_DMA_BEG);
+        R16_LED_DMA_LEN = len;
+        if(m)
+        {
+            R8_LED_CTRL_MOD1 = RB_LED_DMA_LOOP;
+            R8_LED_CTRL_MOD |= RB_LED_DMA_EN;
+        }
+        else
+            R8_LED_CTRL_MOD |= RB_LED_DMA_EN;
+    }
+}

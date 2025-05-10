@@ -26,10 +26,10 @@ extern "C" {
  */
 void FLASH_ROM_READ(uint32_t StartAddr, void *Buffer, uint32_t len);
 
-UINT8 UserOptionByteConfig(FunctionalState RESET_EN, FunctionalState BOOT_PIN, FunctionalState UART_NO_KEY_EN,
+uint8_t UserOptionByteConfig(FunctionalState RESET_EN, FunctionalState BOOT_PIN, FunctionalState UART_NO_KEY_EN,
         uint32_t FLASHProt_Size);
 
-UINT8 UserOptionByteClose_SWD(void);
+uint8_t UserOptionByteClose_SWD(void);
 
 void UserOptionByte_Active(void);
 

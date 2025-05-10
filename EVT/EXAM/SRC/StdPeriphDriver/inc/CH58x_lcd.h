@@ -74,23 +74,23 @@ void LCD_Init(LCDDutyTypeDef duty, LCDBiasTypeDef bias);
 // 输入值参考 LCDBiasTypeDef
 #define LCD_BiasCfg( d )		(R32_LCD_CMD = (R32_LCD_CMD & ~RB_LCD_BIAS) | (d<<2))				/* 配置LCD的 bias选择 */
 	 
-#define LCD_WriteData0( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0xffffff00) | ((UINT32)d))			/* 填充LCD0驱动数值 */
-#define LCD_WriteData1( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0xffff00ff) | ((UINT32)d<<8))		/* 填充LCD1驱动数值 */
-#define LCD_WriteData2( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0xff00ffff) | ((UINT32)d<<16))		/* 填充LCD2驱动数值 */
-#define LCD_WriteData3( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0x00ffffff) | ((UINT32)d<<24))		/* 填充LCD3驱动数值 */
+#define LCD_WriteData0( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0xffffff00) | ((uint32_t)d))			/* 填充LCD0驱动数值 */
+#define LCD_WriteData1( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0xffff00ff) | ((uint32_t)d<<8))		/* 填充LCD1驱动数值 */
+#define LCD_WriteData2( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0xff00ffff) | ((uint32_t)d<<16))		/* 填充LCD2驱动数值 */
+#define LCD_WriteData3( d )		(R32_LCD_RAM0 = (R32_LCD_RAM0 & 0x00ffffff) | ((uint32_t)d<<24))		/* 填充LCD3驱动数值 */
 	 
-#define LCD_WriteData4( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0xffffff00) | ((UINT32)d))			/* 填充LCD4驱动数值 */
-#define LCD_WriteData5( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0xffff00ff) | ((UINT32)d<<8))		/* 填充LCD5驱动数值 */
-#define LCD_WriteData6( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0xff00ffff) | ((UINT32)d<<16))		/* 填充LCD6驱动数值 */
-#define LCD_WriteData7( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0x00ffffff) | ((UINT32)d<<24))		/* 填充LCD7驱动数值 */
+#define LCD_WriteData4( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0xffffff00) | ((uint32_t)d))			/* 填充LCD4驱动数值 */
+#define LCD_WriteData5( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0xffff00ff) | ((uint32_t)d<<8))		/* 填充LCD5驱动数值 */
+#define LCD_WriteData6( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0xff00ffff) | ((uint32_t)d<<16))		/* 填充LCD6驱动数值 */
+#define LCD_WriteData7( d )		(R32_LCD_RAM1 = (R32_LCD_RAM1 & 0x00ffffff) | ((uint32_t)d<<24))		/* 填充LCD7驱动数值 */
 	 
-#define LCD_WriteData8( d )		(R32_LCD_RAM2 = (R32_LCD_RAM2 & 0xffffff00) | ((UINT32)d))			/* 填充LCD8驱动数值 */
-#define LCD_WriteData9( d )		(R32_LCD_RAM2 = (R32_LCD_RAM2 & 0xffff00ff) | ((UINT32)d<<8))		/* 填充LCD9驱动数值 */
-#define LCD_WriteData10( d )	(R32_LCD_RAM2 = (R32_LCD_RAM2 & 0xff00ffff) | ((UINT32)d<<16))		/* 填充LCD10驱动数值 */
-#define LCD_WriteData11( d )    (R32_LCD_RAM2 = (R32_LCD_RAM2 & 0x00ffffff) | ((UINT32)d<<24))      /* 填充LCD11驱动数值 */
+#define LCD_WriteData8( d )		(R32_LCD_RAM2 = (R32_LCD_RAM2 & 0xffffff00) | ((uint32_t)d))			/* 填充LCD8驱动数值 */
+#define LCD_WriteData9( d )		(R32_LCD_RAM2 = (R32_LCD_RAM2 & 0xffff00ff) | ((uint32_t)d<<8))		/* 填充LCD9驱动数值 */
+#define LCD_WriteData10( d )	(R32_LCD_RAM2 = (R32_LCD_RAM2 & 0xff00ffff) | ((uint32_t)d<<16))		/* 填充LCD10驱动数值 */
+#define LCD_WriteData11( d )    (R32_LCD_RAM2 = (R32_LCD_RAM2 & 0x00ffffff) | ((uint32_t)d<<24))      /* 填充LCD11驱动数值 */
 
-#define LCD_WriteData12( d )    (R32_LCD_RAM3 = (R32_LCD_RAM3 & 0xffffff00) | ((UINT32)d))          /* 填充LCD12驱动数值 */
-#define LCD_WriteData13( d )    (R32_LCD_RAM3 = (R32_LCD_RAM3 & 0xffff00ff) | ((UINT32)d<<8))       /* 填充LCD13驱动数值 */
+#define LCD_WriteData12( d )    (R32_LCD_RAM3 = (R32_LCD_RAM3 & 0xffffff00) | ((uint32_t)d))          /* 填充LCD12驱动数值 */
+#define LCD_WriteData13( d )    (R32_LCD_RAM3 = (R32_LCD_RAM3 & 0xffff00ff) | ((uint32_t)d<<8))       /* 填充LCD13驱动数值 */
 
 
 

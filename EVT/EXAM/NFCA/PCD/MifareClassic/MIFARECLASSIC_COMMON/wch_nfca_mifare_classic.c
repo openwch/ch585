@@ -41,6 +41,7 @@ nfca_crypto1_cipher_t g_m1_crypto1_cipher;
  *          0x0004 = Mifare_One(S50).<BR>
  *          0x0002 = Mifare_One(S70).<BR>
  *          0x0044 = Mifare Ultralight.<BR>
+ *          others = maybe other card.<BR>
 */
 uint16_t PcdRequest(uint8_t req_code)
 {

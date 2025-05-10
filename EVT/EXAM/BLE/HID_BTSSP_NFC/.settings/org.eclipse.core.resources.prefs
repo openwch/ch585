@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+encoding//NFCA_COMMON/ISO14443-3A.c=UTF-8
+encoding//NFCA_COMMON/ISO14443-3A.h=UTF-8
+encoding//NFCA_COMMON/wch_nfca_crypto1.h=UTF-8
+encoding//NFCA_LIB/CH58x_NFCA_LIB.h=UTF-8
+encoding//NFCA_LIB/ISO14443-3A.c=UTF-8
+encoding//NFCA_LIB/ISO14443-3A.h=UTF-8
+encoding//NFCA_PICC_LIB/wch_nfca_picc_bsp.c=UTF-8
+encoding//NFCA_PICC_LIB/wch_nfca_picc_bsp.h=UTF-8
+encoding//NFCA_PICC_LIB/wch_nfca_picc_config.h=UTF-8
+encoding//PICC_COMMON/wch_nfca_picc_bsp.c=UTF-8
+encoding//PICC_COMMON/wch_nfca_picc_bsp.h=UTF-8
+encoding//StdPeriphDriver/inc/CH585SFR.h=UTF-8
+encoding/readme.txt=UTF-8

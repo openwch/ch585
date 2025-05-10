@@ -1,15 +1,13 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : wch_nfca_picc_m1.c
  * Author             : WCH
- * Version            : V1.0
- * Date               : 2024/09/20
- * Description        : NFC PICC head file for WCH chips.
- * Copyright (c) 2024 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Version            : V1.2
+ * Date               : 2025/01/21
+ * Description        : NFC PICC M1 head file for WCH chips.
+ * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 #include "wch_nfca_picc_m1.h"
-#include "wch_nfca_picc.h"
-#include "wch_nfca_crypto1.h"
 
 /* 每个文件单独debug打印的开关，置0可以禁止本文件内部打印 */
 #define DEBUG_PRINT_IN_THIS_FILE 0
@@ -336,6 +334,10 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
             }
             goto end;
         }
+        if(bits_num != (4 * 9))
+        {
+            goto end;
+        }
         if(nfca_crypto1_decrypt(
                 (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
                 g_picc_data_buf,
@@ -347,124 +349,128 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
             g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_IDLE;
             goto end;
         }
+        if (ISO14443_CRCA(g_picc_data_buf, 4) != 0)
+        {
+            g_picc_data_buf[0] = NAK_CRC_ERROR;
+            send_bits = 4;
+            nfca_crypto1_encrypt(
+                    (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
+                    g_picc_data_buf,
+                    g_picc_data_buf,
+                    g_picc_parity_buf,
+                    send_bits
+            );
+            goto end;
+        }
         if (g_picc_data_buf[0] == PICC_READ)
         {
-            if (ISO14443_CRCA(g_picc_data_buf, 4) == 0)
+            uint8_t acc;
+            uint8_t read_addr;
+
+            g_nfca_picc_m1_data.authed_sector = g_nfca_picc_m1_data.authed_sector & 0xf;
+            read_addr = ((g_picc_data_buf[1] & 0x3) + g_nfca_picc_m1_data.authed_sector * 4);;
+
+            acc = abTrailerAccessConditions[get_access_condition(read_addr)][g_nfca_picc_m1_data.key_a_or_b];
+            if((read_addr & 3) == 3)
             {
-                uint8_t acc;
-                uint8_t read_addr;
-
-                g_nfca_picc_m1_data.authed_sector = g_nfca_picc_m1_data.authed_sector & 0xf;
-                read_addr = ((g_picc_data_buf[1] & 0x3) + g_nfca_picc_m1_data.authed_sector * 4);;
-
-                acc = abTrailerAccessConditions[get_access_condition(read_addr)][g_nfca_picc_m1_data.key_a_or_b];
-                if((read_addr & 3) == 3)
+                g_picc_data_buf[0] = 0;
+                g_picc_data_buf[1] = 0;
+                g_picc_data_buf[2] = 0;
+                g_picc_data_buf[3] = 0;
+                g_picc_data_buf[4] = 0;
+                g_picc_data_buf[5] = 0;
+                g_picc_data_buf[9] = g_nfca_picc_m1_data.blocks[read_addr][9];
+                if(acc & ACC_TRAILER_READ_ACC)
                 {
-                    g_picc_data_buf[0] = 0;
-                    g_picc_data_buf[1] = 0;
-                    g_picc_data_buf[2] = 0;
-                    g_picc_data_buf[3] = 0;
-                    g_picc_data_buf[4] = 0;
-                    g_picc_data_buf[5] = 0;
-                    g_picc_data_buf[9] = g_nfca_picc_m1_data.blocks[read_addr][9];
-                    if(acc & ACC_TRAILER_READ_ACC)
-                    {
-                        g_picc_data_buf[6] = g_nfca_picc_m1_data.blocks[read_addr][6];
-                        g_picc_data_buf[7] = g_nfca_picc_m1_data.blocks[read_addr][7];
-                        g_picc_data_buf[8] = g_nfca_picc_m1_data.blocks[read_addr][8];
-                    }
-                    else
-                    {
-                        g_picc_data_buf[6] = 0;
-                        g_picc_data_buf[7] = 0;
-                        g_picc_data_buf[8] = 0;
-                    }
-                    if(acc & ACC_TRAILER_READ_KEYB)
-                    {
-                        g_picc_data_buf[10] = g_nfca_picc_m1_data.blocks[read_addr][10];
-                        g_picc_data_buf[11] = g_nfca_picc_m1_data.blocks[read_addr][11];
-                        g_picc_data_buf[12] = g_nfca_picc_m1_data.blocks[read_addr][12];
-                        g_picc_data_buf[13] = g_nfca_picc_m1_data.blocks[read_addr][13];
-                        g_picc_data_buf[14] = g_nfca_picc_m1_data.blocks[read_addr][14];
-                        g_picc_data_buf[15] = g_nfca_picc_m1_data.blocks[read_addr][15];
-                    }
-                    else
-                    {
-                        g_picc_data_buf[10] = 0;
-                        g_picc_data_buf[11] = 0;
-                        g_picc_data_buf[12] = 0;
-                        g_picc_data_buf[13] = 0;
-                        g_picc_data_buf[14] = 0;
-                        g_picc_data_buf[15] = 0;
-                    }
+                    g_picc_data_buf[6] = g_nfca_picc_m1_data.blocks[read_addr][6];
+                    g_picc_data_buf[7] = g_nfca_picc_m1_data.blocks[read_addr][7];
+                    g_picc_data_buf[8] = g_nfca_picc_m1_data.blocks[read_addr][8];
                 }
                 else
                 {
-                    __MCPY((void *)g_picc_data_buf, (void *)g_nfca_picc_m1_data.blocks[read_addr], (void *)((uint32_t)g_nfca_picc_m1_data.blocks[read_addr] + 16));
+                    g_picc_data_buf[6] = 0;
+                    g_picc_data_buf[7] = 0;
+                    g_picc_data_buf[8] = 0;
                 }
-
-                ISO14443AAppendCRCA(g_picc_data_buf, 16);
-                send_bits = 18 * 8;
-                nfca_crypto1_encrypt(
-                        (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
-                        g_picc_data_buf,
-                        g_picc_data_buf,
-                        g_picc_parity_buf,
-                        send_bits
-                );
+                if(acc & ACC_TRAILER_READ_KEYB)
+                {
+                    g_picc_data_buf[10] = g_nfca_picc_m1_data.blocks[read_addr][10];
+                    g_picc_data_buf[11] = g_nfca_picc_m1_data.blocks[read_addr][11];
+                    g_picc_data_buf[12] = g_nfca_picc_m1_data.blocks[read_addr][12];
+                    g_picc_data_buf[13] = g_nfca_picc_m1_data.blocks[read_addr][13];
+                    g_picc_data_buf[14] = g_nfca_picc_m1_data.blocks[read_addr][14];
+                    g_picc_data_buf[15] = g_nfca_picc_m1_data.blocks[read_addr][15];
+                }
+                else
+                {
+                    g_picc_data_buf[10] = 0;
+                    g_picc_data_buf[11] = 0;
+                    g_picc_data_buf[12] = 0;
+                    g_picc_data_buf[13] = 0;
+                    g_picc_data_buf[14] = 0;
+                    g_picc_data_buf[15] = 0;
+                }
             }
             else
             {
-                g_picc_data_buf[0] = NAK_CRC_ERROR;
-                send_bits = 4;
-                nfca_crypto1_encrypt(
-                        (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
-                        g_picc_data_buf,
-                        g_picc_data_buf,
-                        g_picc_parity_buf,
-                        send_bits
-                );
+                __MCPY((void *)g_picc_data_buf, (void *)g_nfca_picc_m1_data.blocks[read_addr], (void *)((uint32_t)g_nfca_picc_m1_data.blocks[read_addr] + 16));
             }
+
+            ISO14443AAppendCRCA(g_picc_data_buf, 16);
+            send_bits = 18 * 8;
+            nfca_crypto1_encrypt(
+                    (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
+                    g_picc_data_buf,
+                    g_picc_data_buf,
+                    g_picc_parity_buf,
+                    send_bits
+            );
         }
         else if ((g_picc_data_buf[0] == PICC_AUTHENT1A) || (g_picc_data_buf[0] == PICC_AUTHENT1B))
         {
-            if (ISO14443_CRCA(g_picc_data_buf, 4) == 0)
+            uint16_t sector_num;
+            uint8_t *key_use;
+
+            sector_num = ((g_picc_data_buf[1] >> 2) & 0x0f) ;
+            g_nfca_picc_m1_data.authed_sector = sector_num;
+
+            g_nfca_picc_m1_data.key_a_or_b = g_picc_data_buf[0] & 1;
+            if(g_nfca_picc_m1_data.key_a_or_b)
             {
-                uint16_t sector_num;
-                uint8_t *key_use;
-
-                sector_num = ((g_picc_data_buf[1] >> 2) & 0x0f) ;
-                g_nfca_picc_m1_data.authed_sector = sector_num;
-
-                g_nfca_picc_m1_data.key_a_or_b = g_picc_data_buf[0] & 1;
-                if(g_nfca_picc_m1_data.key_a_or_b)
-                {
-                    key_use = g_nfca_picc_m1_data.sectors[sector_num].sector_trailer.key_b;
-                }
-                else
-                {
-                    key_use = g_nfca_picc_m1_data.sectors[sector_num].sector_trailer.key_a;
-                }
-
-                g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_AUTHING;
-
-                nfca_picc_crypto1_setup(
-                        (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
-                        (uint8_t *)key_use,
-                        (uint8_t *)g_nfca_picc_m1_data.manufacturer_data.uid,
-                        nfca_picc_rand(),
-                        (uint8_t *)g_picc_data_buf,
-                        (uint8_t *)g_picc_parity_buf,
-                        (nfca_picc_crypto1_auth_t *)&g_nfca_picc_crypto1_auth
-                );
-
-                send_bits = 4 * 8;
+                key_use = g_nfca_picc_m1_data.sectors[sector_num].sector_trailer.key_b;
             }
             else
             {
-                g_picc_data_buf[0] = NAK_CRC_ERROR;
-                send_bits = ACK_NAK_FRAME_SIZE;
+                key_use = g_nfca_picc_m1_data.sectors[sector_num].sector_trailer.key_a;
             }
+
+            g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_AUTHING;
+
+            nfca_picc_crypto1_setup(
+                    (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
+                    (uint8_t *)key_use,
+                    (uint8_t *)g_nfca_picc_m1_data.manufacturer_data.uid,
+                    nfca_picc_rand(),
+                    (uint8_t *)g_picc_data_buf,
+                    (uint8_t *)g_picc_parity_buf,
+                    (nfca_picc_crypto1_auth_t *)&g_nfca_picc_crypto1_auth
+            );
+
+            send_bits = 4 * 8;
+        }
+        else if(g_picc_data_buf[0] == PICC_WRITE)
+        {
+            g_nfca_picc_m1_data.block_in_use = g_picc_data_buf[1] & 0x0f;
+            g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_WRITING;
+            g_picc_data_buf[0] = ACK_VALUE;
+            send_bits = ACK_NAK_FRAME_SIZE;
+            nfca_crypto1_encrypt(
+                    (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
+                    g_picc_data_buf,
+                    g_picc_data_buf,
+                    g_picc_parity_buf,
+                    send_bits
+            );
         }
         else if(g_picc_data_buf[0] == PICC_HALT)
         {
@@ -486,6 +492,58 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
                 g_picc_data_buf[0] = NAK_NOT_AUTHED;
                 send_bits = ACK_NAK_FRAME_SIZE;
             }
+            if(send_bits != 0)
+            {
+                nfca_crypto1_encrypt(
+                        (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
+                        g_picc_data_buf,
+                        g_picc_data_buf,
+                        g_picc_parity_buf,
+                        send_bits
+                );
+            }
+        }
+        else
+        {
+            g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_IDLE;
+        }
+        break;
+    case NFCA_PICC_M1_STATE_WRITING:
+        if(bits_num == (18 * 9))
+        {
+            if(nfca_crypto1_decrypt(
+                    (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
+                    g_picc_data_buf,
+                    g_picc_data_buf,
+                    g_picc_parity_buf,
+                    (18 * 8)
+            ))
+            {
+                g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_IDLE;
+                goto end;
+            }
+            if (ISO14443_CRCA(g_picc_data_buf, 18) == 0)
+            {
+                /* 写入成功，这里应加上用户自己的写入回调，如果不给写入第0块，增加判断即可 */
+                if(g_nfca_picc_m1_data.block_in_use != 0)
+                {
+                    __MCPY((void *)&g_nfca_picc_m1_data.blocks[g_nfca_picc_m1_data.block_in_use], (void *)g_picc_data_buf, (void *)(g_picc_data_buf + 16));
+                }
+                g_picc_data_buf[0] = ACK_VALUE;
+            }
+            else
+            {
+                g_picc_data_buf[0] = NAK_CRC_ERROR;
+            }
+            g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_AUTHED_IDLE;
+            send_bits = ACK_NAK_FRAME_SIZE;
+            nfca_crypto1_encrypt(
+                    (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
+                    g_picc_data_buf,
+                    g_picc_data_buf,
+                    g_picc_parity_buf,
+                    send_bits
+            );
         }
         else
         {

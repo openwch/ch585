@@ -98,7 +98,8 @@ void SPI0_DataMode(ModeBitOrderTypeDef m)
 void SPI0_MasterSendByte(uint8_t d)
 {
     R8_SPI0_CTRL_MOD &= ~RB_SPI_FIFO_DIR;
-    R8_SPI0_BUFFER = d;
+    R16_SPI0_TOTAL_CNT = 1;         // 设置要发送的数据长度
+    R8_SPI0_FIFO = d;
     while(!(R8_SPI0_INT_FLAG & RB_SPI_FREE));
 }
 
@@ -262,6 +263,7 @@ uint8_t SPI0_SlaveRecvByte(void)
 void SPI0_SlaveSendByte(uint8_t d)
 {
     R8_SPI0_CTRL_MOD &= ~RB_SPI_FIFO_DIR;
+    R16_SPI0_TOTAL_CNT = 1;
     R8_SPI0_FIFO = d;
     while(R8_SPI0_FIFO_COUNT != 0); // 等待发送完成
 }

@@ -1,10 +1,10 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : wch_nfca_picc_m1.h
  * Author             : WCH
- * Version            : V1.0
- * Date               : 2024/11/12
- * Description        : NFC PICC head file for WCH chips.
- * Copyright (c) 2024 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Version            : V1.2
+ * Date               : 2025/01/21
+ * Description        : NFC PICC M1 head file for WCH chips.
+ * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 #ifndef _WCH_NFCA_PICC_M1_H_
@@ -20,6 +20,7 @@ typedef enum
     NFCA_PICC_M1_STATE_ACTIVE,
     NFCA_PICC_M1_STATE_AUTHING,
     NFCA_PICC_M1_STATE_AUTHED_IDLE,
+    NFCA_PICC_M1_STATE_WRITING,
     NFCA_PICC_M1_STATE_MAX,
 } NFCA_PICC_M1_STATE_t;
 
@@ -59,7 +60,7 @@ typedef __attribute__((aligned(4))) struct _nfca_picc_m1_data_struct
     uint8_t state;
 
     uint8_t authed_sector;
-    uint8_t key_in_use;
+    uint8_t block_in_use;
     uint8_t key_a_or_b;
 } nfca_picc_m1_data_t;
 

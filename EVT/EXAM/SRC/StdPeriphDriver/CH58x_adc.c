@@ -247,7 +247,7 @@ int adc_to_temperature_celsius(uint16_t adc_val)
     uint32_t C25 = 0;
     int      temp;
 
-    C25 = (*((PUINT32)ROM_CFG_TMP_25C));
+    C25 = (*((uint32_t*)ROM_CFG_TMP_25C));
 
     /* current temperature = standard temperature + (adc deviation * adc linearity coefficient) */ 
     temp = (((C25 >> 16) & 0xFFFF) ? ((C25 >> 16) & 0xFFFF) : 25) + \

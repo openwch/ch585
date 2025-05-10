@@ -1,5 +1,5 @@
 
-Nanjing Qinheng Microelectronics Co., Ltd. 2024.11
+Nanjing Qinheng Microelectronics Co., Ltd. 2025.03
 
 http://wch-ic.com
 
@@ -12,7 +12,7 @@ Directory
   |      |      |      |-- SRC  
   |      |      |      |      |-- Ld: link file
   |      |      |      |      |-- RVMSIS: kernal system header file
-  |      |      |      |      |-- Startup: CH59x startup file
+  |      |      |      |      |-- Startup: CH58x startup file
   |      |      |      |      |-- StdPeriphDriver: basic peripheral driver source file and header file
   |      |      |      |-- ADC: ADC sampling routines, including temperature detection, single channel detection, differential channel detection, TouchKey detection and interrupt sampling
   |      |      |      |-- FLASH: on-chip flash routines: erase/read/write Code area and DataFlash area
@@ -23,13 +23,14 @@ Directory
   |      |      |      |-- LCD: LCD routines, including LCD display and LCD sleep
   |      |      |      |-- LED LED routines, LED screen controller interface demonstration
   |      |      |      |-- NFCA
-  |      |      |      |      |-- NFCA_COMMON: ISO14443-3A and Universal M1 Encryption Algorithm Library Universal File
+  |      |      |      |      |-- NFCA_LIB: ISO14443-3A and Universal M1 Encryption Algorithm Library Universal File
   |      |      |      |      |-- PCD: 
-  |      |      |      |      |      |-- NFCA_PCD_LIB: NFC-A underlying code and library files
+  |      |      |      |      |      |-- PCD_COMMON: NFC-A PCD Reader Universal Code File
   |      |      |      |      |      |-- MifareClassic: MifareClassic Card Operation Example Project
   |      |      |      |      |-- PICC: 
-  |      |      |      |      |      |-- NFCA_PICC_LIB: NFC card mode underlying code and library files
+  |      |      |      |      |      |-- PICC_COMMON: NFC Card Mode Universal Code File
   |      |      |      |      |      |-- PICC_M1: NFC card mode simulation M1 card example project
+  |      |      |      |      |      |-- PICC_T2T: NFC Card Mode Emulation of NFC Forum Type 2 Tag Example Project
   |      |      |      |      |-- CH585 NFC Card Reader Application Guide.pdf
   |      |      |      |-- IAP
   |      |      |      |      |-- APP: APP program routine used with IAP 
@@ -43,12 +44,11 @@ Directory
   |      |      |      |-- TMR: Timer routine  
   |      |      |      |-- TOUCH
   |      |      |      |      |-- TKYLIB: Touch library files and their header files
-  |      |      |      |      |-- Touch_Keys: Touch button routine, implementing 12 buttons
-  |      |      |      |      |-- Touch_Keys_with_ble: Bluetooth touch button routine, combined with Bluetooth peripheral routine on the basis of touch button routine, realizes touch button key value reporting
-  |      |      |      |      |-- Touch_Proximity: Space separated touch routine, implemented using a touch channel
-  |      |      |      |      |-- Touch_WheelSlider: Touch pulley routine, resolution of 360 points, implemented using 8 touch channels
+  |      |      |      |      |-- Touch_EX001: Comprehensive demonstration of touch applications, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB
+  |      |      |      |      |-- Touch_EX001_ble: Comprehensive demonstration of touch applications integrated with Bluetooth communication, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB. It supports reporting touch key values, touch wheel position values, and touch slider position values to debugging devices via Bluetooth connection
+  |      |      |      |      |-- Touch_EX002: Demonstration of 8-channel touch button application for touch functionality, designed for use with EVB
+  |      |      |      |      |-- Touch_EX002_ble: Demonstration of 8-channel touch button application integrated with Bluetooth communication, designed for use with EVB. It supports reporting touch button values to debugging devices via Bluetooth connection
   |      |      |      |      |-- WCH Touch Library User Manual.PDF
-  |      |      |      |      |-- WCH Touch Application Guide.PDF
   |      |      |      |-- UART1: UART1 receive/transmit routine
   |      |      |      |-- USB
   |      |      |      |      |-- Device
@@ -73,9 +73,6 @@ Directory
   |      |      |      |      |      |      |-- CompositeKM:Simulate keyboard and mouse, use IO to simulate keystrokes, while simulated data can be uploaded through serial port 2.
   |      |      |      |      |      |      |-- MSC_U-Disk: Smulates a simple USB flash drive, optionally using on-chip Flash or external SPI-Flash
   |      |      |      |      |      |      |-- MSC_CD-ROM: Simulate CDROM, need external SPI-Flash
-  |      |      |      |      |      |      |--USB_ECM-NetWorkAdaptor: USB ECM routines
-  |      |      |      |      |      |      |--USB_RNDIS-NetWorkAdaptor: USB RNDIS routines
-  |      |      |      |      |      |      |--USB_NCM-NetWorkAdaptor: USB NCM routines
   |      |      |      |      |      |      |-- SimulateCDC:Simulate a CDC serial port and use serial port 2 to send and receive.
   |      |      |      |      |      |      |-- SimulateCDC-HID:Simulate a CDC serial port, use serial port 2 to send and receive, HID interrupt endpoints to send and receive data to reverse and upload.  
   |      |      |      |      |      |-- HOST_IAP
@@ -97,7 +94,7 @@ Directory
   |      |      |      |      |-- HID_Mouse: BLE mouse routine, simulate a mouse device, upload key value regularly after connected to the central
   |      |      |      |      |-- HID_Consumer: BLE consumer routine, simulate user control device, upload volume key down key regularly after connected to the central
   |      |      |      |      |-- HID_Touch: BLE touch routine, simulate a touch pencil device,  upload touch value regularly after connected to the central
-  |      |      |      |      |-- HID_NFC_NDEF_Connect: NFC card to connect Bluetooth HID routine
+  |      |      |      |      |-- HID_BTSSP_NFC: NFC Swipe for Secure Bluetooth HID Connection Example Routine
   |      |      |      |      |-- MultiCentral: multicentral routine, actively scan surrounding devices, conect to the specified three peripheral addresses, search custom services and characteristics, execute read/write commands, peripheral routine is needed, and modify the peripheral address to this routine target address, the addresses of these peripherals are (84:C2:E4:03:02:02), (84:C2:E4:03:02:03) and (84:C2:E4:03:02:04) by default
   |      |      |      |      |-- Observer: observer routine, scan regularly, print the scanned broadcast address if the scanning result is not empty
   |      |      |      |      |-- Direct_Test_Mode£ºDTM test routine, combined with RF test tools
@@ -140,5 +137,9 @@ Directory
   |      |      |      |      |-- Qinheng Low Energy Bluetooth Software Development Reference Manual.pdf
   |      |      |      |      |-- WCH Bluetooth Over-the-Air Upgrade (BLE OTA).PDF
   |      |      |      |      |-- BLE Certification: Product: WCH CH58x QDID: 179771
-  |      |      |-- PUB: CH585EVT evaluation board schematic and manual
+  |      |      |-- PUB
+  |      |      |      |-- SCHPCB: Reference schematic and PCB files
+  |      |      |      |-- CH585 Evaluation Board Schematic (CH585SCH.pdf)
+  |      |      |      |-- CH585 Evaluation Board User Manual.pdf
+  |      |      |      |-- Important Considerations for Circuit and PCB Design of Bluetooth Chip.pdf
   |

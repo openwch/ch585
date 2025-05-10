@@ -70,13 +70,13 @@ typedef struct
 
 typedef struct
 {
-    UINT8  DeviceStatus;  // 设备状态,0-无设备,1-有设备但尚未初始化,2-有设备但初始化枚举失败,3-有设备且初始化枚举成功
-    UINT8  DeviceAddress; // 设备被分配的USB地址
-    UINT8  DeviceSpeed;   // 0为低速,非0为全速
-    UINT8  DeviceType;    // 设备类型
-    UINT16 DeviceVID;
-    UINT16 DevicePID;
-    UINT8  GpVar[4]; // 通用变量
+    uint8_t  DeviceStatus;  // 设备状态,0-无设备,1-有设备但尚未初始化,2-有设备但初始化枚举失败,3-有设备且初始化枚举成功
+    uint8_t  DeviceAddress; // 设备被分配的USB地址
+    uint8_t  DeviceSpeed;   // 0为低速,非0为全速
+    uint8_t  DeviceType;    // 设备类型
+    uint16_t DeviceVID;
+    uint16_t DevicePID;
+    uint8_t  GpVar[4]; // 通用变量
 } _DevOnHubPort;     // 假定:不超过1个外部HUB,每个外部HUB不超过HUB_MAX_PORTS个端口(多了不管)
 
 extern _RootHubDev   ThisUsbDev;

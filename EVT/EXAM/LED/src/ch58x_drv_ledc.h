@@ -31,7 +31,23 @@ typedef enum {
  */
 #define  LED_DISABLE()  (R8_LED_CTRL_MOD &= ~(RB_LED_DMA_EN))
 
+/**
+ * @brief   清除LED中断标志
+ *
+ * @param   f       - refer to LED interrupt bit define
+ */
+#define LED_ClearITFlag(f)    (R16_LED_STATUS = f)
+
+/**
+ * @brief   查询LED中断标志状态
+ *
+ * @param   f       - refer to LED interrupt bit define
+ */
+#define LED_GetITFlag(f)      (R16_LED_STATUS & f)
+
 void ch58x_led_controller_init(ch58x_led_out_mode_t mode, uint8_t led_clk_div);
 
 void ch58x_led_controller_send(uint32_t *data, uint16_t length);
+
+void TMR_DMACfg(uint8_t s, uint32_t startAddr, uint16_t len, DMAModeTypeDef m);
 

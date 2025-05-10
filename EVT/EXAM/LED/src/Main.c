@@ -70,14 +70,11 @@ int main()
     //lED 7
     GPIOA_ModeCfg( GPIO_Pin_8 , GPIO_ModeOut_PP_5mA );
 
-
     //配置分频和模式选择
-    ch58x_led_controller_init(CH58X_LED_OUT_MODE_FOUR_EXT, 128);
+    ch58x_led_controller_init(CH58X_LED_OUT_MODE_SINGLE, 128);
 
     //开始发送,后面再发送就在中断里面发送了
-    R32_LED_DMA_BEG = ((uint32_t)(tx_data)& RB_LED_DMA_BEG);
-    R16_LED_DMA_LEN = 2;
-    R8_LED_CTRL_MOD |= RB_LED_DMA_EN;
+    TMR_DMACfg(ENABLE, (uint16_t)(uint32_t)&tx_data, 2, Mode_Single);
 
 #if LSB_HSB   //LSB HSB
     R8_LED_CTRL_MOD ^= RB_LED_BIT_ORDER;
@@ -105,9 +102,9 @@ __HIGH_CODE
 void LED_IRQHandler(void)
 {
     //清空中断标志
-    uint16_t LED_status;
-    LED_status = R16_LED_STATUS;
-    R16_LED_STATUS = LED_status;
-
-    ch58x_led_controller_send(tx_data, 2);
+    if(LED_GetITFlag(RB_LED_IF_DMA_END))  // 获取中断标志
+    {
+       LED_ClearITFlag(RB_LED_IF_DMA_END); // 清除中断标志
+       ch58x_led_controller_send(tx_data, 2);
+    }
 }

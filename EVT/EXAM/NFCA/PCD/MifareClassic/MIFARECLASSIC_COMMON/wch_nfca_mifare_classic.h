@@ -80,20 +80,6 @@ enum
 extern uint16_t PcdRequest(uint8_t req_code);
 
 /**
- * @brief   Find a card and select a receive gain.
- *
- * @param   req_code - 0x52/0x26.
- *          0x52 = find all 14443A-compliant cards in the sensing area.
- *          0x26 = find all 14443A-compliant cards which is not in halt mode in the sensing area.
- *
- * @return  0 = No Card.<BR>
- *          0x0004 = Mifare_One(S50).<BR>
- *          0x0002 = Mifare_One(S70).<BR>
- *          0x0044 = Mifare Ultralight.<BR>
-*/
-extern uint16_t PcdRequestWithCheckGain(uint8_t req_code);
-
-/**
  * @brief   Perform an anti-collision session.
  *
  * @param   cmd - PICC_ANTICOLL1/PICC_ANTICOLL2/PICC_ANTICOLL3.

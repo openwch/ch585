@@ -200,13 +200,13 @@ void LSECFG_Capacitance(LSECapTypeDef c)
  */
 void Calibration_LSI(Cali_LevelTypeDef cali_Lv)
 {
-    UINT64 i;
+    uint64_t i;
     long long cnt_offset;
-    UINT8  retry = 0;
-    UINT8  retry_all = 0;
-    INT32  freq_sys;
-    UINT32 cnt_32k = 0;
-    UINT32 irqv = 0;
+    uint8_t  retry = 0;
+    uint8_t  retry_all = 0;
+    int32_t  freq_sys;
+    uint32_t cnt_32k = 0;
+    uint32_t irqv = 0;
 
     freq_sys = GetSysClock();
 

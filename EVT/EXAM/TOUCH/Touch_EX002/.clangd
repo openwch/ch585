@@ -1,0 +1,7 @@
+If:
+  PathMatch: []
+CompileFlags:
+  Add: []
+Diagnostics:
+  ClangTidy:
+    Remove: [performance-*,bugprone-*,modernize-*,clang-analyzer-*,readability-identifier*,clang-diagnostic-*,bugprone-argument-comment,bugprone-assert-side-effect,bugprone-bad-signal-to-kill-thread,bugprone-narrowing-conversions]

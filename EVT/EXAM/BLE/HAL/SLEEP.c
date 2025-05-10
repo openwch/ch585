@@ -14,6 +14,8 @@
 /* 头文件包含 */
 #include "HAL.h"
 
+
+pfnLowPowerGapProcessCB_t LowPowerGapProcess;
 /*******************************************************************************
  * @fn          CH58x_LowPower
  *
@@ -65,12 +67,39 @@ uint32_t CH58x_LowPower(uint32_t time)
     // LOW POWER-sleep模式
     if(!RTCTigFlag)
     {
-        LowPower_Sleep(RB_PWR_RAM32K | RB_PWR_RAM96K | RB_PWR_EXTEND |RB_XT_PRE_EN );
+        LowPower_Sleep(RB_PWR_RAM32K | RB_PWR_RAM96K | RB_PWR_EXTEND);
+        R8_RTC_FLAG_CTRL = (RB_RTC_TMR_CLR | RB_RTC_TRIG_CLR);
+        RTC_SetTignTime(time);
+        sys_safe_access_enable();
+        R8_HFCK_PWR_CTRL |= RB_CLK_XT32M_KEEP;
+        sys_safe_access_disable();
+        if(!RTCTigFlag)
+        {
+            LowPower_Halt();
+        }
+        R8_RTC_FLAG_CTRL = (RB_RTC_TMR_CLR | RB_RTC_TRIG_CLR);
         HSECFG_Current(HSE_RCur_100); // 降为额定电流(低功耗函数中提升了HSE偏置电流)
         return 0;
     }
 #endif
     return 3;
+}
+
+/*******************************************************************************
+ * @fn      LowPowerGapProcess_Register
+ *
+ * @brief   注册低功耗唤醒间隙执行回调
+ *
+ * @param   None.
+ *
+ * @return  None.
+ */
+void LowPowerGapProcess_Register(pfnLowPowerGapProcessCB_t cb)
+{
+    if((uint32_t)cb & 0x20000000)
+    {
+        LowPowerGapProcess = cb;
+    }
 }
 
 /*******************************************************************************

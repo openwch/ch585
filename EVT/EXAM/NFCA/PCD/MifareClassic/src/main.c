@@ -1,20 +1,20 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : main.c
  * Author             : WCH
- * Version            : V1.1
- * Date               : 2024/11/14
- * Description        : NFC PCD Mifare Classic²âÊÔÀı³Ì
- * Copyright (c) 2024 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Version            : V1.2
+ * Date               : 2025/01/21
+ * Description        : NFC PCD Mifare Classicæµ‹è¯•ä¾‹ç¨‹
+ * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 
 /******************************************************************************/
-/* Í·ÎÄ¼ş°üº¬ */
+/* å¤´æ–‡ä»¶åŒ…å« */
 #include "CH58x_common.h"
 #include "wch_nfca_mifare_classic.h"
 #include "wch_nfca_pcd_bsp.h"
 
-/* Ã¿¸öÎÄ¼şµ¥¶Àdebug´òÓ¡µÄ¿ª¹Ø£¬ÖÃ0¿ÉÒÔ½ûÖ¹±¾ÎÄ¼şÄÚ²¿´òÓ¡ */
+/* æ¯ä¸ªæ–‡ä»¶å•ç‹¬debugæ‰“å°çš„å¼€å…³ï¼Œç½®0å¯ä»¥ç¦æ­¢æœ¬æ–‡ä»¶å†…éƒ¨æ‰“å° */
 #define DEBUG_PRINT_IN_THIS_FILE 1
 #if DEBUG_PRINT_IN_THIS_FILE
     #define PRINTF(...) PRINT(__VA_ARGS__)
@@ -26,16 +26,16 @@
  * GLOBAL TYPEDEFS
  */
 uint8_t default_key[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-uint8_t picc_uid[4];
+uint8_t picc_uid[7];
 
 /*********************************************************************
  * @fn      sys_get_vdd
  *
- * @brief   ÏµÍ³µçÑ¹¼ì²â
+ * @brief   ç³»ç»Ÿç”µå‹æ£€æµ‹
  *
  * @param   none
  *
- * @return  ¼ì²âµÄADCÖµ
+ * @return  æ£€æµ‹çš„ADCå€¼
  */
 uint16_t sys_get_vdd(void)
 {
@@ -49,9 +49,9 @@ uint16_t sys_get_vdd(void)
 
     R8_TKEY_CFG &= ~RB_TKEY_PWR_ON;
     R8_ADC_CHANNEL = CH_INTE_VBAT;
-    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (0 << 4);    /* Ê¹ÓÃ-12dBÄ£Ê½ */
+    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (0 << 4);    /* ä½¿ç”¨-12dBæ¨¡å¼ */
     R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
-    R8_ADC_CONVERT |= (3 << 4);                                 /* 7¸öTadc */
+    R8_ADC_CONVERT |= (3 << 4);                                 /* 7ä¸ªTadc */
     R8_ADC_CONVERT |= RB_ADC_START;
     while (R8_ADC_CONVERT & RB_ADC_START);
     adc_data = R16_ADC_DATA;
@@ -66,7 +66,7 @@ uint16_t sys_get_vdd(void)
 /*********************************************************************
  * @fn      nfca_pcd_test
  *
- * @brief   nfc-a pcd¶Á¿¨Æ÷²âÊÔº¯Êı
+ * @brief   nfc-a pcdè¯»å¡å™¨æµ‹è¯•å‡½æ•°
  *
  * @param   none
  *
@@ -78,6 +78,7 @@ void nfca_pcd_test(void)
     uint16_t adc_vdd;
     int vdd_value;
 
+    /* ä¸‹é¢ä»£ç ä½ç”µå‹æ£€æµ‹å¹¶æ ¹æ®ç”µå‹è®¾ç½®è¾“å‡ºæ¡£ä½ï¼Œéå¿…è¦ä»£ç ï¼Œæ¼”ç¤ºä½¿ç”¨ã€‚ */
     adc_vdd = sys_get_vdd();
     vdd_value = ADC_VoltConverSignalPGA_MINUS_12dB(adc_vdd);
     PRINTF("vdd_value: %d\n", vdd_value);
@@ -106,7 +107,7 @@ void nfca_pcd_test(void)
     {
         nfca_pcd_start();
 
-#if 1   /* ÖÃ1ÏÈ½øĞĞ³¬µÍ¹¦ºÄ¼ì¿¨£¬¶ÔÌìÏßĞÅºÅ·ù¶ÈÓ°ÏìĞ¡µÄÉè±¸¿ÉÄÜ»áÎŞ·¨»½ĞÑ */
+#if 1   /* ç½®1å…ˆè¿›è¡Œè¶…ä½åŠŸè€—æ£€å¡ï¼Œå¯¹å¤©çº¿ä¿¡å·å¹…åº¦å½±å“å°çš„è®¾å¤‡å¯èƒ½ä¼šæ— æ³•å”¤é†’ */
         if(nfca_pcd_lpcd_check() == 0)
         {
             PRINTF("NO CARD\n");
@@ -114,10 +115,10 @@ void nfca_pcd_test(void)
         }
         PRINTF("CARD DETECT\n");
 #endif
-        mDelaymS(5);   /* ÊÖ»úµÈÄ£Äâ¿¨Éè±¸ĞèÒª³¤Ê±¼äµÄÁ¬Ğø²¨»½ĞÑÆä¿¨¹¦ÄÜ£¬ÆÕÍ¨ÊµÌå¿¨ 1 ms ¼´¿É */
+        mDelaymS(5);   /* æ‰‹æœºç­‰æ¨¡æ‹Ÿå¡è®¾å¤‡éœ€è¦é•¿æ—¶é—´çš„è¿ç»­æ³¢å”¤é†’å…¶å¡åŠŸèƒ½ï¼Œæ™®é€šå®ä½“å¡ 1 ms å³å¯ */
 
 #if NFCA_PCD_USE_NFC_CTR_PIN
-        nfca_pcd_ctr_handle();  /* ¶ÔÌìÏßĞÅºÅ½øĞĞ¼ì²â£¬Ê¹ÓÃNFC CTRÒı½Å¿ØÖÆ·ù¶È */
+        nfca_pcd_ctr_handle();  /* å¯¹å¤©çº¿ä¿¡å·è¿›è¡Œæ£€æµ‹ï¼Œä½¿ç”¨NFC CTRå¼•è„šæ§åˆ¶å¹…åº¦ */
 #endif
 
         res = PcdRequest(PICC_REQALL);
@@ -137,7 +138,7 @@ void nfca_pcd_test(void)
                 {
                     PRINTF("\nselect OK, SAK:%02x\n", g_nfca_pcd_recv_buf[0]);
 
-#if 1   /* ¶ÁÈ¡Ç°4¸ö¿éÊı¾İ²âÊÔ */
+#if 1   /* è¯»å–å‰4ä¸ªå—æ•°æ®æµ‹è¯• */
                     res = PcdAuthState(PICC_AUTHENT1A, 0, default_key, picc_uid);
                     if (res != PCD_NO_ERROR)
                     {
@@ -160,7 +161,7 @@ void nfca_pcd_test(void)
                         PRINTF("\n");
                     }
 
-#if 0   /* Öµ¿é¶ÁÈ¡ºÍ³õÊ¼»¯²âÊÔ */
+#if 0   /* å€¼å—è¯»å–å’Œåˆå§‹åŒ–æµ‹è¯• */
 
                     res = PcdReadValueBlock(1);
                     if (res == PCD_VALUE_BLOCK_INVALID)
@@ -184,9 +185,9 @@ void nfca_pcd_test(void)
                         PRINTF("value:%d, adr:%d\n", PU32_BUF(g_nfca_pcd_recv_buf)[0], g_nfca_pcd_recv_buf[12]);
                     }
 
-#endif  /* Öµ¿é¶ÁÈ¡ºÍ³õÊ¼»¯²âÊÔ */
+#endif  /* å€¼å—è¯»å–å’Œåˆå§‹åŒ–æµ‹è¯• */
 
-#if 0   /* Öµ¿é¿Û¿îºÍ±¸·İ²âÊÔ */
+#if 0   /* å€¼å—æ‰£æ¬¾å’Œå¤‡ä»½æµ‹è¯• */
                     PRINTF("PcdValue\n");
                     uint32_t di_data = 1;
                     res = PcdValue(PICC_DECREMENT, 1, (uint8_t *)&di_data);
@@ -203,11 +204,11 @@ void nfca_pcd_test(void)
                         goto nfc_exit;
                     }
 
-#endif  /* Öµ¿é¿Û¿îºÍ±¸·İ²âÊÔ */
+#endif  /* å€¼å—æ‰£æ¬¾å’Œå¤‡ä»½æµ‹è¯• */
 
-#endif  /* ¶ÁÈ¡Ç°4¸ö¿éÊı¾İ²âÊÔ */
+#endif  /* è¯»å–å‰4ä¸ªå—æ•°æ®æµ‹è¯• */
 
-#if 1   /* ËùÓĞÉÈÇø¶ÁÈ¡²âÊÔ */
+#if 1   /* æ‰€æœ‰æ‰‡åŒºè¯»å–æµ‹è¯• */
                     for (uint8_t l = 1; l < 16; l++)
                     {
                         res = PcdAuthState(PICC_AUTHENT1A, 4 * l, default_key, picc_uid);
@@ -234,10 +235,61 @@ void nfca_pcd_test(void)
                             PRINTF("\n");
                         }
                     }
-#endif  /* ËùÓĞÉÈÇø¶ÁÈ¡²âÊÔ */
+#endif  /* æ‰€æœ‰æ‰‡åŒºè¯»å–æµ‹è¯• */
 
 nfc_exit:
                     PcdHalt();
+                }
+            }
+        }
+        else
+        {
+            if(res == 0x0044)   /* Mifare Ultrlightã€NFC Forum Type2ç­‰ç±»ä¼¼å¡ç‰‡ï¼Œåªæ¼”ç¤ºè¯»å–å¡å· */
+            {
+                res = PcdAnticoll(PICC_ANTICOLL1);
+                if (res == PCD_NO_ERROR)
+                {
+                    if(g_nfca_pcd_recv_buf[0] == 0x88)
+                    {
+                        picc_uid[0] = g_nfca_pcd_recv_buf[1];
+                        picc_uid[1] = g_nfca_pcd_recv_buf[2];
+                        picc_uid[2] = g_nfca_pcd_recv_buf[3];
+
+                        res = PcdSelect(PICC_ANTICOLL1, g_nfca_pcd_recv_buf);
+                        if (res == PCD_NO_ERROR)
+                        {
+                            res = PcdAnticoll(PICC_ANTICOLL2);
+                            if (res == PCD_NO_ERROR)
+                            {
+                                picc_uid[3] = g_nfca_pcd_recv_buf[0];
+                                picc_uid[4] = g_nfca_pcd_recv_buf[1];
+                                picc_uid[5] = g_nfca_pcd_recv_buf[2];
+                                picc_uid[6] = g_nfca_pcd_recv_buf[3];
+                                PRINTF("uid: %02x %02x %02x %02x %02x %02x %02x\n", picc_uid[0], picc_uid[1],
+                                        picc_uid[2], picc_uid[3], picc_uid[4], picc_uid[5], picc_uid[6]);
+
+                                res = PcdSelect(PICC_ANTICOLL2, g_nfca_pcd_recv_buf);
+                                if (res == PCD_NO_ERROR)
+                                {
+                                    /* é˜²å†²çªç¬¬äºŒå±‚é€‰ä¸­æˆåŠŸ */
+                                    PRINTF("SELECT OK, SAK: %02x\n", g_nfca_pcd_recv_buf[0]);
+                                    PcdHalt();
+                                }
+                            }
+                            else
+                            {
+                                PRINTF("ERROR ANTICOLL2\n");
+                            }
+                        }
+                        else
+                        {
+                            PRINTF("CARD PcdSelect error: %d\n", res);
+                        }
+                    }
+                    else
+                    {
+                        PRINTF("ERROR UID0\n");
+                    }
                 }
             }
         }
@@ -250,28 +302,30 @@ next_loop:
 /*********************************************************************
  * @fn      main
  *
- * @brief   Ö÷º¯Êı
+ * @brief   ä¸»å‡½æ•°
  *
  * @return  none
  */
 int main(void)
 {
-    UINT16 x;
-    PWR_DCDCCfg(ENABLE);
+    HSECFG_Capacitance(HSECap_18p);
     SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
 
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);
     GPIOPinRemap(ENABLE, RB_PIN_UART0);
+    GPIOA_ModeCfg(GPIO_Pin_15, GPIO_ModeIN_PU);
     GPIOA_ModeCfg(GPIO_Pin_14, GPIO_ModeOut_PP_5mA);
     UART0_DefInit();
 #endif
 
-    PRINT("NFCA PCD START\n");
+    PRINT("Program build on: %s, %s\n", __DATE__, __TIME__);
+
+    PRINT("NFCA PCD MifareClassic START\n");
 
     nfca_pcd_init();
 
-    nfca_pcd_lpcd_calibration();    /* µÍ¹¦ºÄ¼ì¿¨ADCÖµĞ£×¼£¬ºÍÌìÏßµÈÏà¹Ø£¬¿ÉÔÚÉú²úÊ±½øĞĞ¼ì²â¡£ */
+    nfca_pcd_lpcd_calibration();    /* ä½åŠŸè€—æ£€å¡ADCå€¼æ ¡å‡†ï¼Œå’Œå¤©çº¿ç­‰ç›¸å…³ï¼Œå¯åœ¨ç”Ÿäº§æ—¶è¿›è¡Œæ£€æµ‹ã€‚ */
 
     nfca_pcd_test();
 

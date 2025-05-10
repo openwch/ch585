@@ -1,0 +1,18 @@
+Vendor=WCH
+Toolchain=RISC-V
+Series=CH32L103
+RTOS=NoneOS
+MCU=CH32L103C8T6
+Link=WCH-Link
+PeripheralVersion==1.0
+Description==
+Mcu Type=CH32L10x
+Address=0x08000000
+Target Path=obj\MifareClassic.hex
+CLKSpeed=1
+DebugInterfaceMode=-1
+Erase All=false
+Program=false
+Verify=false
+Reset=false
+SDIPrintf=false

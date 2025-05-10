@@ -27,9 +27,9 @@
       <locationURI>PARENT-3-PROJECT_LOC/SRC/Ld</locationURI>
     </link>
     <link>
-      <name>NFCA_COMMON</name>
+      <name>NFCA_LIB</name>
       <type>2</type>
-      <locationURI>PARENT-2-PROJECT_LOC/NFCA_COMMON</locationURI>
+      <locationURI>PARENT-2-PROJECT_LOC/NFCA_LIB</locationURI>
     </link>
     <link>
       <name>RVMSIS</name>
@@ -47,9 +47,9 @@
       <locationURI>PARENT-3-PROJECT_LOC/SRC/StdPeriphDriver</locationURI>
     </link>
     <link>
-      <name>NFCA_PICC_LIB</name>
+      <name>PICC_COMMON</name>
       <type>2</type>
-      <location>PARENT-1-PROJECT_LOC/NFCA_PICC_LIB</location>
+      <location>PARENT-1-PROJECT_LOC/PICC_COMMON</location>
     </link>
   </linkedResources>
   <filteredResources>

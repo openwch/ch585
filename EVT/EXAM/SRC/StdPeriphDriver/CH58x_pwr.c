@@ -276,8 +276,14 @@ void LowPower_Idle(void)
 __HIGH_CODE
 void LowPower_Halt(void)
 {
+    uint32_t i;
     uint8_t x32Mpw;
+    uint16_t clk_sys_cfg;
+    uint8_t flash_cfg,flash_sck;
 
+    clk_sys_cfg = R16_CLK_SYS_CFG;
+    flash_cfg = R8_FLASH_CFG;
+    flash_sck = R8_FLASH_SCK;
     FLASH_ROM_SW_RESET();
     R8_FLASH_CTRL = 0x04; //flash关闭
     x32Mpw = R8_XT32M_TUNE;
@@ -292,22 +298,56 @@ void LowPower_Halt(void)
     sys_safe_access_enable();
     R8_XT32M_TUNE = x32Mpw;
     sys_safe_access_disable();
-    sys_safe_access_enable();
-    R8_PLL_CONFIG |= (1 << 5);
-    sys_safe_access_disable();
+//    sys_safe_access_enable();
+//    R8_PLL_CONFIG |= (1 << 5);
+//    sys_safe_access_disable();
+
+    if(R16_CLK_SYS_CFG & RB_OSC32M_SEL) //使用外部32M
+    {
+        sys_safe_access_enable();
+        R8_SLP_POWER_CTRL |= 0x40;
+        R8_FLASH_CFG = 0X57;
+        R8_FLASH_SCK = R8_FLASH_SCK & (~(1<<4));
+        R16_CLK_SYS_CFG = CLK_SOURCE_HSE_8MHz;
+        sys_safe_access_disable();
+    }
+    else//使用内部16M
+    {
+      sys_safe_access_enable();
+      R8_FLASH_CFG = 0X57;
+      R8_FLASH_SCK = R8_FLASH_SCK & (~(1<<4));
+      R16_CLK_SYS_CFG = CLK_SOURCE_HSI_4MHz;
+      sys_safe_access_disable();
+    }
 
     PFIC->SCTLR |= (1 << 2); //deep sleep
     __WFI();
     __nop();
     __nop();
+
+    if((!(clk_sys_cfg & RB_OSC32M_SEL)) && (clk_sys_cfg & 0x100)) //使用内部16M
+    {
+      i = 40;
+      do
+      {
+          __nop();
+      }while(--i);
+    }
+
     sys_safe_access_enable();
-    R8_PLL_CONFIG &= ~(1 << 5);
+    R8_FLASH_CFG = flash_cfg;
+    R8_FLASH_SCK = flash_sck;
+    R16_CLK_SYS_CFG = clk_sys_cfg;
     sys_safe_access_disable();
+
+//    sys_safe_access_enable();
+//    R8_PLL_CONFIG &= ~(1 << 5);
+//    sys_safe_access_disable();
 }
 
 /*******************************************************************************
 * Function Name  : LowPower_Sleep
-* Description    : 低功耗-Sleep模式。
+* Description    : 低功耗-Sleep模式，注意唤醒后到flash稳定还需要300us
 * Input          : rm:
                     RB_PWR_RAM32K	-	32K retention SRAM 供电
                     RB_PWR_RAM96K	-	96K main SRAM 供电
@@ -319,18 +359,19 @@ void LowPower_Halt(void)
 __HIGH_CODE
 void LowPower_Sleep(uint16_t rm)
 {
-    __attribute__((aligned(4))) uint8_t MacAddr[6] = {0};
     uint8_t x32Mpw;
     uint16_t power_plan;
     uint16_t clk_sys_cfg;
     uint16_t hfck_pwr_ctrl;
-
-    GetMACAddress(MacAddr);
+    uint8_t flash_cfg,flash_sck;
+    uint32_t i;
 
     clk_sys_cfg = R16_CLK_SYS_CFG;
     hfck_pwr_ctrl = R8_HFCK_PWR_CTRL;
     x32Mpw = R8_XT32M_TUNE;
     x32Mpw = (x32Mpw & 0xfc) | 0x03; // 150%额定电流
+    flash_cfg = R8_FLASH_CFG;
+    flash_sck = R8_FLASH_SCK;
 
     sys_safe_access_enable();
     R8_BAT_DET_CTRL = 0; // 关闭电压监控
@@ -339,42 +380,62 @@ void LowPower_Sleep(uint16_t rm)
     R8_XT32M_TUNE = x32Mpw;
     sys_safe_access_disable();
 
-    sys_safe_access_enable();
-    R16_POWER_PLAN &= ~RB_XT_PRE_EN;
-    sys_safe_access_disable();
-
     PFIC->SCTLR |= (1 << 2); //deep sleep
 
     power_plan = R16_POWER_PLAN & (RB_PWR_DCDC_EN | RB_PWR_DCDC_PRE);
     power_plan |= RB_PWR_PLAN_EN | RB_PWR_CORE | rm | (2<<11);
+    power_plan &= ~RB_XT_PRE_EN;
 
     sys_safe_access_enable();
-    if(rm & RB_XT_PRE_EN)
-    {
-        R8_SLP_POWER_CTRL |= 0x41;
-    }
-    else
-    {
-        R8_SLP_POWER_CTRL |= 0x40;
-    }
     R16_POWER_PLAN = power_plan;
-    R8_HFCK_PWR_CTRL |= RB_CLK_RC16M_PON;   //睡眠需要打开内部HSI之后睡
+    R8_HFCK_PWR_CTRL |= RB_CLK_RC16M_PON;   //睡眠需要打开内部HSI
     sys_safe_access_disable();
-    if((R16_CLK_SYS_CFG & RB_CLK_SYS_MOD) == 0x40)
+    if(R16_CLK_SYS_CFG & RB_OSC32M_SEL) //使用外部32M
     {
         sys_safe_access_enable();
-        R16_CLK_SYS_CFG = (R16_CLK_SYS_CFG&(~RB_CLK_PLL_DIV))|24;
+        if(rm & RB_XT_PRE_EN)
+        {
+          R8_SLP_POWER_CTRL |= 0x40;
+        }
+        else
+        {
+          R8_SLP_POWER_CTRL |= 0x41;
+        }
+        R8_FLASH_CFG = 0X57;
+        R8_FLASH_SCK = R8_FLASH_SCK & (~(1<<4));
+        R16_CLK_SYS_CFG = CLK_SOURCE_HSE_4MHz;
         sys_safe_access_disable();
     }
-//    sys_safe_access_enable();
-//    R8_PLL_CONFIG |= (1 << 5);
-//    sys_safe_access_disable();
+    else//使用内部16M
+    {
+      sys_safe_access_enable();
+      R8_FLASH_CFG = 0X57;
+      R8_FLASH_SCK = R8_FLASH_SCK & (~(1<<4));
+      R16_CLK_SYS_CFG = CLK_SOURCE_HSI_4MHz;
+      sys_safe_access_disable();
+    }
 
     __WFI();
     __nop();
     __nop();
 
+    if(rm & RB_PWR_EXTEND)
+    {
+        R32_U2H_BC_CTRL = 0;
+        (*((PUINT32V)0x4000C254)) = 0;
+    }
+    if((!(clk_sys_cfg & RB_OSC32M_SEL)) && (clk_sys_cfg & 0x100)) //使用内部16M
+    {
+      i = 40;
+      do
+      {
+          __nop();
+      }while(--i);
+    }
+
     sys_safe_access_enable();
+    R8_FLASH_CFG = flash_cfg;
+    R8_FLASH_SCK = flash_sck;
     R16_CLK_SYS_CFG = clk_sys_cfg;
     R8_HFCK_PWR_CTRL = hfck_pwr_ctrl;
     sys_safe_access_disable();
@@ -382,14 +443,7 @@ void LowPower_Sleep(uint16_t rm)
     R16_POWER_PLAN &= ~RB_PWR_PLAN_EN;
     sys_safe_access_disable();
 
-    sys_safe_access_enable();
-    R16_POWER_PLAN &= ~RB_XT_PRE_EN;
-    sys_safe_access_disable();
-
-//    sys_safe_access_enable();
-//    R8_PLL_CONFIG &= ~(1 << 5);
-//    sys_safe_access_disable();
-    DelayUs(40);
+//    DelayUs(100); //如果rm & RB_XT_PRE_EN == 0, 且退出函数后运行flash代码，则需要延时100us后退出
 }
 
 /*********************************************************************
@@ -409,20 +463,18 @@ void LowPower_Sleep(uint16_t rm)
 __HIGH_CODE
 void LowPower_Shutdown(uint16_t rm)
 {
-    uint8_t x32Kpw, x32Mpw;
+    uint8_t x32Kpw;
 
     FLASH_ROM_SW_RESET();
     x32Kpw = R8_XT32K_TUNE;
-    x32Mpw = R8_XT32M_TUNE;
-    x32Mpw = (x32Mpw & 0xfc) | 0x03; // 150%额定电流
     x32Kpw = (x32Kpw & 0xfc) | 0x01; // LSE驱动电流降低到额定电流
 
+    SetSysClock(CLK_SOURCE_HSI_PLL_13MHz);
     sys_safe_access_enable();
     R8_BAT_DET_CTRL = 0; // 关闭电压监控
     sys_safe_access_disable();
     sys_safe_access_enable();
     R8_XT32K_TUNE = x32Kpw;
-    R8_XT32M_TUNE = x32Mpw;
     sys_safe_access_disable();
 
     PFIC->SCTLR |= (1 << 2); //deep sleep

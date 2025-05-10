@@ -1,5 +1,5 @@
 
-南京沁恒微电子股份有限公司 2024.11
+南京沁恒微电子股份有限公司 2025.03
 最新资料请到我们的网站上查询
 http://wch.cn
 
@@ -12,7 +12,7 @@ http://wch.cn
   |      |      |      |-- SRC  
   |      |      |      |      |-- Ld：link文件
   |      |      |      |      |-- RVMSIS：内核系统头文件
-  |      |      |      |      |-- Startup：CH59x系列启动文件
+  |      |      |      |      |-- Startup：CH58x系列启动文件
   |      |      |      |      |-- StdPeriphDriver：基本外设驱动源文件及头文件
   |      |      |      |-- ADC：adc采样例程，包括温度检测、单通道检测、差分通道检测、TouchKey检测、中断方式采样
   |      |      |      |-- FLASH：片上flash例程：包括Code区，DataFlash区的擦/读/写
@@ -23,33 +23,32 @@ http://wch.cn
   |      |      |      |-- LCD：LCD例程，包括LCD显示与LCD睡眠
   |      |      |      |-- LED：LED例程，LED屏控制卡接口演示
   |      |      |      |-- NFCA
-  |      |      |      |      |-- NFCA_COMMON：ISO14443-3A和通用M1加密算法库通用文件
+  |      |      |      |      |-- NFCA_LIB：NFCA代码库文件和ISO14443-3A协议文件
   |      |      |      |      |-- PCD：
-  |      |      |      |      |      |-- NFCA_PCD_LIB：NFC-A PCD读卡器底层代码和库文件
+  |      |      |      |      |      |-- PCD_COMMON：NFC-A PCD读卡器通用代码文件
   |      |      |      |      |      |-- MifareClassic：PCD读卡器对MifareClassic卡片操作示例工程 
   |      |      |      |      |-- PICC：
-  |      |      |      |      |      |-- NFCA_PICC_LIB：NFC 模式卡模式底层代码和库文件
+  |      |      |      |      |      |-- PICC_COMMON：NFC 模式卡模式通用代码文件
   |      |      |      |      |      |-- PICC_M1：NFC卡模式模拟M1卡示例工程 
-  |      |      |      |      |-- CH585 NFC读卡器应用指南.pdf
+  |      |      |      |      |      |-- PICC_T2T：NFC卡模式模拟NFC Forum Type2卡示例工程 
+  |      |      |      |      |-- CH585 NFC读卡器应用指南.pdf 
   |      |      |      |-- IAP
   |      |      |      |      |-- APP：和IAP配套使用的APP程序例程
   |      |      |      |      |-- USB_IAP：通过USB更新片上程序的例程
   |      |      |      |      |-- USBHS_IAP：通过高速USB更新片上程序的例程
   |      |      |      |      |-- UART_IAP：通过串口更新片上程序的例程
   |      |      |      |      |-- WCHMcuIAP_WinAPP：IAP上位机工具及源码
-  |      |      |      |-- PDF：生成PDF例程：FLASH为存储媒介模拟U盘设备，自动生成自定义的PDF文件
   |      |      |      |-- PM：系统睡眠模式并唤醒例程：GPIOA_5作为唤醒源，共4种功耗等级
   |      |      |      |-- PWMX：PWM4-11输出功能例程
   |      |      |      |-- SPI：SPI例程，Master/Slave 模式数据收发 
   |      |      |      |-- TMR：定时器功能例程  
   |      |      |      |-- TOUCH
   |      |      |      |      |-- TKYLIB：触摸库文件及其头文件
-  |      |      |      |      |-- Touch_Keys：触摸按键例程，实现12个按键。
-  |      |      |      |      |-- Touch_Keys_with_ble：蓝牙触摸按键例程，在触摸按键例程的基础上结合蓝牙外设例程，实现触摸按键键值上报。
-  |      |      |      |      |-- Touch_Proximity：隔空触摸例程，使用一个触摸通道实现。
-  |      |      |      |      |-- Touch_WheelSlider：触摸滑轮例程，分辨率360个点，使用8个触摸通道实现。
+  |      |      |      |      |-- Touch_EX001：触摸应用的综合演示，包括触摸滑条、触摸滑环、触摸按键和隔空感应四种触摸应用，配合EVB使用。
+  |      |      |      |      |-- Touch_EX001_ble：触摸应用搭配蓝牙通信功能的综合演示，包括触摸滑条、触摸滑环、触摸按键和隔空感应四种触摸应用，配合EVB使用，可通过蓝牙连接调试设备上报触摸键值，触摸滑环位置值和触摸滑条位置值。
+  |      |      |      |      |-- Touch_EX002：触摸应用的8通道触摸按键演示，配合EVB使用。
+  |      |      |      |      |-- Touch_EX002_ble：触摸应用的8通道触摸按键搭配蓝牙通信功能演示，配合EVB使用，可通信蓝牙连接调试设备上报触摸按键值。
   |      |      |      |      |-- WCH触摸库使用说明.PDF
-  |      |      |      |      |-- WCH触摸应用指南.PDF
   |      |      |      |-- UART1：串口1收发例程
   |      |      |      |-- USB
   |      |      |      |      |-- Device
@@ -74,9 +73,6 @@ http://wch.cn
   |      |      |      |      |      |      |-- CompositeKM：模拟键盘和鼠标，使用IO模拟按键，同时模拟数据可以通过串口2上传。
   |      |      |      |      |      |      |-- MSC_U-Disk: 模拟简单U盘，可选使用片内Flash或外部SPI-Flash
   |      |      |      |      |      |      |-- MSC_CD-ROM: 模拟CDROM，需要外挂SPI-Flash
-  |      |      |      |      |      |      |-- USB_ECM-NetWorkAdaptor: USB ECM网卡例程
-  |      |      |      |      |      |      |-- USB_NCM-NetWorkAdaptor: USB NCM网络适配器例程
-  |      |      |      |      |      |      |-- USB_RNDIS-NetWorkAdaptor: USB RNDIS网络适配器例程
   |      |      |      |      |      |      |-- SimulateCDC：模拟一个CDC串口，使用串口2收发。
   |      |      |      |      |      |      |-- SimulateCDC-HID：模拟一个CDC串口，使用串口2收发,HID中断端点下发数据取反上传。  
   |      |      |      |      |      |-- HOST_IAP
@@ -98,7 +94,7 @@ http://wch.cn
   |      |      |      |      |-- HID_Mouse：蓝牙鼠标例程，模拟鼠标设备，连接主机后定时上传键值
   |      |      |      |      |-- HID_Consumer：蓝牙拍照器例程，模拟用户控制设备，连接主机后定时上传音量键下键
   |      |      |      |      |-- HID_Touch：蓝牙触摸例程，模拟触摸笔设备，连接主机后定时上传触摸值
-  |      |      |      |      |-- HID_NFC_NDEF_Connect：NFC刷卡连接蓝牙HID例程 
+  |      |      |      |      |-- HID_BTSSP_NFC：NFC刷卡进行安全连接蓝牙HID例程 
   |      |      |      |      |-- MultiCentPeri：多主机多从机例程，支持同时连接三个主机三个从机
   |      |      |      |      |-- MultiCentral：主机多连接例程，主动扫描周围设备，连接至给定的三个从机设备地址，寻找自定义服务及特征，执行读写命令，需与从机例程配合使用,并将从机设备地址修改为该例程目标地址，三个从机设备地址默认为 (84:C2:E4:03:02:02)、(84:C2:E4:03:02:03)、(84:C2:E4:03:02:04)
   |      |      |      |      |-- Observer：观察者角色例程，定时扫描，如果扫描结果不为空，则打印扫描到的广播地址
@@ -142,5 +138,9 @@ http://wch.cn
   |      |      |      |      |-- WCH蓝牙空中升级（BLE OTA）.PDF
   |      |      |      |      |-- 沁恒低功耗蓝牙软件开发参考手册.pdf
   |      |      |      |      |-- BLE认证证书：产品：WCH CH58x  QDID：179771
-  |      |      |-- PUB: CH585评估版原理图以及说明书
+  |      |      |-- PUB
+  |      |      |      |-- SCHPCB: 参考原理图及PCB文件
+  |      |      |      |-- CH585评估版原理图 (CH585SCH.pdf)
+  |      |      |      |-- CH585评估板说明书.pdf
+  |      |      |      |-- 蓝牙芯片的电路及PCB设计的重要注意事项.pdf
   |

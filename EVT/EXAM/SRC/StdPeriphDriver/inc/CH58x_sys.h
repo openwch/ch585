@@ -50,6 +50,31 @@ typedef enum
 } SYS_InfoStaTypeDef;
 
 /**
+ * @brief  IWDG_KR_Key
+ */
+typedef enum
+{
+    KEY_UNPROTECT = 0x5555,        //解除保护
+    KEY_RELOADING_COUNT = 0xAAAA,  //重装载计数值
+    KEY_START_IWDG = 0xCCCC        //启动看门狗
+} IWDG_KR_Key;
+
+/**
+ * @brief  IWDG Prescaler factor
+ */
+typedef enum
+{
+    IWDG_PR_4 = 0, // 4分频
+    IWDG_PR_8,     // 8分频
+    IWDG_PR_16,    // 16分频
+    IWDG_PR_32,    // 32分频
+    IWDG_PR_64,    // 64分频
+    IWDG_PR_128,   // 128分频
+    IWDG_PR_256,   // 256分频
+    IWDG_PR_512    // 512分频
+} IWDG_32K_PR;
+
+/**
  * @brief  获取芯片ID类，一般为固定值
  */
 #define SYS_GetChipID()      R8_CHIP_ID
@@ -180,6 +205,48 @@ void mDelayuS(uint16_t t);
  * @param   t       - 时间参数
  */
 void mDelaymS(uint16_t t);
+
+/**
+ * @brief   获取写保护状态
+ *
+ * @return  1:禁止操作相应字段; 0:解除保护
+ */
+#define  IWDG_WR_Protect()       (R32_IWDG_CFG >> 30 & 0x01)
+
+/**
+ * @brief   获取看门狗计数器
+ *
+ * @return  COUNT
+ */
+#define  IWDG_Count_Get()        ((R32_IWDG_CFG >> 16) & 0xFFF)
+
+/**
+ * @brief   获取配置寄存器更新标志，关闭写保护位生效
+ *
+ * @return  1:寄存器更新; 0:寄存器不更新
+ */
+#define  IWDG_PVU_Get()          (R32_IWDG_CFG >> 15 & 0x01)
+
+/**
+ * @brief   启动看门狗/解除读保护/喂狗/重装载计数值
+ *
+ * @param   kr       - 控制值
+ */
+void IWDG_KR_Set(IWDG_KR_Key kr);
+
+/**
+ * @brief   配置预分频，关闭写保护位生效
+ *
+ * @param   pr       - 分频系数
+ */
+void IWDG_PR_Set(IWDG_32K_PR pr);
+
+/**
+ * @brief   配置计数器重装载值，关闭写保护位生效
+ *
+ * @param   rlr       - 计数器重装载值
+ */
+void IWDG_RLR_Set(uint16_t rlr);
 
 /**
  * @brief Enter safe access mode.

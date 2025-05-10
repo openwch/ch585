@@ -158,8 +158,8 @@ __attribute__((always_inline)) RV_STATIC_INLINE uint32_t __risc_v_disable_irq(vo
 
 /* ##########################   PFIC functions  #################################### */
 
-#define PFIC_EnableAllIRQ()     {write_csr(0x800, 0x88);__nop();__nop();}
-#define PFIC_DisableAllIRQ()    {write_csr(0x800, 0x80);__nop();__nop();}
+#define PFIC_EnableAllIRQ()     {write_csr(0x800, 0x88);}
+#define PFIC_DisableAllIRQ()    {write_csr(0x800, 0x80);asm volatile("fence.i");}
 
 /*******************************************************************************
  * @fn      PFIC_EnableIRQ
@@ -183,8 +183,7 @@ __attribute__((always_inline)) RV_STATIC_INLINE void PFIC_EnableIRQ(IRQn_Type IR
 __attribute__((always_inline)) RV_STATIC_INLINE void PFIC_DisableIRQ(IRQn_Type IRQn)
 {
     PFIC->IRER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
-    __nop();
-    __nop();
+    asm volatile("fence.i");
 }
 
 /*******************************************************************************

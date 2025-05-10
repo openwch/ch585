@@ -97,6 +97,7 @@ static void SYS_SetTignOffest( int32_t val )
  *
  * @return  None.
  */
+__HIGH_CODE
 void RTC_SetTignTime(uint32_t time)
 {
     sys_safe_access_enable();

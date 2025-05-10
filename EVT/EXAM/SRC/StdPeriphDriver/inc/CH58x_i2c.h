@@ -145,8 +145,8 @@ typedef enum
 #define I2C_EVENT_SLAVE_BYTE_TRANSMITTING                    ((uint32_t)0x00060080) /* TRA, BUSY and TXE flags */
 #define I2C_EVENT_SLAVE_ACK_FAILURE                          ((uint32_t)0x00000400) /* AF flag */
 
-void I2C_Init(I2C_ModeTypeDef I2C_Mode, UINT32 I2C_ClockSpeed, I2C_DutyTypeDef I2C_DutyCycle,
-              I2C_AckTypeDef I2C_Ack, I2C_AckAddrTypeDef I2C_AckAddr, UINT16 I2C_OwnAddress1);
+void I2C_Init(I2C_ModeTypeDef I2C_Mode, uint32_t I2C_ClockSpeed, I2C_DutyTypeDef I2C_DutyCycle,
+              I2C_AckTypeDef I2C_Ack, I2C_AckAddrTypeDef I2C_AckAddr, uint16_t I2C_OwnAddress1);
 void I2C_Cmd(FunctionalState NewState);
 void I2C_GenerateSTART(FunctionalState NewState);
 void I2C_GenerateSTOP(FunctionalState NewState);

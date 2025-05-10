@@ -115,20 +115,20 @@ int main()
 /*********************************************************************
  * @fn      LowPowerGapProcess
  *
- * @brief   外部时钟不稳定期间执行，可用于执行对时钟要求不高的处理
+ * @brief   外部时钟不稳定期间执行，可用于执行对时钟要求不高的处理，且flash未准备好，需要在RAM中运行
  *
  * @return  none
  */
 __HIGH_CODE
 void LowPowerGapProcess()
 {
-    PRINT("LowPowerGapProcess.. \n");
+    //执行对时钟要求不高的处理
 }
 
 /*********************************************************************
  * @fn      PM_LowPower_Sleep
  *
- * @brief   GPIOA中断函数
+ * @brief   调用Sleep睡眠驱动，此函数需要在RAM中运行
  *
  * @return  none
  */
@@ -145,6 +145,7 @@ void PM_LowPower_Sleep(void)
     R16_CLK_SYS_CFG &= ~RB_OSC32M_SEL;
     sys_safe_access_disable();
     LowPower_Sleep(RB_PWR_RAM96K | RB_PWR_RAM32K ); //只保留96+32K SRAM 供电
+    // 此时外部时钟不稳定，且flash未准备好，只能运行RAM中代码
     SYS_DisableAllIrq(&irq_status);
     wake_ctrl = R8_SLP_WAKE_CTRL;
     sys_safe_access_enable();

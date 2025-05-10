@@ -5,7 +5,12 @@
 #include "TouchKey_CFG.h"
 #include "wchtouch.h"
 //是否开启触摸数据打印
+
+#ifdef  DEBUG
+#define PRINT_EN 1
+#else
 #define PRINT_EN 0
+#endif
 
 #if (PRINT_EN)
   #define dg_log               printf
@@ -14,16 +19,15 @@
 #endif
 
 /************************KEY_FIFO_DEFINE******************************/
-#define KEY_COUNT       	TKY_MAX_QUEUE_NUM               // 按键个数 
+// #define KEY_COUNT       	TKY_MAX_QUEUE_NUM               // 按键个数 
 
-#define TKY_SHIELD_PIN      GPIO_Pin_4                      //驱动屏蔽引脚
 /*是否启用TMOS*/
 #ifndef TMOS_EN
 #define TMOS_EN     0
 #endif
 /*是否支持触摸休眠功能*/
 #if TMOS_EN
-#define TKY_SLEEP_EN 1
+#define TKY_SLEEP_EN HAL_SLEEP
 #else
 #define TKY_SLEEP_EN 0
 #endif
@@ -32,24 +36,12 @@
 #define TKY_FILTER_MODE FILTER_MODE_3
 #endif
 
-#if (TKY_FILTER_MODE == FILTER_MODE_1)
-#define TKY_PollForFilter() TKY_PollForFilterMode_1()
-#elif (TKY_FILTER_MODE == FILTER_MODE_3)
 #define TKY_PollForFilter() TKY_PollForFilterMode_3()
-#elif (TKY_FILTER_MODE == FILTER_MODE_5)
-#define TKY_PollForFilter() TKY_PollForFilterMode_5()
-#elif (TKY_FILTER_MODE == FILTER_MODE_7)
-#define TKY_PollForFilter() TKY_PollForFilterMode_7()
-#elif (TKY_FILTER_MODE == FILTER_MODE_9)
-#define TKY_PollForFilter() TKY_PollForFilterMode_9()
-#endif
 
 
-#if (TKY_FILTER_MODE == FILTER_MODE_7)
-#define TKY_MEMHEAP_SIZE    	(KEY_COUNT*TKY_BUFLEN*2)     //外部定义数据缓冲区长度
-#else
-#define TKY_MEMHEAP_SIZE   		(KEY_COUNT*TKY_BUFLEN)     	 //外部定义数据缓冲区长度
-#endif
+#define TKY_MEMHEAP_SIZE   		(TKY_MAX_QUEUE_NUM*TKY_BUFLEN)     	 //外部定义数据缓冲区长度
+
+#define TOUCH_OFF_VALUE    					(0xFFFF)
 
 /* 按键ID, 主要用于tky_GetKeyState()函数的入口参数 */
 typedef enum
@@ -68,17 +60,14 @@ typedef enum
     KID_K11
 }KEY_ID_E;
 
-/*
-    按键滤波时间50ms, 单位10ms。
-    只有连续检测到50ms状态不变才认为有效，包括弹起和按下两种事件
-    即使按键电路不做硬件滤波，该滤波机制也可以保证可靠地检测到按键事件
-*/
+
 #define NORMAL_KEY_MODE 0                //独立按键触发模式
 #define TOUCH_KEY_MODE  1                //触摸按键触发模式
 
 #define KEY_MODE    NORMAL_KEY_MODE      //按键模式设置
-#define KEY_FILTER_TIME   2              //按键滤波次数
-#define KEY_LONG_TIME     0              //单位：以tky_KeyScan()调用的间隔时间为准， 超出次数则认为长按事件
+#define KEY_FILTER_TIME   2              //按键滤波次数 0 表示不进行按键滤波
+#define KEY_LONG_TIME     0//100              //长按时间 0 表示不检测长按键事件，时间单位为按键扫描单位
+#define KEY_REPEAT_TIME   0//100             //按键连发的速度，0表示不支持连发，时间单位为按键扫描单位
 
 typedef uint8_t (*pIsKeyDownFunc)(void);
 
@@ -89,7 +78,7 @@ typedef struct
 {
     /* 下面是一个函数指针，指向判断按键手否按下的函数 */
     /* 按键按下的判断函数,1表示按下 */
-    pIsKeyDownFunc IsKeyDownFunc;
+    // pIsKeyDownFunc IsKeyDownFunc;
     uint8_t  Count;         //滤波器计数器
     uint16_t LongCount;     //长按计数器
     uint16_t LongTime;      //按键按下持续时间, 0表示不检测长按
@@ -168,38 +157,59 @@ typedef struct
     uint8_t Write;                  // 缓冲区写指针
 }KEY_FIFO_T;
 
-/************************WHEEL_SLIDER_DEFINE****************************/
-#define TOUCH_DECIMAL_POINT_PRECISION       (100)
-#define TOUCH_OFF_VALUE    					(0xFFFF)
+/** Configuration of each button */
+typedef struct st_touch_button_cfg
+{
+    const uint8_t* p_elem_index;      ///< Element number array used by this button.
+    KEY_T       *p_stbtn;
+    uint8_t     num_elements;      ///< Number of elements used by this button.
+} touch_button_cfg_t;
 
-#define TOUCH_WHEEL_ELEMENTS            	(KEY_COUNT)
-#define TOUCH_WHEEL_RESOLUTION              (60)
+/** Configuration of each slider */
+typedef struct st_touch_slider_cfg
+{
+    const uint8_t* p_elem_index;      ///< Element number array used by this slider.
+    uint8_t  num_elements;      ///< Number of elements used by this slider.
+    uint16_t threshold;         ///< Position calculation start threshold value.
+    uint16_t decimal_point_percision;
+    uint16_t slider_resolution;
+    uint16_t *pdata;
+} touch_slider_cfg_t;
 
-#define TOUCH_SLIDER_ELEMENTS            	(KEY_COUNT)
-#define TOUCH_SLIDER_RESOLUTION             (200)
+/** Configuration of each wheel */
+typedef struct st_touch_wheel_cfg_t
+{
+    const uint8_t* p_elem_index;      ///< Element number array used by this wheel.
+    uint8_t  num_elements;      ///< Number of elements used by this wheel.
+    uint16_t threshold;         ///< Position calculation start threshold value.
+    uint16_t decimal_point_percision;
+    uint16_t wheel_resolution;
+    uint16_t *pdata;
+} touch_wheel_cfg_t;
 
-/************************LINE_SLIDER_DEFINE****************************/
-
-/************************TOUCH_PAD_DEFINE****************************/
+/** Configuration of touch */
+typedef struct st_touch_cfg_t
+{
+    touch_button_cfg_t *touch_button_cfg;
+    touch_slider_cfg_t *touch_slider_cfg;
+    touch_wheel_cfg_t *touch_wheel_cfg;
+} touch_cfg_t;
 
 extern uint8_t wakeupflag; // 0  sleep mode   1  wakeup sta
-extern uint32_t tkyPinAll;
 extern uint16_t tkyQueueAll;
-extern uint16_t keyData, scanData;
 extern uint8_t wakeUpCount, wakeupflag;
 
 /* 供外部调用的函数声明 */
-extern void touch_InitKey(void);
+extern void touch_Init(touch_cfg_t *p);
 extern void touch_ScanWakeUp(void);
 extern void touch_ScanEnterSleep(void);
-extern void touch_PutKey(uint8_t _KeyCode);
 extern uint8_t touch_GetKey(void);
 extern uint8_t touch_GetKeyState(KEY_ID_E _ucKeyID);
 extern void touch_SetKeyParam(uint8_t _ucKeyID, uint16_t _LongTime, uint8_t  _RepeatSpeed);
 extern void touch_ClearKey(void);
-extern void touch_KeyScan(void);
+extern void touch_Scan(void);
 extern void touch_InfoDebug(void);
-extern uint16_t touch_DetectWheelSlider(void);
-extern void touch_GPIOModeCfg(GPIOModeTypeDef mode);
-extern void touch_GPIOSleep(void);
+extern uint16_t touch_GetLineSliderData(void);
+extern uint16_t touch_GetWheelSliderData(void);
+extern void touch_GPIOModeCfg (GPIOModeTypeDef mode, uint32_t channel);
 #endif
