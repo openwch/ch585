@@ -52,7 +52,7 @@ CH585 is a RISC-V MCU microcontroller that integrates BLE wireless communication
 
  - AES-128 encryption and decryption, unique chip ID
 
- - Package: QFN48T, QFN32, QFN26C3
+ - Package: QFN48T, QFN32, QFN26C3, QFN20
 
  ### Product Selection Guide
 
