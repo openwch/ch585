@@ -25,7 +25,7 @@
 
 #define US_TO_RTC(us)               ((uint32_t)((us) * CLK_PER_US + 0.5))
 
-void PM_LowPower_Sleep(void);
+void PM_SleepWithRtcWakeup(void);
 /*********************************************************************
  * @fn      DebugInit
  *
@@ -48,18 +48,24 @@ void DebugInit(void)
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);
-    PWR_DCDCCfg(ENABLE);
-    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
+    // PWR_DCDCCfg(ENABLE);
+    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
+    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
 
     /* 配置串口调试 */
     DebugInit();
     PRINT("Start @ChipID=%02x\n", R8_CHIP_ID);
     DelayMs(200);
+
+//关闭外设时钟
+#if 1
+    PWR_PeriphClkCfg(DISABLE,0xFFFF&(~RB_SLP_CLK_UART0));
+    PWR_SafeClkCfg(DISABLE,0x7);
+#endif
 
 #if 1
     /* 配置唤醒源为 GPIO - PA5 */
@@ -90,7 +96,7 @@ int main()
 #if 1
     PRINT("sleep mode sleep \n");
     DelayMs(2);
-    PM_LowPower_Sleep();
+    LowPower_Sleep(RB_PWR_RAM96K | RB_PWR_RAM32K | RB_PWR_EXTEND | RB_XT_PRE_EN);
     PRINT("wake.. \n");
     DelayMs(500);
 #endif
@@ -108,8 +114,7 @@ int main()
     DelayMs(500);
 #endif
 
-    while(1)
-        ;
+    while(1);
 }
 
 /*********************************************************************
@@ -120,24 +125,24 @@ int main()
  * @return  none
  */
 __HIGH_CODE
-void LowPowerGapProcess()
+void LowPowerGapProcess(void)
 {
     //执行对时钟要求不高的处理
 }
 
 /*********************************************************************
- * @fn      PM_LowPower_Sleep
+ * @fn      PM_SleepWithRtcWakeup
  *
- * @brief   调用Sleep睡眠驱动，此函数需要在RAM中运行
+ * @brief   调用Sleep睡眠驱动，此函数需要在RAM中运行, 示例代码，当前未调用
  *
  * @return  none
  */
 __HIGH_CODE
-void PM_LowPower_Sleep(void)
+void PM_SleepWithRtcWakeup(void)
 {
     uint32_t t;
     uint8_t wake_ctrl;
-    unsigned long irq_status;
+    uint32_t irq_status;
 
     //切换内部时钟
     sys_safe_access_enable();

@@ -3,7 +3,7 @@
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2020/08/11
- * Description        : CH573 C语言的U盘目录文件枚举程序
+ * Description        : CH585 C语言的U盘目录文件枚举程序
  * 支持: FAT12/FAT16/FAT32
  * 注意包含 CHRV3UFI.LIB/USBHOST.C/DEBUG.C
  *********************************************************************************
@@ -53,7 +53,7 @@ void mStopIfError(uint8_t iError)
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint8_t  s, i;
     uint8_t *pCodeStr;

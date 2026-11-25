@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : LED.c
+ * File Name          : backlight.c
  * Author             : WCH
  * Version            : V1.2
  * Date               : 2022/01/18
@@ -9,7 +9,7 @@
  *******************************************************************************/
 
 /******************************************************************************/
-/* Í·ÎÄ¼ş°üº¬ */
+/* å¤´æ–‡ä»¶åŒ…å« */
 #include "backlight.h"
 
 #define TKY_BACKLIGHT_NUM   20
@@ -18,7 +18,7 @@ TKY_Backlight_S BacklightArray[ TKY_BACKLIGHT_NUM ] = {0};
 volatile uint8_t led_scanflag = 0;
 
 /*
- * ±³¹â¹Ø±Õ
+ * èƒŒå…‰å…³é—­
  * */
 void TKY_BacklightOff (void)
 {
@@ -35,7 +35,7 @@ void TKY_BacklightOff (void)
 }
 
 /*
- * ±³¹âÈ«¿ª
+ * èƒŒå…‰å…¨å¼€
  * */
 void TKY_BacklightOn (void)
 {
@@ -52,7 +52,7 @@ void TKY_BacklightOn (void)
 }
 
 /*
- * Æô¶¯±³¹âÉ¨ÃèÈÎÎñ
+ * å¯åŠ¨èƒŒå…‰æ‰«æä»»åŠ¡
  * */
 void TKY_BacklightTaskStart ()
 {
@@ -61,16 +61,16 @@ void TKY_BacklightTaskStart ()
 }
 
 /*
- * Í£Ö¹±³¹âÉ¨ÃèÈÎÎñ
+ * åœæ­¢èƒŒå…‰æ‰«æä»»åŠ¡
  * */
 void TKY_BacklightTaskStop ()
 {
+    led_scanflag = 0; /* å…ˆæ¸…æ ‡å¿—å†å…³ç¯ï¼šé¿å…å…³ç¯åTMR0ä¸­æ–­å†æ¬¡ç‚¹äº®ä¸€ä¸ªCOMå¹¶å¸¸äº®åˆ°ä¸‹æ¬¡å”¤é†’ */
     TKY_BacklightOff();
-    led_scanflag = 0;
 }
 
 /*
- *  ±³¹âÏà¹ØÍâÉèºÍ²ÎÊı³õÊ¼»¯
+ *  èƒŒå…‰ç›¸å…³å¤–è®¾å’Œå‚æ•°åˆå§‹åŒ–
  * */
 void TKY_BacklightInit (void)
 {
@@ -92,10 +92,15 @@ void TKY_BacklightInit (void)
 }
 
 /*
- * ÉèÖÃ°´¼ü±³¹â×´Ì¬
+ * è®¾ç½®æŒ‰é”®èƒŒå…‰çŠ¶æ€
  * */
 void TKY_KeyBacklightOut (uint8_t key, FunctionalState s)
 {
+    if (key >= TKY_BACKLIGHT_NUM)
+    {
+        return;
+    }
+
     if (DISABLE == s)
     {
         BacklightArray[ key ].BacklightStates = 0;
@@ -106,15 +111,15 @@ void TKY_KeyBacklightOut (uint8_t key, FunctionalState s)
     }
 }
 
-uint8_t getBacklightState(uint8_t key)
+uint8_t TKY_GetBacklightState(uint8_t key)
 {
     return BacklightArray[ key ].BacklightStates;
 }
 
 /*
- * ±³¹âÉ¨Ãè¹ı³ÌÖĞ£¬seg¶ÎµÄÉèÖÃ
+ * èƒŒå…‰æ‰«æè¿‡ç¨‹ä¸­ï¼Œsegæ®µçš„è®¾ç½®
  * */
-void setBacklightState (uint8_t Idx, uint8_t state)
+static void TKY_SetBacklightState (uint8_t Idx, uint8_t state)
 {
     switch (Idx)
     {
@@ -171,7 +176,7 @@ void setBacklightState (uint8_t Idx, uint8_t state)
 }
 
 /*
- * ±³¹âÉ¨ÃèµÄ´¦Àí¹ı³Ì
+ * èƒŒå…‰æ‰«æçš„å¤„ç†è¿‡ç¨‹
  * */
 void TKY_BacklightProcess (void)
 {
@@ -183,7 +188,7 @@ void TKY_BacklightProcess (void)
     {
         for (i = 4 * (backLightScanState - 1); i < 4 * backLightScanState; i++)
         {
-            setBacklightState (i - 4 * (backLightScanState - 1), BacklightArray[ i ].BacklightStates);
+            TKY_SetBacklightState (i - 4 * (backLightScanState - 1), BacklightArray[ i ].BacklightStates);
         }
     }
     switch (backLightScanState)

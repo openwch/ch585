@@ -108,12 +108,12 @@ void UART2_IRQHandler(void)
  */
 void USART2_Init( uint32_t baudrate )
 {
-    /* 配置串口2：先配置IO口模式，再配置串口 */
+    /* Configure USART2: configure the IO mode first, then the USART */
     GPIOA_SetBits(GPIO_Pin_7);
-    GPIOA_ModeCfg(GPIO_Pin_6, GPIO_ModeIN_PU);      // RXD-配置上拉输入
-    GPIOA_ModeCfg(GPIO_Pin_7, GPIO_ModeOut_PP_5mA); // TXD-配置推挽输出，注意先让IO口输出高电平
+    GPIOA_ModeCfg(GPIO_Pin_6, GPIO_ModeIN_PU);      // RXD-Configure as input with pull-up
+    GPIOA_ModeCfg(GPIO_Pin_7, GPIO_ModeOut_PP_5mA); // TXD-Configure as push-pull output; note that the IO must be driven high first
     UART2_BaudRateCfg(baudrate);
-    R8_UART2_FCR = (2 << 6) | RB_FCR_TX_FIFO_CLR | RB_FCR_RX_FIFO_CLR | RB_FCR_FIFO_EN; // FIFO打开，触发点4字节
+    R8_UART2_FCR = (2 << 6) | RB_FCR_TX_FIFO_CLR | RB_FCR_RX_FIFO_CLR | RB_FCR_FIFO_EN; // FIFOOpen; the trigger point is 4 bytes
     R8_UART2_LCR = RB_LCR_WORD_SZ;
     R8_UART2_IER = RB_IER_TXD_EN;
     R8_UART2_DIV = 1;

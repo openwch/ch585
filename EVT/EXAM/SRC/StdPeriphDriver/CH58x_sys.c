@@ -2,7 +2,7 @@
  * File Name          : CH58x_SYS.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/17
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -119,6 +119,7 @@ void SetSysClock(SYS_CLKTypeDef sc)
         }
 
     }
+    R8_SLP_POWER_CTRL |= 0x40;
     R8_SAFE_MODE_CTRL |= RB_SAFE_AUTO_EN;
     sys_safe_access_disable();
 }
@@ -182,8 +183,7 @@ void MachineMode_Call_IRQ(void)
 __HIGH_CODE
 void MachineMode_Call(MachineMode_Call_func func)
 {
-    uint8_t i;
-    uint32_t sw_vtf, sw_irqtable;
+    uint32_t sw_irqtable;
     uint32_t irqv;
 
     /* 这里关闭所有中断 */
@@ -238,7 +238,8 @@ void MachineMode_Call(MachineMode_Call_func func)
  * @param   none
  *
  * @return  none
- */void SetPI_func()
+ */
+void SetPI_func(void)
 {
     write_csr(0xbc0, 0x25);
 }
@@ -252,7 +253,7 @@ void MachineMode_Call(MachineMode_Call_func func)
  *
  * @return  null
  */
-void SYS_EnablePI()
+void SYS_EnablePI(void)
 {
     MachineMode_Call(SetPI_func);
 }
@@ -552,6 +553,7 @@ void mDelaymS(uint16_t t)
 }
 
 #ifdef DEBUG
+__attribute__((used))
 int _write(int fd, char *buf, int size)
 {
     int i;
@@ -710,13 +712,13 @@ uint8_t IWDG_Enable(IWDG_32K_PR pr, uint16_t rlr)
     R8_SAFE_LRST_CTRL |= RB_IWDG_RST_EN;  //看门狗复位为上电复位。若改为全局复位，需保证LSI不被关闭
     sys_safe_access_disable();
 
-    IWDG_KR_Set(KEY_START_IWDG);
     IWDG_KR_Set(KEY_UNPROTECT);
     state = IWDG_PR_Set(pr);
     if(state)  return 1;
     state = IWDG_RLR_Set(rlr);
     if(state)  return 1;
-
+    
+    IWDG_KR_Set(KEY_START_IWDG);
     return 0;
 }
 

@@ -2,7 +2,7 @@
  * File Name          : CH58x_adc.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -63,7 +63,7 @@ signed short ADC_DataCalib_Rough(void) // 采样数据粗调,获取偏差值
 void ADC_ExtSingleChSampInit(ADC_SampClkTypeDef sp, ADC_SignalPGATypeDef ga)
 {
     R8_TKEY_CFG &= ~RB_TKEY_PWR_ON;
-    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (sp << 6) | ((ga&0xF) << 4);
+    R8_ADC_CFG = RB_ADC_BUF_EN | (sp << 6) | ((ga&0xF) << 4);
     if( ga & ADC_PGA_2_ )
     {
         R8_ADC_CONVERT |= RB_ADC_PGA_GAIN2;
@@ -72,6 +72,7 @@ void ADC_ExtSingleChSampInit(ADC_SampClkTypeDef sp, ADC_SignalPGATypeDef ga)
     {
         R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
     }
+    R8_ADC_CFG |= RB_ADC_POWER_ON;
 }
 
 /*********************************************************************
@@ -87,7 +88,7 @@ void ADC_ExtSingleChSampInit(ADC_SampClkTypeDef sp, ADC_SignalPGATypeDef ga)
 void ADC_ExtDiffChSampInit(ADC_SampClkTypeDef sp, ADC_SignalPGATypeDef ga)
 {
     R8_TKEY_CFG &= ~RB_TKEY_PWR_ON;
-    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_DIFF_EN | (sp << 6) | ((ga&0xF) << 4);
+    R8_ADC_CFG = RB_ADC_DIFF_EN | (sp << 6) | ((ga&0xF) << 4);
     if( ga & ADC_PGA_2_ )
     {
         R8_ADC_CONVERT |= RB_ADC_PGA_GAIN2;
@@ -96,6 +97,7 @@ void ADC_ExtDiffChSampInit(ADC_SampClkTypeDef sp, ADC_SignalPGATypeDef ga)
     {
         R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
     }
+    R8_ADC_CFG |= RB_ADC_POWER_ON;
 }
 
 /*********************************************************************
@@ -112,8 +114,9 @@ void ADC_InterTSSampInit(void)
     R8_TKEY_CFG &= ~RB_TKEY_PWR_ON;
     R8_TEM_SENSOR = RB_TEM_SEN_PWR_ON;
     R8_ADC_CHANNEL = CH_INTE_VTEMP;
-    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_DIFF_EN | (3 << 4);
+    R8_ADC_CFG = RB_ADC_DIFF_EN | (3 << 4);
     R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
+    R8_ADC_CFG |= RB_ADC_POWER_ON;
 }
 
 /*********************************************************************
@@ -129,8 +132,9 @@ void ADC_InterBATSampInit(void)
 {
     R8_TKEY_CFG &= ~RB_TKEY_PWR_ON;
     R8_ADC_CHANNEL = CH_INTE_VBAT;
-    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (0 << 4); // 使用-12dB模式
+    R8_ADC_CFG = RB_ADC_BUF_EN | (0 << 4); // 使用-12dB模式
     R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
+    R8_ADC_CFG |= RB_ADC_POWER_ON;
 }
 
 /*********************************************************************
@@ -144,9 +148,10 @@ void ADC_InterBATSampInit(void)
  */
 void TouchKey_ChSampInit(void)
 {
-    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (ADC_PGA_0 << 4) | (SampleFreq_8_or_4 << 6);
+    R8_ADC_CFG = RB_ADC_BUF_EN | (ADC_PGA_0 << 4) | (SampleFreq_8_or_4 << 6);
     R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
     R8_TKEY_CFG = RB_TKEY_PWR_ON | RB_TKEY_CURRENT;
+    R8_ADC_CFG |= RB_ADC_POWER_ON;
 }
 
 /*********************************************************************

@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : wch_nfca_pcd_bsp.h
+ * File Name          : wch_nfca_soft_pcd_bsp.h
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2024/11/14
@@ -15,15 +15,28 @@
 
 #include "wch_nfca_soft_pcd_config.h"
 #include "CH58x_NFCA_LIB.h"
-#include "wch_nfca_soft_pcd_bsp.h"
 
 #define PU8_BUF(BUF)                    ((uint8_t *)BUF)
 #define PU16_BUF(BUF)                   ((uint16_t *)BUF)
 #define PU32_BUF(BUF)                   ((uint32_t *)BUF)
 
+#ifndef NFCA_PCD_MAX_SEND_NUM
 #define NFCA_PCD_MAX_SEND_NUM           (32)
+#endif
+
+#ifndef NFCA_PCD_MAX_RECV_NUM
 #define NFCA_PCD_MAX_RECV_NUM           (NFCA_PCD_MAX_SEND_NUM)
+#endif
+
+#ifndef NFCA_PCD_MAX_PARITY_NUM
 #define NFCA_PCD_MAX_PARITY_NUM         (NFCA_PCD_MAX_RECV_NUM)
+#endif
+
+#if (NFCA_PCD_MAX_SEND_NUM*9*4) > NFCA_PCD_DATA_BUF_SIZE
+/* 这只是没有干扰的场景下，有干扰的场景下还需要翻倍，软件解码对内存的开销较大。 */
+/* (NFCA_PCD_MAX_SEND_NUM*9*4*2) > NFCA_PCD_DATA_BUF_SIZE */
+#error  "NFCA_PCD_DATA_BUF_SIZE is too small, cannot decode to NFCA_PCD_MAX_SEND_NUM length data."
+#endif
 
 extern uint8_t g_nfca_pcd_send_buf[((NFCA_PCD_MAX_SEND_NUM + 3) & 0xfffc)];
 extern uint8_t g_nfca_pcd_recv_buf[((NFCA_PCD_MAX_RECV_NUM + 3) & 0xfffc)];

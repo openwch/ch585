@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: vscanf_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -47,14 +46,22 @@ int vscanf_s(const char *format, va_list argList)
      * To determine it's invalid. If you has fixed platform, you can check some fields to validate it,
      * such as "argList == NULL" or argList.xxx != NULL or *(size_t *)&argList != 0.
      */
+#if SECUREC_ENABLE_SCANF_FILE
     if (format == NULL || fStr.pf == NULL) {
+#else
+    if (format == NULL) {
+#endif
         SECUREC_ERROR_INVALID_PARAMTER("vscanf_s");
         return SECUREC_SCANF_EINVAL;
     }
 
+#if SECUREC_ENABLE_SCANF_FILE
     SECUREC_LOCK_STDIN(0, fStr.pf);
+#endif
     retVal = SecInputS(&fStr, format, argList);
+#if SECUREC_ENABLE_SCANF_FILE
     SECUREC_UNLOCK_STDIN(0, fStr.pf);
+#endif
     if (retVal < 0) {
         SECUREC_ERROR_INVALID_PARAMTER("vscanf_s");
         return SECUREC_SCANF_EINVAL;

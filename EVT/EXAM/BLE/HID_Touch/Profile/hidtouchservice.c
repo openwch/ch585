@@ -106,14 +106,14 @@ static const uint8_t hidReportMap[] = {
     0x09, 0x30, //     Usage (X)
     0x15, 0x00, //     Logical Minimum......... (0)
     /*48 49 50*/
-    0x26, (uint8_t)DEF_DESKTOP_X_MAX, (uint8_t)(DEF_DESKTOP_X_MAX >> 8), /* LOGIC_MAX (0X0800) */
+    0x26, (uint8_t)DEF_DESKTOP_X_MAX, (uint8_t)(DEF_DESKTOP_X_MAX >> 8), /* LOGIC_MAX (800) */
     0x75, 0x10,                                                          //     Report Size............. (16)
     0x95, 0x01,                                                          //     Report Count............ (1)
     0x81, 0x02,                                                          //     Input...................(Data, Variable, Absolute)
     0x09, 0x31,                                                          //     Usage (Y)
     0x15, 0x00,                                                          //     Logical Minimum......... (0)
     /*61 62 63*/
-    0x26, (uint8_t)DEF_DESKTOP_Y_MAX, (uint8_t)(DEF_DESKTOP_Y_MAX >> 8), /* LOGIC_MAX (0X0800) */
+    0x26, (uint8_t)DEF_DESKTOP_Y_MAX, (uint8_t)(DEF_DESKTOP_Y_MAX >> 8), /* LOGIC_MAX (800) */
     0x75, 0x10,                                                          //     Report Size............. (16) 64 65
     0x95, 0x01,                                                          //     Report Count............ (1)  66 67
     0x81, 0x02,                                                          //     Input...................(Data, Variable, Absolute) 68 69
@@ -322,10 +322,10 @@ enum
     HID_REPORT_MAP_DECL_IDX,      // HID Report Map characteristic declaration
     HID_REPORT_MAP_IDX,           // HID Report Map characteristic
     HID_EXT_REPORT_REF_DESC_IDX,  // HID External Report Reference Descriptor
-    HID_REPORT_TOUCH_IN_DECL_IDX, // HID Report characteristic, mouse input declaration
-    HID_REPORT_TOUCH_IN_IDX,      // HID Report characteristic, mouse input
+    HID_REPORT_TOUCH_IN_DECL_IDX, // HID Report characteristic, touch input declaration
+    HID_REPORT_TOUCH_IN_IDX,      // HID Report characteristic, touch input
     HID_REPORT_TOUCH_IN_CCCD_IDX, // HID Report characteristic client characteristic configuration
-    HID_REPORT_REF_TOUCH_IN_IDX,  // HID Report Reference characteristic descriptor, mouse input
+    HID_REPORT_REF_TOUCH_IN_IDX,  // HID Report Reference characteristic descriptor, touch input
     HID_FEATURE_DECL_IDX,         // Feature Report declaration
     HID_FEATURE_IDX,              // Feature Report
     HID_REPORT_REF_FEATURE_IDX    // HID Report Reference characteristic descriptor, feature
@@ -375,7 +375,7 @@ bStatus_t Hid_AddService(void)
     // Construct map of reports to characteristic handles
     // Each report is uniquely identified via its ID and type
 
-    // Mouse input report
+    // Touch input report
     hidRptMap[0].id = hidReportRefTouchIn[0];
     hidRptMap[0].type = hidReportRefTouchIn[1];
     hidRptMap[0].handle = hidAttrTbl[HID_REPORT_TOUCH_IN_IDX].handle;
@@ -401,12 +401,12 @@ bStatus_t Hid_AddService(void)
 /*********************************************************************
  * @fn      Hid_SetParameter
  *
- * @brief   Set a HID Kbd parameter.
+ * @brief   Set a HID Touch parameter.
  *
  * @param   id - HID report ID.
  * @param   type - HID report type.
  * @param   uuid - attribute uuid.
- * @param   len - length of data to right.
+ * @param   len - length of data to write.
  * @param   pValue - pointer to data to write.  This is dependent on
  *          the input parameters and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to
@@ -449,7 +449,7 @@ uint8_t Hid_SetParameter(uint8_t id, uint8_t type, uint16_t uuid, uint8_t len, v
 /*********************************************************************
  * @fn      Hid_GetParameter
  *
- * @brief   Get a HID Kbd parameter.
+ * @brief   Get a HID Touch parameter.
  *
  * @param   id - HID report ID.
  * @param   type - HID report type.

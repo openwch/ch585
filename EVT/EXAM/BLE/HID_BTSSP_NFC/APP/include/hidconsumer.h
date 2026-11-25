@@ -41,7 +41,7 @@ extern "C" {
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-extern uint8_t hid_static_addr[6];
+extern uint8_t hid_bd_addr[6];
 
 /*
  * Task Initialization for the BLE Application

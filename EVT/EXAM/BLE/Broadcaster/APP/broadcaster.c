@@ -29,12 +29,6 @@
 // What is the advertising interval when device is discoverable (units of 625us, min is 160=100ms)
 #define DEFAULT_ADVERTISING_INTERVAL    160
 
-// Company Identifier: WCH
-#define WCH_COMPANY_ID                  0x07D7
-
-// Length of bd addr as a string
-#define B_ADDR_STR_LEN                  15
-
 /*********************************************************************
  * TYPEDEFS
  */
@@ -78,7 +72,7 @@ static uint8_t scanRspData[] = {
 };
 
 // GAP - Advertisement data (max size = 31 bytes, though this is
-// best kept short to conserve power while advertisting)
+// best kept short to conserve power while advertising)
 static uint8_t advertData[] = {
     // Flags; this sets the device to use limited discoverable
     // mode (advertises for 30 seconds at a time) instead of general
@@ -120,14 +114,14 @@ static gapRolesBroadcasterCBs_t Broadcaster_BroadcasterCBs = {Broadcaster_StateN
  *          Task. This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void Broadcaster_Init()
+void Broadcaster_Init(void)
 {
     Broadcaster_TaskID = TMOS_ProcessEventRegister(Broadcaster_ProcessEvent);
 
@@ -230,8 +224,13 @@ static void Broadcaster_StateNotificationCB(gapRole_States_t newState)
     switch(newState)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             PRINT("Advertising..\n");

@@ -43,7 +43,7 @@ void mStopIfError(uint8_t iError)
     /* 遇到错误后,应该分析错误码以及CHRV3DiskStatus状态,例如调用CHRV3DiskReady查询当前U盘是否连接,如果U盘已断开那么就重新等待U盘插上再操作,
      建议出错后的处理步骤:
      1、调用一次CHRV3DiskReady,成功则继续操作,例如Open,Read/Write等
-     2、如果CHRV3DiskReady不成功,那么强行将从头开始操作(等待U盘连接，CH554DiskReady等) */
+     2、如果CHRV3DiskReady不成功,那么强行将从头开始操作(等待U盘连接，CHRV3DiskReady等) */
     while(1)
     {
     }
@@ -56,7 +56,7 @@ void mStopIfError(uint8_t iError)
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint8_t s, c, i;
 
@@ -120,7 +120,7 @@ int main()
                     mStopIfError(s);
                     PRINT("ByteWrite\n");
                     //实际应该判断写数据长度和定义缓冲区长度是否相符，如果大于缓冲区长度则需要多次写入
-                    i = sprintf((uint8_t *)buf, "Note: \xd\xa这个程序是以字节为单位进行U盘文件读写,RV3简单演示功能。\xd\xa"); /*演示 */
+                    i = sprintf((uint8_t *)buf, "Note: \xd\xa这个程序是以字节为单位进行U盘文件读写,585简单演示功能。\xd\xa"); /*演示 */
                     for(c = 0; c < 10; c++)
                     {
                         mCmdParam.ByteWrite.mByteCount = i;    /* 指定本次写入的字节数 */

@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : RingMem.C
+ * File Name          : RingMem.c
  * Author             : WCH
  * Version            : V1.4
  * Date               : 2019/12/20
@@ -64,8 +64,14 @@ uint8_t RingMemWrite( RingMemParm_t *Parm, uint8_t *pData, uint32_t len )
 	}
 
 	if( len > Parm->RemanentLen )
+	{
+		if(RingMemProtection)
+		{
+			RingMemProtection(DISABLE);
+		}
 		return !SUCCESS;
-	
+	}
+
 	edgelen = Parm->pEnd - Parm->pWrite; //Calculate the length of the remaining to the boundary
 	
 	if( len > edgelen )
@@ -118,9 +124,15 @@ uint8_t RingMemRead( RingMemParm_t *Parm, uint8_t *pData, uint32_t len )
     }
 
     if( len > Parm->CurrentLen )	//Not enough reading length
+	{
+		if(RingMemProtection)
+		{
+			RingMemProtection(DISABLE);
+		}
 		return !SUCCESS;
+	}
 	
-	edgelen = Parm->pEnd - Parm->pRead;			//Calculate the length of the remaining to the boundarythe length of the remaining to the boundary
+	edgelen = Parm->pEnd - Parm->pRead;			//Calculate the length of the remaining to the boundary
 	
 	if( len > edgelen )
 	{
@@ -174,7 +186,13 @@ uint8_t RingMemCopy( RingMemParm_t *Parm, uint8_t *pData, uint32_t len )
 	uint8_t volatile *pRead = Parm->pRead;
 	
 	if( len > Parm->CurrentLen )						//The length that can be copied is not enough
+	{
+		if(RingMemProtection)
+		{
+			RingMemProtection(DISABLE);
+		}
 		return !SUCCESS;
+	}
 	
 	edgelen = Parm->pEnd - Parm->pRead;			//Calculate the length of the remaining to the boundary
 	
@@ -225,7 +243,13 @@ uint8_t RingMemDelete( RingMemParm_t *Parm, uint32_t len )
     }
 
 	if( len > Parm->CurrentLen )						//Can delete not enough length
+	{
+		if(RingMemProtection)
+		{
+			RingMemProtection(DISABLE);
+		}
 		return !SUCCESS;
+	}
 	
 	edgelen = Parm->pEnd - Parm->pRead;			//Calculate the length of the remaining to the boundary
 	
@@ -270,8 +294,14 @@ uint8_t RingAddInStart( RingMemParm_t *Parm, uint8_t *pData, uint32_t len )
     }
 
 	if( len > Parm->RemanentLen )
+	{
+		if(RingMemProtection)
+		{
+			RingMemProtection(DISABLE);
+		}
 		return !SUCCESS;
-	
+	}
+
 	edgelen = Parm->pRead - Parm->pData;			//Calculate the length of the remaining to the boundary
 	
 	if( len > edgelen )
@@ -280,7 +310,7 @@ uint8_t RingAddInStart( RingMemParm_t *Parm, uint8_t *pData, uint32_t len )
 		{
 			*Parm->pRead-- = *pData++;		
 		}
-		Parm->pRead = Parm->pData + Parm->MaxLen;	
+		Parm->pRead = Parm->pEnd - 1;
 		for(i=0; i<(len-edgelen); i++)
 		{
 			*Parm->pRead-- = *pData++;		

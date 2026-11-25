@@ -36,11 +36,11 @@
 #include "CH58x_common.h"
 #include "string.h"
 #include "stdio.h"
-#include "Udisk_Operation.h"
+#include "UDisk_Operation.h"
 
 /* USB Buffer Size */
 #ifndef USBHS_MAX_PACKET_SIZE
-#define USBHS_MAX_PACKET_SIZE      64
+#define USBHS_MAX_PACKET_SIZE      512
 #endif
 
 

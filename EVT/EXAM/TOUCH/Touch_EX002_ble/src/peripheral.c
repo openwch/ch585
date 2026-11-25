@@ -1,10 +1,10 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
- * Description        : ÍâÉè´Ó»ú¶àÁ¬½ÓÓ¦ÓÃ³ÌĞò£¬³õÊ¼»¯¹ã²¥Á¬½Ó²ÎÊı£¬È»ºó¹ã²¥£¬Á¬½ÓÖ÷»úºó£¬
- *                      ÇëÇó¸üĞÂÁ¬½Ó²ÎÊı£¬Í¨¹ı×Ô¶¨Òå·şÎñ´«ÊäÊı¾İ
+ * Description        : å¤–è®¾ä»æœºå¤šè¿æ¥åº”ç”¨ç¨‹åºï¼Œåˆå§‹åŒ–å¹¿æ’­è¿æ¥å‚æ•°ï¼Œç„¶åå¹¿æ’­ï¼Œè¿æ¥ä¸»æœºåï¼Œ
+ *                      è¯·æ±‚æ›´æ–°è¿æ¥å‚æ•°ï¼Œé€šè¿‡è‡ªå®šä¹‰æœåŠ¡ä¼ è¾“æ•°æ®
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
@@ -81,8 +81,8 @@
  * LOCAL VARIABLES
  */
 
-UINT8V bleConnectState = 0; ///< 0:Ã»ÓĞÁ¬½Ó; 1:ÒÑÁ¬½Ó
-UINT8V advState = 0;        ///< 0:Í£Ö¹¹ã²¥; 1:ÕıÔÚ¹ã²¥
+UINT8V bleConnectState = 0; ///< 0:æ²¡æœ‰è¿æ¥; 1:å·²è¿æ¥
+UINT8V advState = 0;        ///< 0:åœæ­¢å¹¿æ’­; 1:æ­£åœ¨å¹¿æ’­
 
 uint8_t initial_advertising_enable = FALSE;
 
@@ -119,9 +119,8 @@ static uint8_t scanRspData[] = {
 // GAP - Advertisement data (max size = 31 bytes, though this is
 // best kept short to conserve power while advertising)
 static uint8_t advertData[] = {
-// Flags; this sets the device to use limited discoverable
-// mode (advertises for 30 seconds at a time) instead of general
-// discoverable mode (advertises indefinitely)
+// Flags; this sets the device to use general discoverable mode
+// (advertises indefinitely)
     0x02,// length of this data
     GAP_ADTYPE_FLAGS,
     DEFAULT_DISCOVERABLE_MODE | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
@@ -139,9 +138,7 @@ static uint8_t attDeviceName[ GAP_DEVICE_NAME_LEN ] = "Ble_Touch";
 // Connection item list
 peripheralConnItem_t peripheralConnList;
 
-static uint8_t peripheralMTU = ATT_MTU_SIZE;
-
-uint16_t peripheral_Mtu = 23;
+static uint16_t peripheralMTU = ATT_MTU_SIZE;
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
@@ -454,8 +451,8 @@ static void Peripheral_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
             pMsgEvent = (gattMsgEvent_t *) pMsg;
             if (pMsgEvent->method == ATT_MTU_UPDATED_EVENT)
             {
-                peripheralMTU = pMsgEvent->msg.exchangeMTUReq.clientRxMTU;
-                PRINT( "mtu exchange: %d\n", pMsgEvent->msg.exchangeMTUReq.clientRxMTU );
+                peripheralMTU = pMsgEvent->msg.mtuEvt.MTU;
+                PRINT( "mtu exchange: %d\n", pMsgEvent->msg.mtuEvt.MTU );
             }
             break;
         }
@@ -490,6 +487,7 @@ static void Peripheral_LinkEstablished(gapRoleEvent_t *pEvent)
         peripheralConnList.connInterval = event->connInterval;
         peripheralConnList.connSlaveLatency = event->connLatency;
         peripheralConnList.connTimeout = event->connTimeout;
+        peripheralMTU = ATT_MTU_SIZE;
 
         // Set timer for periodic event
         tmos_start_task( Peripheral_TaskID, SBP_PERIODIC_EVT, SBP_PERIODIC_EVT_PERIOD );
@@ -678,7 +676,7 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
  * @fn      performPeriodicTask
  *
  * @brief   Perform a periodic application task. This function gets
- *          called every five seconds as a result of the SBP_PERIODIC_EVT
+ *          called every 1 second as a result of the SBP_PERIODIC_EVT
  *          TMOS event. In this example, the value of the third
  *          characteristic in the SimpleGATTProfile service is retrieved
  *          from the profile, and then copied into the value of the
@@ -727,13 +725,20 @@ static void performPeriodicTask(void)
 void peripheralChar2Notify(uint8_t *pValue, uint16_t len)
 {
     attHandleValueNoti_t noti;
-    noti.len = min( (peripheral_Mtu - 3), len );
-    noti.pValue = GATT_bm_alloc( peripheralConnList.connHandle, ATT_HANDLE_VALUE_NOTI, noti.len, NULL, 0 );
-    tmos_memcpy( noti.pValue, pValue, noti.len );
-    if (simpleProfile_Notify( peripheralConnList.connHandle, &noti ) != SUCCESS)
+    if (len > (peripheralMTU - 3))
     {
-
-        GATT_bm_free( (gattMsg_t *) &noti, ATT_HANDLE_VALUE_NOTI );
+        PRINT( "Too large noti\n" );
+        return;
+    }
+    noti.len = len;
+    noti.pValue = GATT_bm_alloc( peripheralConnList.connHandle, ATT_HANDLE_VALUE_NOTI, noti.len, NULL, 0 );
+    if (noti.pValue)
+    {
+        tmos_memcpy( noti.pValue, pValue, noti.len );
+        if (simpleProfile_Notify( peripheralConnList.connHandle, &noti ) != SUCCESS)
+        {
+            GATT_bm_free( (gattMsg_t *) &noti, ATT_HANDLE_VALUE_NOTI );
+        }
     }
 }
 
@@ -776,7 +781,7 @@ void peripheralStartAdv(void)
     }
 }
 
-void peripheralStoptAdv(void)
+void peripheralStopAdv(void)
 {
     if (advState)
     {

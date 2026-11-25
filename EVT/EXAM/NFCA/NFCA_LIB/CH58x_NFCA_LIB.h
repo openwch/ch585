@@ -1,11 +1,11 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : CH58x_NFCA_LIB.h
  * Author             : WCH
- * Version            : V1.4
- * Date               : 2025/06/25
+ * Version            : V1.5
+ * Date               : 2026/02/27
  * Description        : CH585/4 NFC-A头文件
  *********************************************************************************
- * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Copyright (c) 2026 Nanjing Qinheng Microelectronics Co., Ltd.
  * Attention: This software (modified or not) and binary are used for
  * microcontroller manufactured by Nanjing Qinheng Microelectronics.
  *******************************************************************************/
@@ -65,7 +65,7 @@ typedef enum
 
 typedef enum
 {
-    NFCA_PCD_REC_MODE_NONE          = 0,
+    NFCA_PCD_REC_MODE_NONE          = 0,            /* 不进行接收，发送完成就退出通讯 */
     NFCA_PCD_REC_MODE_NORMAL        = 1,            /* 接收时不进行冲突检测，尽可能的进行解码 */
     NFCA_PCD_REC_MODE_COLI          = 0x10,         /* 接收时进行冲突检测，可在防冲突流程中启用 */
 } NFCA_PCD_REC_MODE_Def;
@@ -148,7 +148,7 @@ extern void nfca_pcd_antenna_off(void);
  *
  * @param           data_bits_num - uint16_t，需要发送的数据区bit数量
  * @param           mode - NFCA_PCD_REC_MODE_Def，发送结束后的接收模式
- * @param           offset - uint8_t(0 - 7)，需要发送的第一个位在首字节中的偏移数量
+ * @param           offset - uint8_t(0 - 7)，接收首字节中缺少的比特数量
  *
  * @return          0 if success, others failed.
  */
@@ -536,7 +536,7 @@ extern uint8_t nfca_picc_crypto1_auth(nfca_crypto1_cipher_t *crypto1_cipher, uin
  * @param[out]  out_parity      oddparity of data.
  * @param[in]   len             bit length of data.
  */
-extern void nfca_crypto1_encrypt(nfca_crypto1_cipher_t *crypto1_cipher, uint8_t *in, uint8_t *out, uint8_t *out_parity, uint8_t len);
+extern void nfca_crypto1_encrypt(nfca_crypto1_cipher_t *crypto1_cipher, uint8_t *in, uint8_t *out, uint8_t *out_parity, uint32_t len);
 
 /**
  * @brief Decrypt data.
@@ -550,7 +550,7 @@ extern void nfca_crypto1_encrypt(nfca_crypto1_cipher_t *crypto1_cipher, uint8_t 
  * @return      0 - success
  *              otherwise - failed.
  */
-extern uint8_t nfca_crypto1_decrypt(nfca_crypto1_cipher_t *crypto1_cipher, uint8_t *in, uint8_t *out, uint8_t *in_parity, uint8_t len);
+extern uint8_t nfca_crypto1_decrypt(nfca_crypto1_cipher_t *crypto1_cipher, uint8_t *in, uint8_t *out, uint8_t *in_parity, uint32_t len);
 
 /********************************** CH58x NFC-A SOFT PCD ***************************************/
 
@@ -586,7 +586,7 @@ extern uint8_t nfca_soft_pcd_lib_init(nfca_soft_pcd_config_t *cfg);
  *
  * @param           data_bits_num - uint16_t，需要发送的数据区bit数量
  * @param           mode - NFCA_PCD_REC_MODE_Def，发送结束后的接收模式
- * @param           offset - uint8_t(0 - 7)，需要发送的第一个位在首字节中的偏移数量
+ * @param           offset - uint8_t(0 - 7)，接收首字节中缺少的比特数量
  *
  * @return          0 if success, others failed.
  */
@@ -630,18 +630,18 @@ extern uint16_t nfca_soft_pcd_get_recv_bits(void);
  *
  * @brief           NFC PCD软件解码设置接收超时时间
  *
- * @param           us - uint16_t，超时时间，单位ms，最大38ms。
+ * @param           us - uint16_t，超时时间，单位ms，最大65535ms。
  *
  * @return          None.
  */
-extern void nfca_soft_pcd_set_wait_ms(uint8_t ms);
+extern void nfca_soft_pcd_set_wait_ms(uint16_t ms);
 
 /*******************************************************************************
  * @fn              nfca_soft_pcd_set_wait_us
  *
  * @brief           NFC PCD软件解码设置接收超时时间
  *
- * @param           us - uint16_t，超时时间，单位us，最大38000us。
+ * @param           us - uint16_t，超时时间，单位us，最大65535us。
  *
  * @return          None.
  */

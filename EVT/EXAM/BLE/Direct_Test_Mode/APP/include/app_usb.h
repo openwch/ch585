@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : APP_USB.h
+ * File Name          : app_usb.h
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2022/01/19
@@ -11,7 +11,7 @@
  *******************************************************************************/
 
 #ifndef _APP_USB_H
-#define _APP_USBE_H
+#define _APP_USB_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,4 +29,4 @@ extern uint8_t USBSendData(uint8_t *buf, uint16_t len);
 }
 #endif
 
-#endif /* _BLE_usb_SERVICE_H */
+#endif /* _APP_USB_H */

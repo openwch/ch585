@@ -360,7 +360,7 @@ void DebugInit(void)
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);

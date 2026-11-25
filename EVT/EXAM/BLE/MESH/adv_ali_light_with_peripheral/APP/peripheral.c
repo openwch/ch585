@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -194,7 +194,7 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @return  none
  */
@@ -610,6 +610,11 @@ void peripheralChar4Notify(uint8_t *pValue, uint16_t len)
     attHandleValueNoti_t noti;
     noti.len = len;
     noti.pValue = GATT_bm_alloc(peripheralConnList.connHandle, ATT_HANDLE_VALUE_NOTI, noti.len, NULL, 0);
+    if(noti.pValue == NULL)
+    {
+        // 分配失败禁止解引用
+        return;
+    }
     tmos_memcpy(noti.pValue, pValue, noti.len);
     if(simpleProfile_Notify(peripheralConnList.connHandle, &noti) != SUCCESS)
     {

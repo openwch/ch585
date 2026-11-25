@@ -198,14 +198,14 @@ static gapBondCBs_t heartRateBondCB = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void HeartRate_Init()
+void HeartRate_Init(void)
 {
     heartRate_TaskID = TMOS_ProcessEventRegister(HeartRate_ProcessEvent);
 
@@ -476,6 +476,7 @@ static void HeartRateGapStateCB(gapRole_States_t newState, gapRoleEvent_t *pEven
         // Set the system ID from the bd addr
         uint8_t systemId[DEVINFO_SYSTEM_ID_LEN];
         GAPRole_GetParameter(GAPROLE_BD_ADDR, systemId);
+        GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, systemId);
 
         // shift three bytes up
         systemId[7] = systemId[5];

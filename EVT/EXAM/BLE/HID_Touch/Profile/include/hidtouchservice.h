@@ -29,7 +29,7 @@ extern "C" {
 #define HID_NUM_REPORTS        3
 
 // HID Report IDs for the service
-#define HID_RPT_ID_TOUCH_IN    1                      // Mouse input report ID
+#define HID_RPT_ID_TOUCH_IN    1                      // Touch input report ID
 #define HID_RPT_ID_FEATURE     0                      // Feature report ID
 
 // HID feature flags
@@ -54,7 +54,7 @@ extern "C" {
 /*********************************************************************
  * @fn      Hid_AddService
  *
- * @brief   Initializes the HID service for keyboard by registering
+ * @brief   Initializes the HID service for touch by registering
  *          GATT attributes with the GATT server.
  *
  * @param   none
@@ -71,7 +71,7 @@ extern bStatus_t Hid_AddService(void);
  * @param   id     - HID report ID.
  * @param   type   - HID report type.
  * @param   uuid   - attribute uuid.
- * @param   len    - length of data to right.
+ * @param   len    - length of data to write.
  * @param   pValue - pointer to data to write.  This is dependent on
  *          the input parameters and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to

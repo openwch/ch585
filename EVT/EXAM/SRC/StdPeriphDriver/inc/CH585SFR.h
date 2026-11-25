@@ -1,5 +1,5 @@
 /* Define for CH585         */
-/* Website:  http://wch.cn  */
+/* Website:  https://wch.cn  */
 /* Email:    tech@wch.cn    */
 /* Author:   rdl14 2024.09   */
 /* V1.0 SpecialFunctionRegister */
@@ -235,8 +235,8 @@ extern "C" {
 #define  RST_FLAG_RPOR      0x01
 #define  RST_FLAG_WTR       0x02
 #define  RST_FLAG_MR        0x03
-//#define  RST_FLAG_GPWSM     0x04                      // RO, power on reset flag during sleep/shutdown: 0=no power on reset during sleep/shutdown, 1=power on reset occurred during sleep/shutdown
-#define  RST_FLAG_GPWSM     0x05
+//#define  RST_FLAG_GRWSM     0x04                      // RO, power on reset flag during sleep/shutdown: 0=no power on reset during sleep/shutdown, 1=power on reset occurred during sleep/shutdown
+#define  RST_FLAG_GRWSM     0x05
 // RB_RESET_FLAG: recent reset flag
 //   000 - SR, software reset, by RB_SOFTWARE_RESET=1 @RB_WDOG_RST_EN=0
 //   001 - RPOR, real power on reset
@@ -362,7 +362,7 @@ extern "C" {
 #define  RB_PIN_U0_INV      0x4000                    // RW, UART0 in/out inverting enable 
 #define  RB_RF_ANT_SW_EN    0x8000                    // RW, RF antenna switch control output enable: 0=disable output, 1=output on PB[16]/PB[17]/PB[18]/PB[19]/PB[20]/PB[21]
 #define R16_PIN_CONFIG      (*((PUINT16V)0x4000101A)) // RW, functional pin enable and digital input disable
-#define  RB_PB16_8_SEL      0x10                      // RW, interupt pin select,0=PB8, 1=PB16
+#define  RB_PB16_8_SEL      0x10                      // RW, interrupt pin select,0=PB8, 1=PB16
 #define  RB_PIN_USB2_EN     0x20                      // RW, USB high speed comunication pin select, 0=PB12/13 not use, 1=PB12/13 used 
 #define  RB_UDP_PU_EN       0x40                      // RW, enable USB ud+ pin pulled upresistance , 0=control by RB_UC_DEV_PU_EN, 1=force pulled up 
 #define  RB_PIN_USB_EN      0x80                      // RW, enable USB fast speed pin, 0=PB10/PB11 not used, 1=PB10/PB11 used  
@@ -555,7 +555,7 @@ extern "C" {
 #define  RB_ADC_SCAN_CH13        0x000F0000              // RW, channel13 analog input channel select   
 #define  RB_ADC_SCAN_NUM         0x0F000000           // RW, ADC scan number  
 #define  RB_ADC_SCAN_SEL         0x10000000           // RW, ADC scan select, 0=TKEY, 1=ADC  
-#define  RB_ADC_IE_SCAN_END      0x20000000           // RW, enable ADC scan end interupt     
+#define  RB_ADC_IE_SCAN_END      0x20000000           // RW, enable ADC scan end interrupt     
 #define  RB_ADC_SCAN_MASK_DIS    0x40000000           // RW, disble ADC channel when sample end         
 #define  RB_ADC_IF_SCAN_END      0x80000000           // RW, clear when RB_ADC_IF_SCAN_END = 1 
 
@@ -1180,7 +1180,6 @@ extern "C" {
 #define  RB_I2C_ADD0        0x0001                    // RW, bit0 of address in 10-bit addressing mode
 #define  RB_I2C_ADD7_1      0x00FE                    // RW, bit[7:1] of address
 #define  RB_I2C_ADD9_8      0x0300                    // RW, bit[9:8] of address in 10-bit addressing mode
-#define  MUST1              0x4000                    // RW1, must set 1
 #define  RB_I2C_ADDMODE     0x8000                    // RW, Addressing mode (slave mode): 0=7-bit slave address, 1=10-bit slave address
 #define I2C_OADDR2          12
 #define  RB_I2C_ENDUAL      0x0001                    // RW, Dual addressing mode enable
@@ -1288,17 +1287,17 @@ extern "C" {
 /* LED register */
 #define R8_LED_CTRL_MOD	    (*((PUINT8V)0x4000F000))  // RW, LED mode config register  
 #define  RB_LED_BIT_ORDER   0x01                      // RW, LED serial bit director select 0=hign first, 1=low first      
-#define  RB_LED_ALL_CLEAR   0x02                      // RW, force LED FIFO/count/interupt flag clear      
+#define  RB_LED_ALL_CLEAR   0x02                      // RW, force LED FIFO/count/interrupt flag clear      
 #define  RB_LED_OUT_POLAR   0x04                      // RW, LED data output inverted      
 #define  RB_LED_OUT_EN      0x08                      // RW, enable LED output    
-#define  RB_LED_DMA_EN      0x10                      // RW, enable LED DMA and DMA interupt  
-#define  RB_LED_IE_FIFO     0x20                      // RW, enable LED fifo count <=2 interupt    
+#define  RB_LED_DMA_EN      0x10                      // RW, enable LED DMA and DMA interrupt  
+#define  RB_LED_IE_FIFO     0x20                      // RW, enable LED fifo count <=2 interrupt    
 #define  RB_LED_CHAN_MOD    0xC0                      // RW, LED channel mode select, 00=LED0, 01=LED0/1, 10=LED0~3, 11=LED0~7  
 #define R8_LED_CLOCK_DIV	(*((PUINT8V)0x4000F001))  // RW, LED serial clk div register   
 #define  RB_LED_CLOCK_DIV   0xFF                      // RW, paramater of LED output clk divider
 #define R8_LED_CTRL_MOD1	(*((PUINT8V)0x4000F002))  // RW, LED mode config1 register  
 #define  RB_LED_DMA_LOOP    0x01                      // RW, enable LED DMA data loop
-#define  RB_IE_SEND_END     0x02                      // RW, enable DMA data transfer interupt 
+#define  RB_IE_SEND_END     0x02                      // RW, enable DMA data transfer interrupt 
 #define R16_LED_STATUS	    (*((PUINT16V)0x4000F004)) // RW, LED status register    
 #define  RB_LED_FIFO_COUNT  0x0F                      // RO, LED fifo current count   
 #define  RB_LED_CLOCK       0x20                      // RO, LED clock current status
@@ -1310,11 +1309,11 @@ extern "C" {
 #define  RB_LED_FIFO        0xFFFFFFFF                // WO, LED fifo data input
 #define R16_LED_DMA_LEN	    (*((PUINT16V)0x4000F010)) // RW, LED DMA send length  
 #define  RB_LED_DMA_LEN     0x0FFF                    // WO, LED DMA send length
-#define R16_LED_DMA_CNT	    (*((PUINT16V)0x4000F014)) // RW, LED DMA remain count  
+#define R16_LED_DMA_CNT	    (*((PUINT16V)0x4000F014)) // RW, LED DMA remain count
 #define  RB_LED_DMA_CNT     0x0FFF                    // RO, LED DMA main buffer remain data cnt
 #define R32_LED_DMA_BEG	    (*((PUINT32V)0x4000F018)) // RW, LED DMA begin address  
-#define  RB_LED_DMA_BEG     0x01FFFC                  // RW, LED DMA start adress
-#define R32_LED_DMA_CUR	    (*((PUINT32V)0x4000F01C)) // RW, LED DMA current address  
+#define  RB_LED_DMA_BEG     0x01FFFC                  // RW, LED DMA start address
+#define R32_LED_DMA_CUR	    (*((PUINT32V)0x4000F01C)) // RW, LED DMA current address
 #define  RB_LED_DMA_CUR     0x01FFFC                  // RW, LED DMA now address
 /* LCD register */
 #define R8_LCD_CMD         (*((PUINT8V)(0x40006000)))
@@ -1403,7 +1402,7 @@ extern "C" {
 #define __Vendor_SysTickConfig    0 /*!< Set to 1 if different SysTick Config is used */
 typedef enum IRQn
 {
-  Reset_IRQn                    = 1,
+  Reset_IRQn                    = 0,
   NMI_IRQn                      = 2,      /*!<  Non Maskable Interrupt   */
   EXC_IRQn                      = 3,      /*!<  Exceptions Interrupt     */
   SysTick_IRQn                  = 12,	  /*!<  System timer Interrupt  */
@@ -1423,6 +1422,7 @@ typedef enum IRQn
   ADC_IRQn                      = 29,
   I2C_IRQn                      = 30,
   PWMX_IRQn                     = 31,
+  SPI1_IRQn                     = 31,
   TMR3_IRQn                     = 32,
   UART2_IRQn                    = 33,
   UART3_IRQn                    = 34,
@@ -2022,7 +2022,7 @@ typedef UDISK_BOC_CSW  *PXUDISK_BOC_CSW;
 #define  USBHS_UD_DEV_EN            0x20                      // RW, enable USB equipment
 #define  USBHS_UD_DMA_EN            0x10                      // RW, enable DMA transmit
 #define  USBHS_UD_PHY_SUSPENDM      0x08                      // RW, suspeng USB PHY
-#define  USBHS_UD_CLR_ALL           0x04                      // RW, clear all interupt flag
+#define  USBHS_UD_CLR_ALL           0x04                      // RW, clear all interrupt flag
 #define  USBHS_UD_RST_SIE           0x02                      // RW, reset USB protocol processor,including end point register
 #define  USBHS_UD_RST_LINK          0x01                      // RW, enable LNK layer reset
 #define R8_USB2_BASE_MODE           (*((PUINT8V)0x40009001))  // RW, USB_high_speed mode control register
@@ -2031,16 +2031,16 @@ typedef UDISK_BOC_CSW  *PXUDISK_BOC_CSW;
 #define  USBHS_UD_SPEED_LOW         0x02
 #define  USBHS_UD_SPEED_TYPE        0x03                      // RW, speed mode excpeted by the equipment,00:full speed, 01:high speed, 10:low speed
 #define R8_USB2_INT_EN              (*((PUINT8V)0x40009002))  // RW, USB_high_speed intreurpt enable register
-#define  USBHS_UDIE_FIFO_OVER       0x80                      // RW, enable fifo overflow interupt
-#define  USBHS_UDIE_LINK_RDY        0x40                      // RW, enable USB conect interupt
-#define  USBHS_UDIE_SOF_ACT         0x20                      // RW, enable SOF package received interupt
-#define  USBHS_UDIE_TRANSFER        0x10                      // RW, enable USB transmit end interupt
-#define  USBHS_UDIE_LPM_ACT         0x08                      // RW, enable lpm transmit end interupt
-#define  USBHS_UDIE_BUS_SLEEP       0x04                      // RW, enable usb bus sleep interupt
-#define  USBHS_UDIE_SUSPEND         0x02                      // RW, enable usb bus suspend interupt
-#define  USBHS_UDIE_BUS_RST         0x01                      // RW, enable usb bus reset interupt
-#define R8_USB2_DEV_AD              (*((PUINT8V)0x40009003))  // RW, USB_high_speed device adress register
-#define  USBHS_UD_DEV_ADDR          0x7F                      // RW, adress of usb equipment
+#define  USBHS_UDIE_FIFO_OVER       0x80                      // RW, enable fifo overflow interrupt
+#define  USBHS_UDIE_LINK_RDY        0x40                      // RW, enable USB connect interrupt
+#define  USBHS_UDIE_SOF_ACT         0x20                      // RW, enable SOF package received interrupt
+#define  USBHS_UDIE_TRANSFER        0x10                      // RW, enable USB transmit end interrupt
+#define  USBHS_UDIE_LPM_ACT         0x08                      // RW, enable lpm transmit end interrupt
+#define  USBHS_UDIE_BUS_SLEEP       0x04                      // RW, enable usb bus sleep interrupt
+#define  USBHS_UDIE_SUSPEND         0x02                      // RW, enable usb bus suspend interrupt
+#define  USBHS_UDIE_BUS_RST         0x01                      // RW, enable usb bus reset interrupt
+#define R8_USB2_DEV_AD              (*((PUINT8V)0x40009003))  // RW, USB_high_speed device address register
+#define  USBHS_UD_DEV_ADDR          0x7F                      // RW, address of usb equipment
 #define R8_USB2_WAKE_CTRL           (*((PUINT8V)0x40009004))  // RW, USB_high_speed wake up remotely register
 #define  USBHS_UD_UD_REMOTE_WKUP    0x01                      // RW1, wake up remotely and auto reset hardware
 #define R8_USB2_TEST_MODE           (*((PUINT8V)0x40009005))  // RW, USB_high_speed test mode register
@@ -2052,18 +2052,19 @@ typedef UDISK_BOC_CSW  *PXUDISK_BOC_CSW;
 #define R16_USB2_LPM_DATA           (*((PUINT16V)0x40009006)) // RW, USB_high_speed power control register
 #define  USBHS_UD_LPM_BUSY          0x8000                    // RW, power control busy
 #define  USBHS_UD_LPM_DATA          0x07FF                    // RO, power control data
-#define R8_USB2_INT_FG              (*((PUINT8V)0x40009008))  // RW, USB_high_speed interupt flag register
-#define  USBHS_UDIF_FIFO_OV         0x80                      // RW1, clear fifo overflow interupt flag
-#define  USBHS_UDIF_LINK_RDY        0x40                      // RW1, clear USB conect interupt flag
-#define  USBHS_UDIF_RX_SOF          0x20                      // RW1, clear SOF package received interupt flag
-#define  USBHS_UDIF_TRANSFER        0x10                      // RO,  USB transmit end interupt flag,cleared by USBHS_UDMS_HS_MOD
-#define  USBHS_UDIF_LPM_ACT         0x08                      // RW1, clear lpm transmit end interupt flag
-#define  USBHS_UDIF_BUS_SLEEP       0x04                      // RW1, clear usb bus sleep interupt flag
-#define  USBHS_UDIF_SUSPEND         0x02                      // RW1, clear usb bus suspend interupt flag
-#define  USBHS_UDIF_BUS_RST         0x01                      // RW1, clear usb bus reset interupt flag
-#define R8_USB2_INT_ST              (*((PUINT8V)0x40009009))  // RW, USB_high_speed interupt status register
-#define  USBHS_UDIS_EP_DIR          0x10                      // RO, end point tranfer diector of data
-#define  USBHS_UDIS_EP_ID_MASK      0x07                      // RO, number of end point which data transmission occured
+#define R8_USB2_INT_FG              (*((PUINT8V)0x40009008))  // RW, USB_high_speed interrupt flag register
+#define  USBHS_UDIF_FIFO_OV         0x80                      // RW1, clear fifo overflow interrupt flag
+#define  USBHS_UDIF_LINK_RDY        0x40                      // RW1, clear USB connect interrupt flag
+#define  USBHS_UDIF_RX_SOF          0x20                      // RW1, clear SOF package received interrupt flag
+#define  USBHS_UDIF_TRANSFER        0x10                      // RO,  USB transmit end interrupt flag,cleared by USBHS_UDMS_HS_MOD
+#define  USBHS_UDIF_RTX_ACT         0x10                      // RO,  USB transmit end interrupt flag,cleared by USBHS_UDMS_HS_MOD
+#define  USBHS_UDIF_LPM_ACT         0x08                      // RW1, clear lpm transmit end interrupt flag
+#define  USBHS_UDIF_BUS_SLEEP       0x04                      // RW1, clear usb bus sleep interrupt flag
+#define  USBHS_UDIF_SUSPEND         0x02                      // RW1, clear usb bus suspend interrupt flag
+#define  USBHS_UDIF_BUS_RST         0x01                      // RW1, clear usb bus reset interrupt flag
+#define R8_USB2_INT_ST              (*((PUINT8V)0x40009009))  // RW, USB_high_speed interrupt status register
+#define  USBHS_UDIS_EP_DIR          0x10                      // RO, end point transfer director of data
+#define  USBHS_UDIS_EP_ID_MASK      0x07                      // RO, number of end point which data transmission occurred
 #define R8_USB2_MIS_ST              (*((PUINT8V)0x4000900A))  // RW, USB_high_speed miscellaneous register
 #define  USBHS_UDMS_HS_MOD          0x80                      // RO, host with high speed
 #define  USBHS_UDMS_SUSP_REQ        0x10                      // RO, requirment of suspending USB
@@ -2113,23 +2114,23 @@ typedef UDISK_BOC_CSW  *PXUDISK_BOC_CSW;
 #define  USBHS_UEP_R_RES_MODE       0xFF
 #define R32_U2EP_AF_MODE            (*((PUINT32V)0x4000901C))   // RW, USB_high_speed end point multiplexing register
 #define  USBHS_UEP_T_AF             0xFE
-#define R32_U2EP0_DMA               (*((PUINT32V)0x40009020))   // RW, USB_high_speed end point0 begin adress of DMA buffer register
+#define R32_U2EP0_DMA               (*((PUINT32V)0x40009020))   // RW, USB_high_speed end point0 begin address of DMA buffer register
 #define  UEPn_DMA                   0x01FFFF
-#define R32_U2EP1_RX_DMA            (*((PUINT32V)0x40009024))   // RW, USB_high_speed end point1 begin adress of DMA receive buffer register
-#define R32_U2EP2_RX_DMA            (*((PUINT32V)0x40009028))   // RW, USB_high_speed end point2 begin adress of DMA receive buffer register
-#define R32_U2EP3_RX_DMA            (*((PUINT32V)0x4000902C))   // RW, USB_high_speed end point3 begin adress of DMA receive buffer register
-#define R32_U2EP4_RX_DMA            (*((PUINT32V)0x40009030))   // RW, USB_high_speed end point4 begin adress of DMA receive buffer register
-#define R32_U2EP5_RX_DMA            (*((PUINT32V)0x40009034))   // RW, USB_high_speed end point5 begin adress of DMA receive buffer register
-#define R32_U2EP6_RX_DMA            (*((PUINT32V)0x40009038))   // RW, USB_high_speed end point6 begin adress of DMA receive buffer register
-#define R32_U2EP7_RX_DMA            (*((PUINT32V)0x4000903C))   // RW, USB_high_speed end point7 begin adress of DMA receive buffer register
+#define R32_U2EP1_RX_DMA            (*((PUINT32V)0x40009024))   // RW, USB_high_speed end point1 begin address of DMA receive buffer register
+#define R32_U2EP2_RX_DMA            (*((PUINT32V)0x40009028))   // RW, USB_high_speed end point2 begin address of DMA receive buffer register
+#define R32_U2EP3_RX_DMA            (*((PUINT32V)0x4000902C))   // RW, USB_high_speed end point3 begin address of DMA receive buffer register
+#define R32_U2EP4_RX_DMA            (*((PUINT32V)0x40009030))   // RW, USB_high_speed end point4 begin address of DMA receive buffer register
+#define R32_U2EP5_RX_DMA            (*((PUINT32V)0x40009034))   // RW, USB_high_speed end point5 begin address of DMA receive buffer register
+#define R32_U2EP6_RX_DMA            (*((PUINT32V)0x40009038))   // RW, USB_high_speed end point6 begin address of DMA receive buffer register
+#define R32_U2EP7_RX_DMA            (*((PUINT32V)0x4000903C))   // RW, USB_high_speed end point7 begin address of DMA receive buffer register
 #define  UEPn_RX_DMA                0x01FFFF
-#define R32_U2EP1_TX_DMA            (*((PUINT32V)0x40009040))   // RW, USB_high_speed end point1 begin adress of DMA transmit buffer register
-#define R32_U2EP2_TX_DMA            (*((PUINT32V)0x40009044))   // RW, USB_high_speed end point2 begin adress of DMA transmit buffer register
-#define R32_U2EP3_TX_DMA            (*((PUINT32V)0x40009048))   // RW, USB_high_speed end point3 begin adress of DMA transmit buffer register
-#define R32_U2EP4_TX_DMA            (*((PUINT32V)0x4000904C))   // RW, USB_high_speed end point4 begin adress of DMA transmit buffer register
-#define R32_U2EP5_TX_DMA            (*((PUINT32V)0x40009050))   // RW, USB_high_speed end point5 begin adress of DMA transmit buffer register
-#define R32_U2EP6_TX_DMA            (*((PUINT32V)0x40009054))   // RW, USB_high_speed end point6 begin adress of DMA transmit buffer register
-#define R32_U2EP7_TX_DMA            (*((PUINT32V)0x40009058))   // RW, USB_high_speed end point7 begin adress of DMA transmit buffer register
+#define R32_U2EP1_TX_DMA            (*((PUINT32V)0x40009040))   // RW, USB_high_speed end point1 begin address of DMA transmit buffer register
+#define R32_U2EP2_TX_DMA            (*((PUINT32V)0x40009044))   // RW, USB_high_speed end point2 begin address of DMA transmit buffer register
+#define R32_U2EP3_TX_DMA            (*((PUINT32V)0x40009048))   // RW, USB_high_speed end point3 begin address of DMA transmit buffer register
+#define R32_U2EP4_TX_DMA            (*((PUINT32V)0x4000904C))   // RW, USB_high_speed end point4 begin address of DMA transmit buffer register
+#define R32_U2EP5_TX_DMA            (*((PUINT32V)0x40009050))   // RW, USB_high_speed end point5 begin address of DMA transmit buffer register
+#define R32_U2EP6_TX_DMA            (*((PUINT32V)0x40009054))   // RW, USB_high_speed end point6 begin address of DMA transmit buffer register
+#define R32_U2EP7_TX_DMA            (*((PUINT32V)0x40009058))   // RW, USB_high_speed end point7 begin address of DMA transmit buffer register
 #define  UEPn_TX_DMA                0x01FFFF
 #define R32_U2EP0_MAX_LEN           (*((PUINT32V)0x4000905C))   // RW, USB_high_speed end point0 max length package register
 #define R32_U2EP1_MAX_LEN           (*((PUINT32V)0x40009060))   // RW, USB_high_speed end point1 max length package register

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -12,10 +12,14 @@
  *              This file provides a template function for ANSI and UNICODE compiling
  *              by different type definition. The functions of SecOutputS or
  *              SecOutputSW  provides internal implementation for printf family API, such as sprintf, swprintf_s.
- * Author: lishunda
  * Create: 2014-02-25
+ * Notes: see www.cplusplus.com/reference/cstdio/printf/
  */
-
+/*
+ * [Standardize-exceptions] Use unsafe function: Portability
+ * [reason] Use unsafe function to implement security function to maintain platform compatibility.
+ *          And sufficient input validation is performed before calling
+ */
 #ifndef OUTPUT_INL_2B263E9C_43D8_44BB_B17A_6D2033DECEE5
 #define OUTPUT_INL_2B263E9C_43D8_44BB_B17A_6D2033DECEE5
 
@@ -71,6 +75,12 @@
     (SecInt64)(size_t)va_arg(argList, size_t))
 #endif
 
+/* Format output buffer pointer and available size */
+typedef struct {
+    int count;
+    SecChar *cur;
+} SecPrintfStream;
+
 typedef union {
     /* Integer formatting refers to the end of the buffer, plus 1 to prevent tool alarms */
     char str[SECUREC_BUFFER_SIZE + 1];
@@ -88,7 +98,7 @@ typedef union {
 
 typedef struct {
     const char *digits;                 /* Point to the hexadecimal subset */
-    SecFormatBuf text;                  /* Point to formated string */
+    SecFormatBuf text;                  /* Point to formatted string */
     int textLen;                        /* Length of the text */
     int textIsWide;                     /* Flag for text is wide chars ; 0 is not wide char */
     unsigned int radix;                 /* Use for output number , default set to 10 */
@@ -112,7 +122,7 @@ typedef struct {
 typedef struct {
     char buffer[SECUREC_FMT_STR_LEN];
     char *fmtStr;                     /* Initialization must point to buffer */
-    char *allocatedFmtStr;            /* Initialization must be NULL  to store alloced point */
+    char *allocatedFmtStr;            /* Initialization must be NULL  to store allocated point */
     char *floatBuffer;                /* Use heap memory if the SecFormatAttr.buffer is not enough */
     int bufferSize;                   /* The size of floatBuffer */
 } SecFloatAdapt;
@@ -120,6 +130,8 @@ typedef struct {
 
 /* Use 20 to Align the data */
 #define SECUREC_DIGITS_BUF_SIZE  20
+/* The serial number of 'x' or 'X' is 16 */
+#define SECUREC_NUMBER_OF_X  16
 /* Some systems can not use pointers to point to string literals, but can use string arrays. */
 /* For example, when handling code under uboot, there is a problem with the pointer */
 static const char g_itoaUpperDigits[SECUREC_DIGITS_BUF_SIZE] = "0123456789ABCDEFX";
@@ -133,9 +145,9 @@ SECUREC_INLINE int SecFormatFloat(char *strDest, const char *format, ...)
     va_list argList;
 
     va_start(argList, format);
-    SECUREC_MASK_MSVC_CRT_WARNING
+    SECUREC_MASK_VSPRINTF_WARNING
     ret = vsprintf(strDest, format, argList);
-    SECUREC_END_MASK_MSVC_CRT_WARNING
+    SECUREC_END_MASK_VSPRINTF_WARNING
     va_end(argList);
     (void)argList; /* To clear e438 last value assigned not used , the compiler will optimize this code */
 
@@ -282,7 +294,7 @@ SECUREC_INLINE void SecNumber32ToString(SecUnsignedInt32 number, SecFormatAttr *
 
 #if defined(SECUREC_USE_SPECIAL_DIV64) || (defined(SECUREC_VXWORKS_VERSION_5_4) && !defined(SECUREC_ON_64BITS))
 /*
- * This function just to clear warning, on sume vxworks compiler shift 32 bit make warnigs
+ * This function just to clear warning, on sume vxworks compiler shift 32 bit make warnings
  */
 SECUREC_INLINE SecUnsignedInt64 SecU64Shr32(SecUnsignedInt64 number)
 {
@@ -502,28 +514,83 @@ SECUREC_INLINE void SecNumberToBuffer(SecFormatAttr *attr, SecInt64 num64)
     attr->textLen = (int)(size_t)((char *)&attr->buffer.str[SECUREC_BUFFER_SIZE] - attr->text.str);
 }
 
+/*
+ * Write one character to dest buffer
+ */
+SECUREC_INLINE void SecWriteChar(SecPrintfStream *stream, SecChar ch, int *charsOut)
+{
+    /* Count must be reduced first, In order to identify insufficient length */
+    --stream->count;
+    if (stream->count >= 0) {
+        *(stream->cur) = ch;
+        ++stream->cur;
+        *charsOut = *charsOut + 1;
+        return;
+    }
+    /* No enough length */
+    *charsOut = -1;
+}
+
+/*
+* Write multiple identical characters.
+*/
+SECUREC_INLINE void SecWriteMultiChar(SecPrintfStream *stream, SecChar ch, int num, int *charsOut)
+{
+    int count;
+    for (count = num; count > 0; --count) {
+        --stream->count; /* count may be negative,indicating insufficient space */
+        if (stream->count < 0) {
+            *charsOut = -1;
+            return;
+        }
+        *(stream->cur) = ch;
+        ++stream->cur;
+    }
+    *charsOut = *charsOut + num;
+}
+
+/*
+* Write string function, where this function is called, make sure that len is greater than 0
+*/
+SECUREC_INLINE void SecWriteString(SecPrintfStream *stream, const SecChar *str, int len, int *charsOut)
+{
+    const SecChar *tmp = str;
+    int count;
+    for (count = len; count > 0; --count) {
+        --stream->count; /* count may be negative,indicating insufficient space */
+        if (stream->count < 0) {
+            *charsOut = -1;
+            return;
+        }
+        *(stream->cur) = *tmp;
+        ++stream->cur;
+        ++tmp;
+    }
+    *charsOut = *charsOut + len;
+}
+
 /* Use loop copy char or wchar_t string */
-SECUREC_INLINE void SecWriteStringToStreamOpt(SecPrintfStream *stream, const SecChar *str, int len)
+SECUREC_INLINE void SecWriteStringByLoop(SecPrintfStream *stream, const SecChar *str, int len)
 {
     int i;
     const SecChar *tmp = str;
     for (i = 0; i < len; ++i) {
-        *((SecChar *)(void *)(stream->cur)) = *(const SecChar *)(tmp);
-        stream->cur += sizeof(SecChar);
-        tmp = tmp + 1;
+        *stream->cur = *tmp;
+        ++stream->cur;
+        ++tmp;
     }
-    stream->count -= len * (int)(sizeof(SecChar));
+    stream->count -= len;
 }
 
-SECUREC_INLINE void SecWriteStringToStream(SecPrintfStream *stream, const SecChar *str, int len)
+SECUREC_INLINE void SecWriteStringOpt(SecPrintfStream *stream, const SecChar *str, int len)
 {
     if (len < 12) { /* Performance optimization for mobile number length 12 */
-        SecWriteStringToStreamOpt(stream, str, len);
+        SecWriteStringByLoop(stream, str, len);
     } else {
-        size_t count = (size_t)(unsigned int)len * (sizeof(SecChar));
+        size_t count = (size_t)(unsigned int)len * sizeof(SecChar);
         SECUREC_MEMCPY_WARP_OPT(stream->cur, str, count);
-        stream->cur += (size_t)((size_t)(unsigned int)len * (sizeof(SecChar)));
-        stream->count -= len * (int)(sizeof(SecChar));
+        stream->cur += len;
+        stream->count -= len;
     }
 }
 
@@ -533,27 +600,26 @@ SECUREC_INLINE void SecWriteStringToStream(SecPrintfStream *stream, const SecCha
  */
 SECUREC_INLINE int SecIsStreamBufEnough(const SecPrintfStream *stream, int needLen)
 {
-    return ((int)(stream->count - (needLen * (int)(sizeof(SecChar)))) >= 0);
+    return (int)(stream->count >= needLen);
 }
 
-#ifdef SECUREC_FOR_WCHAR
-SECUREC_INLINE void SecWriteMultiCharW(wchar_t ch, int num, SecPrintfStream *f, int *pnumwritten);
-SECUREC_INLINE void SecWriteStringW(const wchar_t *string, int len, SecPrintfStream *f, int *pnumwritten);
-#define SECUREC_WRITE_MULTI_CHAR SecWriteMultiCharW
-#define SECUREC_WRITE_STRING     SecWriteStringW
-#else
-SECUREC_INLINE void SecWriteMultiChar(char ch, int num, SecPrintfStream *f, int *pnumwritten);
-SECUREC_INLINE void SecWriteString(const char *string, int len, SecPrintfStream *f, int *pnumwritten);
-#define SECUREC_WRITE_MULTI_CHAR  SecWriteMultiChar
-#define SECUREC_WRITE_STRING      SecWriteString
-#endif
+/* Write text string */
+SECUREC_INLINE void SecWriteTextOpt(SecPrintfStream *stream, const SecChar *str, int len, int *charsOut)
+{
+    if (SecIsStreamBufEnough(stream, len) != 0) {
+        SecWriteStringOpt(stream, str, len);
+        *charsOut += len;
+    } else {
+        SecWriteString(stream, str, len, charsOut);
+    }
+}
 
 /* Write left padding */
 SECUREC_INLINE void SecWriteLeftPadding(SecPrintfStream *stream, const SecFormatAttr *attr, int *charsOut)
 {
     if ((attr->flags & (SECUREC_FLAG_LEFT | SECUREC_FLAG_LEADZERO)) == 0 && attr->padding > 0) {
         /* Pad on left with blanks */
-        SECUREC_WRITE_MULTI_CHAR(SECUREC_CHAR(' '), attr->padding, stream, charsOut);
+        SecWriteMultiChar(stream, SECUREC_CHAR(' '), attr->padding, charsOut);
     }
 }
 
@@ -561,13 +627,7 @@ SECUREC_INLINE void SecWriteLeftPadding(SecPrintfStream *stream, const SecFormat
 SECUREC_INLINE void SecWritePrefix(SecPrintfStream *stream, const SecFormatAttr *attr, int *charsOut)
 {
     if (attr->prefixLen > 0) {
-        if (SecIsStreamBufEnough(stream, attr->prefixLen) != 0) {
-            /* Max prefix len is 2, use loop copy */
-            SecWriteStringToStreamOpt(stream, attr->prefix, attr->prefixLen);
-            *charsOut += attr->prefixLen;
-        } else {
-            SECUREC_WRITE_STRING(attr->prefix, attr->prefixLen, stream, charsOut);
-        }
+        SecWriteString(stream, attr->prefix, attr->prefixLen, charsOut);
     }
 }
 
@@ -576,7 +636,7 @@ SECUREC_INLINE void SecWriteLeadingZero(SecPrintfStream *stream, const SecFormat
 {
     if ((attr->flags & SECUREC_FLAG_LEADZERO) != 0 && (attr->flags & SECUREC_FLAG_LEFT) == 0 &&
         attr->padding > 0) {
-        SECUREC_WRITE_MULTI_CHAR(SECUREC_CHAR('0'), attr->padding, stream, charsOut);
+        SecWriteMultiChar(stream, SECUREC_CHAR('0'), attr->padding, charsOut);
     }
 }
 
@@ -585,20 +645,27 @@ SECUREC_INLINE void SecWriteRightPadding(SecPrintfStream *stream, const SecForma
 {
     if (*charsOut >= 0 && (attr->flags & SECUREC_FLAG_LEFT) != 0 && attr->padding > 0) {
         /* Pad on right with blanks */
-        SECUREC_WRITE_MULTI_CHAR(SECUREC_CHAR(' '), attr->padding, stream, charsOut);
+        SecWriteMultiChar(stream, SECUREC_CHAR(' '), attr->padding, charsOut);
     }
 }
 
-/* Write text string */
-SECUREC_INLINE void SecWriteStringChk(SecPrintfStream *stream, const SecChar *str, int len, int *charsOut)
-{
-    if (SecIsStreamBufEnough(stream, len) != 0) {
-        SecWriteStringToStream(stream, str, len);
-        *charsOut += len;
-    } else {
-        SECUREC_WRITE_STRING(str, len, stream, charsOut);
-    }
-}
+#ifdef SECUREC_FOR_WCHAR
+#define SECUREC_TEXT_CHAR_PTR(text)  ((text).wStr)
+#define SECUREC_NEED_CONVERT_TEXT(attr) ((attr)->textIsWide == 0)
+#if SECUREC_HAVE_MBTOWC
+#define SECUREC_WRITE_TEXT_AFTER_CONVERT(stream, attr, charsOut) SecWriteTextAfterMbtowc((stream), (attr), (charsOut))
+#else
+#define SECUREC_WRITE_TEXT_AFTER_CONVERT(stream, attr, charsOut) (*(charsOut) = -1)
+#endif
+#else
+#define SECUREC_TEXT_CHAR_PTR(text)  ((text).str)
+#define SECUREC_NEED_CONVERT_TEXT(attr) ((attr)->textIsWide != 0)
+#if SECUREC_HAVE_WCTOMB
+#define SECUREC_WRITE_TEXT_AFTER_CONVERT(stream, attr, charsOut) SecWriteTextAfterWctomb((stream), (attr), (charsOut))
+#else
+#define SECUREC_WRITE_TEXT_AFTER_CONVERT(stream, attr, charsOut) (*(charsOut) = -1)
+#endif
+#endif
 
 #ifdef SECUREC_FOR_WCHAR
 #if SECUREC_HAVE_MBTOWC
@@ -613,7 +680,7 @@ SECUREC_INLINE void SecWriteTextAfterMbtowc(SecPrintfStream *stream, const SecFo
             *charsOut = -1;
             break;
         }
-        SecWriteCharW(wChar, stream, charsOut);
+        SecWriteChar(stream, wChar, charsOut);
         if (*charsOut == -1) {
             break;
         }
@@ -637,7 +704,7 @@ SECUREC_INLINE void SecWriteTextAfterWctomb(SecPrintfStream *stream, const SecFo
             *charsOut = -1;
             break;
         }
-        SecWriteString(tmpBuf, retVal, stream, charsOut);
+        SecWriteString(stream, tmpBuf, retVal, charsOut);
         if (*charsOut == -1) {
             break;
         }
@@ -664,7 +731,7 @@ SECUREC_INLINE void SecWriteFloatText(SecPrintfStream *stream, const SecFormatAt
     (void)attr;   /* To clear e438 last value assigned not used , the compiler will optimize this code */
 #endif
 #else /* Not SECUREC_FOR_WCHAR */
-    SecWriteString(attr->text.str, attr->textLen, stream, charsOut);
+    SecWriteString(stream, attr->text.str, attr->textLen, charsOut);
 #endif
 }
 #endif
@@ -672,28 +739,11 @@ SECUREC_INLINE void SecWriteFloatText(SecPrintfStream *stream, const SecFormatAt
 /* Write text of integer or string ... */
 SECUREC_INLINE void SecWriteText(SecPrintfStream *stream, const SecFormatAttr *attr, int *charsOut)
 {
-#ifdef SECUREC_FOR_WCHAR
-    if (attr->textIsWide != 0) {
-        SecWriteStringChk(stream, attr->text.wStr, attr->textLen, charsOut);
+    if (SECUREC_NEED_CONVERT_TEXT(attr)) {
+        SECUREC_WRITE_TEXT_AFTER_CONVERT(stream, attr, charsOut);
     } else {
-#if SECUREC_HAVE_MBTOWC
-        SecWriteTextAfterMbtowc(stream, attr, charsOut);
-#else
-        *charsOut = -1;
-#endif
+        SecWriteTextOpt(stream, SECUREC_TEXT_CHAR_PTR(attr->text), attr->textLen, charsOut);
     }
-
-#else /* Not SECUREC_FOR_WCHAR */
-    if (attr->textIsWide != 0) {
-#if SECUREC_HAVE_WCTOMB
-        SecWriteTextAfterWctomb(stream, attr, charsOut);
-#else
-        *charsOut = -1;
-#endif
-    } else {
-        SecWriteStringChk(stream, attr->text.str, attr->textLen, charsOut);
-    }
-#endif
 }
 
 #define SECUREC_FMT_STATE_OFFSET  256
@@ -703,7 +753,7 @@ SECUREC_INLINE SecFmtState SecDecodeState(SecChar ch, SecFmtState lastState)
     static const unsigned char stateTable[SECUREC_STATE_TABLE_SIZE] = {
         /*
          * Type
-         * 0:    nospecial meanin;
+         * 0:    nospecial meaning;
          * 1:    '%'
          * 2:    '.'
          * 3:    '*'
@@ -812,6 +862,7 @@ SECUREC_INLINE int SecDecodeSizeI(SecFormatAttr *attr, const SecChar **format)
     }
     return 0;
 }
+
 /*
  * Decoded size identifier in format string, and skip format to next charater
  */
@@ -907,8 +958,15 @@ SECUREC_INLINE void SecDecodeTypeC(SecFormatAttr *attr, unsigned int c)
 #endif
 }
 
+#ifdef SECUREC_FOR_WCHAR
+#define SECUREC_IS_NARROW_STRING(attr) (((attr)->flags & SECUREC_FLAG_SHORT) != 0)
+#else
+#define SECUREC_IS_NARROW_STRING(attr) (((attr)->flags & (SECUREC_FLAG_LONG | SECUREC_FLAG_WIDECHAR)) == 0)
+#endif
+
 SECUREC_INLINE void SecDecodeTypeSchar(SecFormatAttr *attr)
 {
+    size_t textLen;
     if (attr->text.str == NULL) {
         /*
          * Literal string to print null ptr, define it as array rather than const text area
@@ -920,13 +978,15 @@ SECUREC_INLINE void SecDecodeTypeSchar(SecFormatAttr *attr)
     if (attr->precision == -1) {
         /* Precision NOT assigned */
         /* The strlen performance is high when the string length is greater than 32 */
-        attr->textLen = (int)strlen(attr->text.str);
+        textLen = strlen(attr->text.str);
+        if (textLen > SECUREC_STRING_MAX_LEN) {
+            textLen = 0;
+        }
     } else {
         /* Precision assigned */
-        size_t textLen;
         SECUREC_CALC_STR_LEN(attr->text.str, (size_t)(unsigned int)attr->precision, &textLen);
-        attr->textLen = (int)textLen;
     }
+    attr->textLen = (int)textLen;
 }
 
 SECUREC_INLINE void SecDecodeTypeSwchar(SecFormatAttr *attr)
@@ -944,6 +1004,9 @@ SECUREC_INLINE void SecDecodeTypeSwchar(SecFormatAttr *attr)
     }
     /* The textLen in wchar_t,when precision is -1, it is unlimited  */
     SECUREC_CALC_WSTR_LEN(attr->text.wStr, (size_t)(unsigned int)attr->precision, &textLen);
+    if (textLen > SECUREC_WCHAR_STRING_MAX_LEN) {
+        textLen = 0;
+    }
     attr->textLen = (int)textLen;
 #else
     attr->textLen = 0;
@@ -955,56 +1018,28 @@ SECUREC_INLINE void SecDecodeTypeSwchar(SecFormatAttr *attr)
  */
 SECUREC_INLINE void SecDecodeTypeS(SecFormatAttr *attr, char *argPtr)
 {
-#if (defined(SECUREC_COMPATIBLE_LINUX_FORMAT)) && (!defined(SECUREC_ON_UNIX))
+#if (defined(SECUREC_COMPATIBLE_LINUX_FORMAT))
+#if (!defined(SECUREC_ON_UNIX))
     attr->flags &= ~SECUREC_FLAG_LEADZERO;
 #endif
-    attr->text.str = argPtr;
-#ifdef SECUREC_FOR_WCHAR
-#if defined(SECUREC_COMPATIBLE_LINUX_FORMAT)
+#if (defined(SECUREC_FOR_WCHAR))
     if ((attr->flags & SECUREC_FLAG_LONG) == 0) {
         attr->flags |= SECUREC_FLAG_SHORT;
     }
 #endif
-    if ((attr->flags & SECUREC_FLAG_SHORT) != 0) {
+#endif
+    attr->text.str = argPtr;
+    if (SECUREC_IS_NARROW_STRING(attr)) {
         /* The textLen now contains length in multibyte chars */
         SecDecodeTypeSchar(attr);
     } else {
         /* The textLen now contains length in wide chars */
         SecDecodeTypeSwchar(attr);
     }
-#else /* SECUREC_FOR_WCHAR */
-    if ((attr->flags & (SECUREC_FLAG_LONG | SECUREC_FLAG_WIDECHAR)) != 0) {
-        /* The textLen now contains length in wide chars */
-        SecDecodeTypeSwchar(attr);
-    } else {
-        /* The textLen now contains length in multibyte chars */
-        SecDecodeTypeSchar(attr);
-    }
-#endif /* SECUREC_FOR_WCHAR */
-    if (attr->textLen < 0) {
-        attr->textLen = 0;
-    }
 }
 
 /*
- * Write one character to dest buffer
- */
-SECUREC_INLINE void SecOutputOneChar(SecChar ch, SecPrintfStream *stream, int *counter)
-{
-    /* Count must be reduced first, In order to identify insufficient length */
-    stream->count -= (int)(sizeof(SecChar));
-    if (stream->count >= 0) {
-        *((SecChar *)(void *)(stream->cur)) = (SecChar)ch;
-        stream->cur += sizeof(SecChar);
-        *counter = *(counter) + 1;
-        return;
-    }
-    /* No enough length */
-    *counter = -1;
-}
-
-/*
- * Check precison in format
+ * Check precision in format
  */
 SECUREC_INLINE int SecDecodePrecision(SecChar ch, SecFormatAttr *attr)
 {
@@ -1044,9 +1079,9 @@ SECUREC_INLINE int SecDecodeWidth(SecChar ch, SecFormatAttr *attr, SecFmtState l
         if (attr->fldWidth < 0) {
             attr->flags |= SECUREC_FLAG_LEFT;
             attr->fldWidth = (-attr->fldWidth);
-            if (attr->fldWidth > SECUREC_MAX_WIDTH_LEN) {
-                return -1;
-            }
+        }
+        if (attr->fldWidth > SECUREC_MAX_WIDTH_LEN) {
+            return -1;
         }
     }
     return 0;
@@ -1135,7 +1170,7 @@ SECUREC_INLINE void SecUpdatePointFlags(SecFormatAttr *attr)
 #if (defined(SECUREC_COMPATIBLE_LINUX_FORMAT) || defined(SECUREC_VXWORKS_PLATFORM))
         attr->prefix[1] = SECUREC_CHAR('x');
 #else
-        attr->prefix[1] = (SecChar)(attr->digits[16]); /* 16 for 'x' or 'X' */
+        attr->prefix[1] = (SecChar)(attr->digits[SECUREC_NUMBER_OF_X]);
 #endif
 #if defined(_AIX) || defined(SECUREC_ON_SOLARIS)
         attr->prefixLen = 0;
@@ -1165,12 +1200,13 @@ SECUREC_INLINE void SecUpdateXpxFlags(SecFormatAttr *attr, SecChar ch)
             if ((attr->flags & SECUREC_FLAG_ALTERNATE) != 0) {
                 /* Alternate form means '0x' prefix */
                 attr->prefix[0] = SECUREC_CHAR('0');
-                attr->prefix[1] = (SecChar)(attr->digits[16]); /* 16 for 'x' or 'X' */
+                attr->prefix[1] = (SecChar)(attr->digits[SECUREC_NUMBER_OF_X]);
                 attr->prefixLen = SECUREC_PREFIX_LEN;
             }
             break;
     }
 }
+
 SECUREC_INLINE void SecUpdateOudiFlags(SecFormatAttr *attr, SecChar ch)
 {
     /* Do not set digits here */
@@ -1286,7 +1322,7 @@ SECUREC_INLINE int SecInitFloatBuffer(SecFloatAdapt *floatAdapt, const SecChar *
     }
 
     if (floatAdapt->bufferSize > SECUREC_BUFFER_SIZE) {
-        /* The current vlaue of SECUREC_BUFFER_SIZE could NOT store the formatted float string */
+        /* The current value of SECUREC_BUFFER_SIZE could not store the formatted float string */
         floatAdapt->floatBuffer = (char *)SECUREC_MALLOC(((size_t)(unsigned int)floatAdapt->bufferSize));
         if (floatAdapt->floatBuffer == NULL) {
             return -1;
@@ -1420,18 +1456,10 @@ SECUREC_INLINE void SecNumberCompatZero(SecFormatAttr *attr)
     (void)attr; /* To clear e438 last value assigned not used , the compiler will optimize this code */
 }
 
-#ifdef SECUREC_FOR_WCHAR
 /*
- * Formatting output core functions for wchar version.Called by a function such as vswprintf_s
- * The argList must not be declare as const
+ * Formatting output core function
  */
-SECUREC_INLINE int SecOutputSW(SecPrintfStream *stream, const wchar_t *cFormat, va_list argList)
-#else
-/*
- * Formatting output core functions for char version.Called by a function such as vsnprintf_s
- */
-SECUREC_INLINE int SecOutputS(SecPrintfStream *stream, const char *cFormat, va_list argList)
-#endif
+SECUREC_INLINE int SecOutput(SecPrintfStream *stream, const SecChar *cFormat, va_list argList)
 {
     const SecChar *format = cFormat;
     int charsOut;               /* Characters written */
@@ -1464,7 +1492,7 @@ SECUREC_INLINE int SecOutputS(SecPrintfStream *stream, const char *cFormat, va_l
         state = SecDecodeState(ch, lastState);
         switch (state) {
             case STAT_NORMAL:
-                SecOutputOneChar(ch, stream, &charsOut);
+                SecWriteChar(stream, ch, &charsOut);
                 continue;
             case STAT_PERCENT:
                 /* Set default values */
@@ -1497,7 +1525,7 @@ SECUREC_INLINE int SecOutputS(SecPrintfStream *stream, const char *cFormat, va_l
                 formatAttr.precision = 0;
                 break;
             case STAT_PRECIS:
-                /* Update precison value */
+                /* Update precision value */
                 if (ch == SECUREC_CHAR('*')) {
                     /* Get precision from arg list */
                     formatAttr.precision = (int)va_arg(argList, int);
@@ -1508,10 +1536,10 @@ SECUREC_INLINE int SecOutputS(SecPrintfStream *stream, const char *cFormat, va_l
                 }
                 break;
             case STAT_SIZE:
-                /* Read a size specifier, set the formatAttr.flags based on it, and skip format to next charater */
+                /* Read a size specifier, set the formatAttr.flags based on it, and skip format to next character */
                 if (SecDecodeSize(ch, &formatAttr, &format) != 0) {
                     /* Compatibility  code for "%I" just print I */
-                    SecOutputOneChar(ch, stream, &charsOut);
+                    SecWriteChar(stream, ch, &charsOut);
                     state = STAT_NORMAL;
                     continue;
                 }
@@ -1536,11 +1564,6 @@ SECUREC_INLINE int SecOutputS(SecPrintfStream *stream, const char *cFormat, va_l
                     }
                     case SECUREC_CHAR('G'): /* fall-through */ /* FALLTHRU */
                     case SECUREC_CHAR('g'): /* fall-through */ /* FALLTHRU */
-                        /* Default precision is 1 for g or G */
-                        if (formatAttr.precision == 0) {
-                            formatAttr.precision = 1;
-                        }
-                        /* fall-through */ /* FALLTHRU */
                     case SECUREC_CHAR('E'): /* fall-through */ /* FALLTHRU */
                     case SECUREC_CHAR('F'): /* fall-through */ /* FALLTHRU */
                     case SECUREC_CHAR('e'): /* fall-through */ /* FALLTHRU */
@@ -1568,7 +1591,7 @@ SECUREC_INLINE int SecOutputS(SecPrintfStream *stream, const char *cFormat, va_l
                             SecFormatDouble(&formatAttr, &floatAdapt, tmp);
                         }
 
-                        /* Only need write formated float string */
+                        /* Only need write formatted float string */
                         SecWriteFloatText(stream, &formatAttr, &charsOut);
                         SecFreeFloatBuffer(&floatAdapt);
                         break;
@@ -1653,16 +1676,45 @@ SECUREC_INLINE int SecOutputS(SecPrintfStream *stream, const char *cFormat, va_l
  * Output one zero character zero into the SecPrintfStream structure
  * If there is not enough space, make sure f->count is less than 0
  */
-SECUREC_INLINE int SecPutZeroChar(SecPrintfStream *str)
+SECUREC_INLINE int SecPutZeroChar(SecPrintfStream *stream)
 {
-    --str->count;
-    if (str->count >= 0) {
-        *(str->cur) = '\0';
-        str->cur = str->cur + 1;
+    --stream->count;
+    if (stream->count >= 0) {
+        *(stream->cur) = SECUREC_CHAR('\0');
+        ++stream->cur;
         return 0;
     }
     return -1;
 }
 
+/*
+ * Multi character formatted output implementation
+ */
+#ifdef SECUREC_FOR_WCHAR
+int SecVswprintfImpl(wchar_t *string, size_t count, const wchar_t *format, va_list argList)
+#else
+int SecVsnprintfImpl(char *string, size_t count, const char *format, va_list argList)
+#endif
+{
+    SecPrintfStream stream;
+    int retVal;
+
+    stream.count = (int)count; /* The count include \0 character, must be greater than zero */
+    stream.cur = string;
+
+    retVal = SecOutput(&stream, format, argList);
+    if (retVal >= 0) {
+        if (SecPutZeroChar(&stream) == 0) {
+            return retVal;
+        }
+    }
+    if (stream.count < 0) {
+        /* The buffer was too small, then truncate */
+        string[count - 1] = SECUREC_CHAR('\0');
+        return SECUREC_PRINTF_TRUNCATE;
+    }
+    string[0] = SECUREC_CHAR('\0'); /* Empty the dest string */
+    return -1;
+}
 #endif /* OUTPUT_INL_2B263E9C_43D8_44BB_B17A_6D2033DECEE5 */
 

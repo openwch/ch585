@@ -41,7 +41,7 @@
 // Connection supervision timeout in 10ms
 #define DEFAULT_CONNECTION_TIMEOUT          100
 
-// Discovey mode (limited, general, all)
+// Discovery mode (limited, general, all)
 #define DEFAULT_DISCOVERY_MODE              DEVDISC_MODE_ALL
 
 // TRUE to use active scan
@@ -149,9 +149,9 @@ static gapDevRec_t centralDevList[DEFAULT_MAX_SCAN_RES];
 
 // Peer device address
 static peerAddrDefItem_t PeerAddrDef[CENTRAL_MAX_CONNECTION] = {
-    {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84},
-    {0x03, 0x02, 0x03, 0xE4, 0xC2, 0x84},
-    {0x04, 0x02, 0x03, 0xE4, 0xC2, 0x84}
+    {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84|0xC0},
+    {0x03, 0x02, 0x03, 0xE4, 0xC2, 0x84|0xC0},
+    {0x04, 0x02, 0x03, 0xE4, 0xC2, 0x84|0xC0}
 };
 
 // Connection item list
@@ -176,7 +176,7 @@ static void     centralPairStateCB(uint16_t connHandle, uint8_t state, uint8_t s
 static uint16_t connect0_ProcessEvent(uint8_t task_id, uint16_t events);
 static void     central_ProcessTMOSMsg(tmos_event_hdr_t *pMsg);
 static void     centralGATTDiscoveryEvent(uint8_t connItem, gattMsgEvent_t *pMsg);
-static void     centralConnIistStartDiscovery_0(void);
+static void     centralConnListStartDiscovery_0(void);
 static void     centralAddDeviceInfo(uint8_t *pAddr, uint8_t addrType);
 static void     centralInitConnItem(uint8_t task_id, centralConnItem_t *centralConnList);
 static uint8_t  centralAddrCmp(peerAddrDefItem_t *PeerAddrDef, uint8_t *addr);
@@ -216,7 +216,7 @@ static gapBondCBs_t centralBondCB = {
  *
  * @return  none
  */
-void Central_Init()
+void Central_Init(void)
 {
     centralTaskId = TMOS_ProcessEventRegister(Central_ProcessEvent);
 
@@ -352,7 +352,7 @@ static uint16_t connect0_ProcessEvent(uint8_t task_id, uint16_t events)
     if(events & START_SVC_DISCOVERY_EVT)
     {
         // start service discovery
-        centralConnIistStartDiscovery_0();
+        centralConnListStartDiscovery_0();
         return (events ^ START_SVC_DISCOVERY_EVT);
     }
 
@@ -489,6 +489,7 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
     }
     if(connItem == CENTRAL_MAX_CONNECTION)
     {
+        GATT_bm_free(&pMsg->msg, pMsg->method);
         return;
         // Should not go there
     }
@@ -532,7 +533,10 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
         else
         {
             // After a successful read, display the read value
-            PRINT("Read rsp: %x\n", *pMsg->msg.readRsp.pValue);
+            if(pMsg->msg.readRsp.len > 0)
+            {
+                PRINT("Read rsp: %x\n", *pMsg->msg.readRsp.pValue);
+            }
         }
         centralConnList[connItem].procedureInProgress = FALSE;
     }
@@ -540,7 +544,7 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
             ((pMsg->method == ATT_ERROR_RSP) &&
              (pMsg->msg.errorRsp.reqOpcode == ATT_WRITE_REQ)))
     {
-        if(pMsg->method == ATT_ERROR_RSP == ATT_ERROR_RSP)
+        if(pMsg->method == ATT_ERROR_RSP)
         {
             uint8_t status = pMsg->msg.errorRsp.errCode;
 
@@ -548,7 +552,7 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
         }
         else
         {
-            // After a succesful write, display the value that was written and increment value
+            // After a successful write, display the value that was written and increment value
             PRINT("Write sent: %x\n", centralCharVal);
         }
 
@@ -556,7 +560,10 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
     }
     else if(pMsg->method == ATT_HANDLE_VALUE_NOTI)
     {
-        PRINT("Receive noti: %x\n", *pMsg->msg.handleValueNoti.pValue);
+        if(pMsg->msg.handleValueNoti.len > 0)
+        {
+            PRINT("Receive noti: %x\n", *pMsg->msg.handleValueNoti.pValue);
+        }
     }
     else if(centralConnList[connItem].discState != BLE_DISC_STATE_IDLE)
     {
@@ -609,7 +616,10 @@ static void centralEventCB(gapRoleEvent_t *pEvent)
     {
         case GAP_DEVICE_INIT_DONE_EVENT:
         {
+            uint8_t ownAddr[6];
             PRINT("Discovering...\n");
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             GAPRole_CentralStartDiscovery(DEFAULT_DISCOVERY_MODE,
                                           DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                           DEFAULT_DISCOVERY_WHITE_LIST);
@@ -751,6 +761,7 @@ static void centralEventCB(gapRoleEvent_t *pEvent)
             if(connItem == CENTRAL_MAX_CONNECTION)
             {
                 // Should not go there
+                break;
             }
             PRINT("  %x  Disconnected...Reason:%x\n", centralConnList[connItem].connHandle, pEvent->linkTerminate.reason);
             centralConnList[connItem].state = BLE_STATE_IDLE;
@@ -849,13 +860,13 @@ static void centralPasscodeCB(uint8_t *deviceAddr, uint16_t connectionHandle,
 }
 
 /*********************************************************************
- * @fn      centralConnIistStartDiscovery_0
+ * @fn      centralConnListStartDiscovery_0
  *
  * @brief   Start connection 0 service discovery.
  *
  * @return  none
  */
-static void centralConnIistStartDiscovery_0(void)
+static void centralConnListStartDiscovery_0(void)
 {
     uint8_t uuid[ATT_BT_UUID_SIZE] = {LO_UINT16(SIMPLEPROFILE_SERV_UUID),
                                       HI_UINT16(SIMPLEPROFILE_SERV_UUID)};

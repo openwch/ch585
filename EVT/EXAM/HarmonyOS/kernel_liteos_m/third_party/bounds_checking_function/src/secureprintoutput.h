@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -11,13 +11,47 @@
  * Description: Define macro, enum, data struct, and declare internal used function
  *              prototype, which is used by output.inl, secureprintoutput_w.c and
  *              secureprintoutput_a.c.
- * Author: lishunda
  * Create: 2014-02-25
  */
 
 #ifndef SECUREPRINTOUTPUT_H_E950DA2C_902F_4B15_BECD_948E99090D9C
 #define SECUREPRINTOUTPUT_H_E950DA2C_902F_4B15_BECD_948E99090D9C
 #include "securecutil.h"
+
+/* Shield compilation alerts about using sprintf without format attribute to format float value. */
+#ifndef SECUREC_HANDLE_WFORMAT
+#define SECUREC_HANDLE_WFORMAT 1
+#endif
+
+#if defined(__clang__)
+#if SECUREC_HANDLE_WFORMAT && defined(__GNUC__) && ((__GNUC__ >= 5) || \
+    (defined(__GNUC_MINOR__) && (__GNUC__ == 4 && __GNUC_MINOR__ >= 2)))
+#define SECUREC_MASK_WFORMAT_WARNING  _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"")
+#define SECUREC_END_MASK_WFORMAT_WARNING  _Pragma("GCC diagnostic pop")
+#else
+#define SECUREC_MASK_WFORMAT_WARNING
+#define SECUREC_END_MASK_WFORMAT_WARNING
+#endif
+#else
+#if SECUREC_HANDLE_WFORMAT && defined(__GNUC__) && ((__GNUC__ >= 5 ) || \
+    (defined(__GNUC_MINOR__) && (__GNUC__ == 4 && __GNUC_MINOR__ > 7)))
+#define SECUREC_MASK_WFORMAT_WARNING  _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"") \
+    _Pragma("GCC diagnostic ignored \"-Wmissing-format-attribute\"") \
+    _Pragma("GCC diagnostic ignored \"-Wsuggest-attribute=format\"")
+#define SECUREC_END_MASK_WFORMAT_WARNING  _Pragma("GCC diagnostic pop")
+#else
+#define SECUREC_MASK_WFORMAT_WARNING
+#define SECUREC_END_MASK_WFORMAT_WARNING
+#endif
+#endif
+
+#define SECUREC_MASK_VSPRINTF_WARNING  SECUREC_MASK_WFORMAT_WARNING \
+    SECUREC_MASK_MSVC_CRT_WARNING
+
+#define SECUREC_END_MASK_VSPRINTF_WARNING  SECUREC_END_MASK_WFORMAT_WARNING \
+    SECUREC_END_MASK_MSVC_CRT_WARNING
 
 /*
  * Flag definitions.
@@ -58,12 +92,6 @@ typedef enum {
     STAT_INVALID
 } SecFmtState;
 
-/* Format output buffer pointer and available size */
-typedef struct {
-    int count;
-    char *cur;
-} SecPrintfStream;
-
 #ifndef SECUREC_BUFFER_SIZE
 #if SECUREC_IN_KERNEL
 #define SECUREC_BUFFER_SIZE    32
@@ -84,7 +112,7 @@ typedef struct {
 #define SECUREC_WCHAR_BUFFER_SIZE 4
 
 #define SECUREC_MAX_PRECISION  SECUREC_BUFFER_SIZE
-/* Max. # bytes in multibyte char  ,see MB_LEN_MAX */
+/* Max. # bytes in multibyte char,see MB_LEN_MAX */
 #define SECUREC_MB_LEN 16
 /* The return value of the internal function, which is returned when truncated */
 #define SECUREC_PRINTF_TRUNCATE (-2)
@@ -112,9 +140,10 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int SecVsnprintfImpl(char *string, size_t count, const char *format, va_list argList);
 #ifdef SECUREC_FOR_WCHAR
-    int SecVswprintfImpl(wchar_t *string, size_t sizeInWchar, const wchar_t *format, va_list argList);
+int SecVswprintfImpl(wchar_t *string, size_t count, const wchar_t *format, va_list argList);
+#else
+int SecVsnprintfImpl(char *string, size_t count, const char *format, va_list argList);
 #endif
 #ifdef __cplusplus
 }

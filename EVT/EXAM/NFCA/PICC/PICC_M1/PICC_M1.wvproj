@@ -158,7 +158,7 @@
 						"preprocess_only": false,
 						"defined_symbols": [
 							"DEBUG=0",
-							"IS014443A_FAST_CL=1"
+							"ISO14443A_FAST_CL=1"
 						],
 						"undefined_symbols": []
 					},
@@ -457,7 +457,7 @@
 						"preprocess_only": false,
 						"defined_symbols": [
 							"DEBUG=0",
-							"IS014443A_FAST_CL=1"
+							"ISO14443A_FAST_CL=1"
 						],
 						"undefined_symbols": []
 					},

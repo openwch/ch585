@@ -28,12 +28,12 @@
 /* imageA定义 */
 #define IMAGE_A_FLAG         0x01
 #define IMAGE_A_START_ADD    0x1000
-#define IMAGE_A_SIZE         44 * 1024
+#define IMAGE_A_SIZE         (44 * 1024)
 
 /* imageB定义 */
 #define IMAGE_B_FLAG         0x02
 #define IMAGE_B_START_ADD    (IMAGE_A_START_ADD + IMAGE_A_SIZE)
-#define IMAGE_B_SIZE         16 * 1024
+#define IMAGE_B_SIZE         (16 * 1024)
 
 #define IMAGE_OTA_FLAG       0x03
 
@@ -51,7 +51,7 @@
 #define IAP_LEN              247
 
 /* 存放在DataFlash地址，不能占用蓝牙的位置 */
-#define OTA_DATAFLASH_ADD    0x00077000 - FLASH_ROM_MAX_SIZE
+#define OTA_DATAFLASH_ADD    (0x00076000 - FLASH_ROM_MAX_SIZE)
 
 /* 存放在DataFlash里的OTA信息 */
 typedef struct

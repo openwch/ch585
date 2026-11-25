@@ -39,7 +39,7 @@ ble_sm_alg_log_buf(const char *name, const uint8_t *buf, int len)
 }
 
 /**
- * Cypher based Message Authentication Code (CMAC) with AES 128 bit
+ * Cipher based Message Authentication Code (CMAC) with AES 128 bit
  *
  * @param key                   128-bit key.
  * @param in                    Message to be authenticated.

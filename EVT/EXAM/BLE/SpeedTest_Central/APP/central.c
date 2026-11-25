@@ -3,9 +3,9 @@
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2020/08/06
- * Description        : Ö÷»úÀý³Ì£¬Ö÷¶¯É¨ÃèÖÜÎ§Éè±¸£¬Á¬½ÓÖÁ¸ø¶¨µÄ´Ó»úÉè±¸µØÖ·£¬
- *                      Ñ°ÕÒ×Ô¶¨Òå·þÎñ¼°ÌØÕ÷£¬Ö´ÐÐ¶ÁÐ´ÃüÁî£¬ÐèÓë´Ó»úÀý³ÌÅäºÏÊ¹ÓÃ,
-                       ²¢½«´Ó»úÉè±¸µØÖ·ÐÞ¸ÄÎª¸ÃÀý³ÌÄ¿±êµØÖ·£¬Ä¬ÈÏÎª(84:C2:E4:03:02:02)
+ * Description        : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì£ï¿½ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½ï¿½ï¿½Î§ï¿½è±¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´Ó»ï¿½ï¿½è±¸ï¿½ï¿½Ö·ï¿½ï¿½
+ *                      Ñ°ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð¶ï¿½Ð´ï¿½ï¿½ï¿½î£¬ï¿½ï¿½ï¿½ï¿½Ó»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½,
+                       ï¿½ï¿½ï¿½ï¿½ï¿½Ó»ï¿½ï¿½è±¸ï¿½ï¿½Ö·ï¿½Þ¸ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ö·ï¿½ï¿½Ä¬ï¿½ï¿½Îª(84:C2:E4:03:02:02)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * Attention: This software (modified or not) and binary are used for 
@@ -23,14 +23,11 @@
  * MACROS
  */
 
-// Length of bd addr as a string
-#define B_ADDR_STR_LEN                      15
-
 /*********************************************************************
  * CONSTANTS
  */
 // Maximum number of scan responses
-#define DEFAULT_MAX_SCAN_RES                10
+#define DEFAULT_MAX_SCAN_RES                100
 
 // Scan duration in 0.625ms
 #define DEFAULT_SCAN_DURATION               2400
@@ -44,7 +41,7 @@
 // Connection supervision timeout in 10ms
 #define DEFAULT_CONNECTION_TIMEOUT          100
 
-// Discovey mode (limited, general, all)
+// Discovery mode (limited, general, all)
 #define DEFAULT_DISCOVERY_MODE              DEVDISC_MODE_ALL
 
 // TRUE to use active scan
@@ -63,10 +60,10 @@
 #define DEFAULT_RSSI_PERIOD                 2400
 
 // Minimum connection interval (units of 1.25ms)
-#define DEFAULT_UPDATE_MIN_CONN_INTERVAL    20
+#define DEFAULT_UPDATE_MIN_CONN_INTERVAL    12
 
 // Maximum connection interval (units of 1.25ms)
-#define DEFAULT_UPDATE_MAX_CONN_INTERVAL    20
+#define DEFAULT_UPDATE_MAX_CONN_INTERVAL    12
 
 // Slave latency to use parameter update
 #define DEFAULT_UPDATE_SLAVE_LATENCY        0
@@ -151,13 +148,13 @@ static uint8_t centralScanRes;
 static gapDevRec_t centralDevList[DEFAULT_MAX_SCAN_RES];
 
 // Peer device address
-static uint8_t PeerAddrDef[B_ADDR_LEN] = {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84};
+static uint8_t PeerAddrDef[B_ADDR_LEN] = {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84|0xC0};
 
 // RSSI polling state
 static uint8_t centralRssi = FALSE;
 
 // Parameter update state
-static uint8_t centralParamUpdate = FALSE;
+static uint8_t centralParamUpdate = TRUE;
 
 // Phy update state
 static uint8_t centralPhyUpdate = TRUE;
@@ -181,16 +178,19 @@ static uint16_t centralCharHdl = 0;
 // Discovered Client Characteristic Configuration handle
 static uint16_t centralCCCDHdl = 0;
 
-// Value to write
-static uint8_t centralCharVal = 0x5A;
-
-// Value read/write toggle
-static uint8_t centralDoWrite = TRUE;
-
 // GATT read/write procedure state
 static uint8_t centralProcedureInProgress = FALSE;
 
 static uint32_t centralRxDataLen = 0;
+/* Timer-based speed statistics: 500ms TMR0, 2 ticks = 1s report interval */
+static volatile uint8_t tmr_speed_tick = 0;
+
+#if SPEED_TEST_DIR == 1
+static uint8_t  centralWriteBuf[244] = {0};
+static uint32_t centralTxDataLen = 0;
+static uint8_t  centralSpeedTestEn = FALSE;
+static uint16_t centralMtu = ATT_MTU_SIZE;
+#endif
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
@@ -205,6 +205,10 @@ static void central_ProcessTMOSMsg(tmos_event_hdr_t *pMsg);
 static void centralGATTDiscoveryEvent(gattMsgEvent_t *pMsg);
 static void centralStartDiscovery(void);
 static void centralAddDeviceInfo(uint8_t *pAddr, uint8_t addrType);
+#if SPEED_TEST_DIR == 1
+static void centralConnectEventCB(uint32_t timeUs);
+static uint8_t centralChar1Write(uint8_t *pValue, uint16_t len);
+#endif
 /*********************************************************************
  * PROFILE CALLBACKS
  */
@@ -240,7 +244,7 @@ static gapBondCBs_t centralBondCB = {
  *
  * @return  none
  */
-void Central_Init()
+void Central_Init(void)
 {
     centralTaskId = TMOS_ProcessEventRegister(Central_ProcessEvent);
 
@@ -268,6 +272,10 @@ void Central_Init()
     GATT_InitClient();
     // Register to receive incoming ATT Indications/Notifications
     GATT_RegisterForInd(centralTaskId);
+#if SPEED_TEST_DIR == 1
+    // Register connect event callback for speed test data writing
+    LL_ConnectEventRegister(centralConnectEventCB);
+#endif
     // Setup a delayed profile startup
     tmos_set_event(centralTaskId, START_DEVICE_EVT);
 }
@@ -378,13 +386,24 @@ uint16_t Central_ProcessEvent(uint8_t task_id, uint16_t events)
         return (events ^ START_READ_RSSI_EVT);
     }
 
-    if(events & START_SPEED_TEST_EVT)
+#if SPEED_TEST_DIR == 1
+    if(events & START_WRITE_DATA_EVT)
     {
-        PRINT("Rx: %dB/s\n", centralRxDataLen);
-        centralRxDataLen=0;
-        tmos_start_task(centralTaskId, START_SPEED_TEST_EVT, 1600);
-        return (events ^ START_SPEED_TEST_EVT);
+        // Write Without Response: queue as many as possible
+        while(1)
+        {
+            if( centralChar1Write(centralWriteBuf, centralMtu - 3) == SUCCESS )
+            {
+                centralTxDataLen += centralMtu - 3;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return (events ^ START_WRITE_DATA_EVT);
     }
+#endif
 
     // Discard unknown events
     return 0;
@@ -441,6 +460,9 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
 
     if(pMsg->method == ATT_MTU_UPDATED_EVENT)
     {
+#if SPEED_TEST_DIR == 1
+        centralMtu = pMsg->msg.mtuEvt.MTU;
+#endif
         PRINT("MTU: %x\n", pMsg->msg.mtuEvt.MTU);
     }
 
@@ -537,7 +559,10 @@ static void centralEventCB(gapRoleEvent_t *pEvent)
     {
         case GAP_DEVICE_INIT_DONE_EVENT:
         {
+            uint8_t ownAddr[6];
             PRINT("Discovering...\n");
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             GAPRole_CentralStartDiscovery(DEFAULT_DISCOVERY_MODE,
                                           DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                           DEFAULT_DISCOVERY_WHITE_LIST);
@@ -608,7 +633,11 @@ static void centralEventCB(gapRoleEvent_t *pEvent)
                 // Initiate service discovery
                 tmos_start_task(centralTaskId, START_SVC_DISCOVERY_EVT, DEFAULT_SVC_DISCOVERY_DELAY);
 
-                tmos_start_task(centralTaskId, START_SPEED_TEST_EVT, 1600);
+                /* Start 500ms hardware timer for speed statistics (2 ticks = 1s) */
+                tmr_speed_tick = 0;
+                TMR0_TimerInit(FREQ_SYS / 2);
+                TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
+                PFIC_EnableIRQ(TMR0_IRQn);
 
                 // See if initiate connect parameter update
                 if(centralParamUpdate)
@@ -648,6 +677,13 @@ static void centralEventCB(gapRoleEvent_t *pEvent)
             centralCharHdl = 0;
             centralScanRes = 0;
             centralProcedureInProgress = FALSE;
+#if SPEED_TEST_DIR == 1
+            centralSpeedTestEn = FALSE;
+            /* Stop speed statistics timer */
+            TMR0_ITCfg(DISABLE, TMR0_3_IT_CYC_END);
+            PFIC_DisableIRQ(TMR0_IRQn);
+            tmr_speed_tick = 0;
+#endif
             tmos_stop_task(centralTaskId, START_READ_RSSI_EVT);
             PRINT("Disconnected...Reason:%x\n", pEvent->linkTerminate.reason);
             PRINT("Discovering...\n");
@@ -818,6 +854,7 @@ static void centralGATTDiscoveryEvent(gattMsgEvent_t *pMsg)
             pMsg->hdr.status == bleProcedureComplete) ||
            (pMsg->method == ATT_ERROR_RSP))
         {
+            centralProcedureInProgress = FALSE;
             // Discover characteristic
             centralDiscState = BLE_DISC_STATE_CCCD;
             req.startHandle = centralSvcStartHdl;
@@ -887,4 +924,91 @@ static void centralAddDeviceInfo(uint8_t *pAddr, uint8_t addrType)
     }
 }
 
+#if SPEED_TEST_DIR == 1
+/*********************************************************************
+ * @fn      centralConnectEventCB
+ *
+ * @brief   Callback from once connect event
+ *
+ * @param   timeUs - Time to next connect event
+ *
+ * @return  none
+ */
+static void centralConnectEventCB( uint32_t timeUs )
+{
+    if( centralSpeedTestEn )
+    {
+        tmos_set_event(centralTaskId, START_WRITE_DATA_EVT);
+    }
+}
+/*********************************************************************
+ * @fn      centralChar1Write
+ *
+ * @brief   Send write command to CHAR1 for speed test
+ *
+ * @param   pValue - data to write
+ *          len - length of data
+ *
+ * @return  SUCCESS or error code
+ */
+static uint8_t centralChar1Write(uint8_t *pValue, uint16_t len)
+{
+    attWriteReq_t req;
+    req.cmd = TRUE;   // Write Without Response
+    req.sig = FALSE;
+    req.handle = centralCharHdl;
+    req.len = len;
+    req.pValue = GATT_bm_alloc(centralConnHandle, ATT_WRITE_CMD, req.len, NULL, 0);
+    if(req.pValue)
+    {
+        tmos_memcpy(req.pValue, pValue, req.len);
+        if(GATT_WriteNoRsp(centralConnHandle, &req) != SUCCESS)
+        {
+            GATT_bm_free((gattMsg_t *)&req, ATT_WRITE_CMD);
+            return bleMemAllocError;
+        }
+        return SUCCESS;
+    }
+    return bleMemAllocError;
+}
+#endif
+/*********************************************************************
+ * @fn      TMR0_IRQHandler
+ *
+ * @brief   500ms timer ISR: 2 ticks = 1s speed statistics period.
+ *          Sets START_SPEED_TEST_EVT every 1 second.
+ *
+ * @return  none
+ */
+__INTERRUPT
+__HIGH_CODE
+void TMR0_IRQHandler(void)
+{
+    if(TMR0_GetITFlag(TMR0_3_IT_CYC_END))
+    {
+        TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
+        tmr_speed_tick++;
+        if(tmr_speed_tick >= 2)
+        {
+            tmr_speed_tick = 0;
+
+#if SPEED_TEST_DIR == 1
+        if( centralSpeedTestEn )
+        {
+            PRINT("Tx: %dB/s\n", centralTxDataLen);
+            centralTxDataLen = 0;
+        }
+        else
+        {
+            // start speed test
+            PRINT("start speed test..\n");
+            centralSpeedTestEn = TRUE;
+        }
+#else
+        PRINT("Rx: %dB/s\n", centralRxDataLen);
+        centralRxDataLen=0;
+#endif
+        }
+    }
+}
 /************************ endfile @ central **************************/

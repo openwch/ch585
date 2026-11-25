@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -48,11 +48,11 @@
 // General discoverable mode advertises indefinitely
 #define DEFAULT_DISCOVERABLE_MODE            GAP_ADTYPE_FLAGS_GENERAL
 
-// Minimum connection interval (units of 1.25ms, 6=7.5ms)
-#define DEFAULT_DESIRED_MIN_CONN_INTERVAL    6
+// Minimum connection interval (units of 1.25ms, 8=10ms)
+#define DEFAULT_DESIRED_MIN_CONN_INTERVAL    8
 
-// Maximum connection interval (units of 1.25ms, 100=125ms)
-#define DEFAULT_DESIRED_MAX_CONN_INTERVAL    100
+// Maximum connection interval (units of 1.25ms, 20=25ms)
+#define DEFAULT_DESIRED_MAX_CONN_INTERVAL    20
 
 // Slave latency to use parameter update
 #define DEFAULT_DESIRED_SLAVE_LATENCY        0
@@ -119,8 +119,8 @@ static uint8_t advertData[] = {
     // in this peripheral
     0x03,                  // length of this data
     GAP_ADTYPE_16BIT_MORE, // some of the UUID's, but not all
-    LO_UINT16(SIMPLEPROFILE_SERV_UUID),
-    HI_UINT16(SIMPLEPROFILE_SERV_UUID)
+    LO_UINT16(0xFFF0), // 与实际 ble_usb 服务 UUID 保持一致
+    HI_UINT16(0xFFF0)
 };
 
 // GAP GATT Attributes
@@ -188,7 +188,7 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
@@ -476,8 +476,8 @@ static void Peripheral_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
             pMsgEvent = (gattMsgEvent_t *)pMsg;
             if(pMsgEvent->method == ATT_MTU_UPDATED_EVENT)
             {
-                peripheralMTU = pMsgEvent->msg.exchangeMTUReq.clientRxMTU;
-                PRINT("mtu exchange: %d\n", pMsgEvent->msg.exchangeMTUReq.clientRxMTU);
+                peripheralMTU = pMsgEvent->msg.mtuEvt.MTU;
+                PRINT("mtu exchange: %d\n", pMsgEvent->msg.mtuEvt.MTU);
             }
             break;
         }
@@ -619,8 +619,13 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
     switch(newState & GAPROLE_STATE_ADV_MASK)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)
@@ -790,7 +795,7 @@ void ble_usb_ServiceEvt(uint16_t connection_handle, ble_usb_evt_t *p_evt)
         case BLE_USB_EVT_TX_NOTI_ENABLED:
             PRINT("%02x:bleusb_EVT_TX_NOTI_ENABLED\r\n", connection_handle);
             break;
-        case BLE_USB_EVT_BLE_DATA_RECIEVED:
+        case BLE_USB_EVT_BLE_DATA_RECEIVED:
             PRINT("BLE RX DATA len:%d\r\n", p_evt->data.length);
 
             if(RingMemWrite(&RingMemBLE, (uint8_t *)p_evt->data.p_data, p_evt->data.length) != SUCCESS)

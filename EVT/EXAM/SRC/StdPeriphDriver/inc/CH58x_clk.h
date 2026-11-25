@@ -2,7 +2,7 @@
  * File Name          : CH58x_clk.h
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : head file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -288,9 +288,9 @@ void RTC_SetCycle32k(uint32_t cyc);
 uint32_t RTC_GetCycle32k(void);
 
 /**
- * @brief   RTC定时模式配置（注意定时基准固定为32768Hz）
+ * @brief   RTC时间触发模式配置
  *
- * @param   t   - refer to RTC_TMRCycTypeDef
+ * @param   cyc - 相对当前时间的触发间隔时间，基于LSE/LSI时钟周期数
  */
 void RTC_TRIGFunCfg(uint32_t cyc);
 

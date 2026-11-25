@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : LED.c
+ * File Name          : backlight.c
  * Author             : WCH
  * Version            : V1.2
  * Date               : 2022/01/18
@@ -9,18 +9,15 @@
  *******************************************************************************/
 
 /******************************************************************************/
-/* Í·ÎÄ¼ş°üº¬ */
+/* å¤´æ–‡ä»¶åŒ…å« */
 #include "backlight.h"
 
 TKY_Backlight_S BacklightArray[ TKY_MAX_QUEUE_NUM ];
-void TKY_BacklightOff (void);
-
-void TKY_KeyBacklightOut (uint8_t key, FunctionalState s);
 
 volatile uint8_t led_scanflag = 0;
 
 /*
- * ±³¹â¹Ø±Õ
+ * èƒŒå…‰å…³é—­
  * */
 void TKY_BacklightOff (void)
 {
@@ -33,7 +30,7 @@ void TKY_BacklightOff (void)
 }
 
 /*
- * ±³¹âÈ«¿ª
+ * èƒŒå…‰å…¨å¼€
  * */
 void TKY_BacklightOn (void)
 {
@@ -47,7 +44,7 @@ void TKY_BacklightOn (void)
 }
 
 /*
- *  ±³¹âÏà¹ØÍâÉèºÍ²ÎÊı³õÊ¼»¯
+ *  èƒŒå…‰ç›¸å…³å¤–è®¾å’Œå‚æ•°åˆå§‹åŒ–
  * */
 void TKY_BacklightInit (void)
 {
@@ -70,6 +67,11 @@ void TKY_BacklightInit (void)
 
 void TKY_KeyBacklightOut (uint8_t key, FunctionalState s)
 {
+    if (key >= TKY_MAX_QUEUE_NUM)
+    {
+        return;
+    }
+
     // PRINT("%d,%d",key,s);
     if (DISABLE == s)
     {
@@ -81,15 +83,15 @@ void TKY_KeyBacklightOut (uint8_t key, FunctionalState s)
     }
 }
 
-uint8_t getBacklightState(uint8_t key)
+uint8_t TKY_GetBacklightState(uint8_t key)
 {
     return BacklightArray[ key ].BacklightStates;
 }
 
 /*
- * ÉèÖÃ°´¼ü±³¹â×´Ì¬
+ * è®¾ç½®æŒ‰é”®èƒŒå…‰çŠ¶æ€
  * */
-void setBacklightState (uint8_t Idx, uint8_t state)
+static void TKY_SetBacklightState (uint8_t Idx, uint8_t state)
 {
     switch (Idx)
     {
@@ -153,8 +155,8 @@ void TKY_BacklightTaskStart ()
 
 void TKY_BacklightTaskStop ()
 {
+    led_scanflag = 0; /* å…ˆæ¸…æ ‡å¿—å†å…³ç¯ï¼šé¿å…å…³ç¯åTMR0ä¸­æ–­å†æ¬¡ç‚¹äº®ä¸€ä¸ªCOMå¹¶å¸¸äº®åˆ°ä¸‹æ¬¡å”¤é†’ */
     TKY_BacklightOff();
-    led_scanflag = 0;
 }
 
 void TKY_BacklightProcess (void)
@@ -167,7 +169,7 @@ void TKY_BacklightProcess (void)
     {
         for (i = 4 * (backLightScanState - 1); i < 4 * backLightScanState; i++)
         {
-            setBacklightState (i - 4 * (backLightScanState - 1), BacklightArray[ i ].BacklightStates);
+            TKY_SetBacklightState (i - 4 * (backLightScanState - 1), BacklightArray[ i ].BacklightStates);
         }
     }
     switch (backLightScanState)
@@ -196,38 +198,24 @@ void TKY_BacklightProcess (void)
     }
 }
 
-void TKY_BeepInit (void)
-{
-}
-
-void TKY_Beepout (FunctionalState s)
-{
-    if (s == DISABLE)
-    {
-    }
-    else
-    {
-    }
-}
-
 /**
  * @fn      IRQHandler
  *
- * @brief   ÖĞ¶Ïº¯Êı
+ * @brief   ä¸­æ–­å‡½æ•°
  *
  * @return  none
  */
-// __attribute__ ((interrupt ("WCH-Interrupt-fast"))) void TMR1_IRQHandler (void)          // TMR0 ¶¨Ê±ÖĞ¶Ï
+// __attribute__ ((interrupt ("WCH-Interrupt-fast"))) void TMR1_IRQHandler (void)          // TMR0 å®šæ—¶ä¸­æ–­
 // {
 //     static uint16_t counter = 0;
 //     if (TMR1_GetITFlag (TMR0_3_IT_CYC_END))
 //     {
-//         TMR1_ClearITFlag (TMR0_3_IT_CYC_END);                                           // Çå³ıÖĞ¶Ï±êÖ¾
+//         TMR1_ClearITFlag (TMR0_3_IT_CYC_END);                                           // æ¸…é™¤ä¸­æ–­æ ‡å¿—
 //         counter++;
-//         if (counter > 10)                                                               // ¶¨Ê±1ms
+//         if (counter > 10)                                                               // å®šæ—¶1ms
 //         {
 //             counter = 0;
-//             TKY_BacklightProcess();                                                     // poll±³¹â×´Ì¬
+//             TKY_BacklightProcess();                                                     // pollèƒŒå…‰çŠ¶æ€
 //         }
 //     }
 // }

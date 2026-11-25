@@ -109,7 +109,9 @@ static uint8_t scanRspData[] = {
     'r',
     'o',
     'a',
-    'd',  // connection interval range
+    'd',
+
+    // connection interval range
     0x05, // length of this data
     GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE,
     LO_UINT16(DEFAULT_DESIRED_MIN_CONN_INTERVAL), // 100ms
@@ -160,7 +162,7 @@ static uint16_t hidEmuConnHandle = GAP_CONNHANDLE_INIT;
  */
 
 static void    hidEmu_ProcessTMOSMsg(tmos_event_hdr_t *pMsg);
-static void    hidEmuSendKbdReport(uint8_t keycode);
+static uint8_t hidEmuSendKbdReport(uint8_t keycode);
 static uint8_t hidEmuRcvReport(uint8_t len, uint8_t *pData);
 static uint8_t hidEmuRptCB(uint8_t id, uint8_t type, uint16_t uuid,
                            uint8_t oper, uint16_t *pLen, uint8_t *pData);
@@ -188,14 +190,14 @@ static hidDevCB_t hidEmuHidCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void HidEmu_Init()
+void HidEmu_Init(void)
 {
     hidEmuTaskId = TMOS_ProcessEventRegister(HidEmu_ProcessEvent);
 
@@ -305,11 +307,13 @@ uint16_t HidEmu_ProcessEvent(uint8_t task_id, uint16_t events)
 
     if(events & START_REPORT_EVT)
     {
-        hidEmuSendKbdReport(send_char);
-        send_char++;
-        if(send_char >= 29)
-            send_char = 4;
-        hidEmuSendKbdReport(0x00);
+        if(hidEmuSendKbdReport(send_char) == SUCCESS)
+        {
+            send_char++;
+            if(send_char >= 29)
+                send_char = 4;
+            hidEmuSendKbdReport(0x00);
+        }
         tmos_start_task(hidEmuTaskId, START_REPORT_EVT, 2000);
         return (events ^ START_REPORT_EVT);
     }
@@ -341,9 +345,9 @@ static void hidEmu_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
  *
  * @param   keycode - HID keycode.
  *
- * @return  none
+ * @return  上报结果（HidDev_Report 的返回值），SUCCESS 表示通知已发出
  */
-static void hidEmuSendKbdReport(uint8_t keycode)
+static uint8_t hidEmuSendKbdReport(uint8_t keycode)
 {
     uint8_t buf[HID_KEYBOARD_IN_RPT_LEN];
 
@@ -356,8 +360,8 @@ static void hidEmuSendKbdReport(uint8_t keycode)
     buf[6] = 0;       // Keycode 5
     buf[7] = 0;       // Keycode 6
 
-    HidDev_Report(HID_RPT_ID_KEY_IN, HID_REPORT_TYPE_INPUT,
-                  HID_KEYBOARD_IN_RPT_LEN, buf);
+    return HidDev_Report(HID_RPT_ID_KEY_IN, HID_REPORT_TYPE_INPUT,
+                         HID_KEYBOARD_IN_RPT_LEN, buf);
 }
 
 /*********************************************************************
@@ -415,6 +419,8 @@ static void hidEmuStateCB(gapRole_States_t newState, gapRoleEvent_t *pEvent)
             }
             else if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)
             {
+                // 断开后复位连接句柄，避免残留上次连接的句柄
+                hidEmuConnHandle = GAP_CONNHANDLE_INIT;
                 PRINT("Disconnected.. Reason:%x\n", pEvent->linkTerminate.reason);
             }
             else if(pEvent->gap.opcode == GAP_LINK_ESTABLISHED_EVENT)
@@ -507,6 +513,12 @@ static uint8_t hidEmuRptCB(uint8_t id, uint8_t type, uint16_t uuid,
     else if(oper == HID_DEV_OPER_ENABLE)
     {
         tmos_start_task(hidEmuTaskId, START_REPORT_EVT, 500);
+    }
+    // notifications disabled
+    else if(oper == HID_DEV_OPER_DISABLE)
+    {
+        // 通知关闭后停止周期上报，避免 START_REPORT_EVT 永不停
+        tmos_stop_task(hidEmuTaskId, START_REPORT_EVT);
     }
     return status;
 }

@@ -2,7 +2,7 @@
  * File Name          : CH58x_SPI.h
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : head file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -44,7 +44,7 @@ typedef enum
 typedef enum
 {
     Mode_DataStream = 0, // 数据流模式
-    Mose_FirstCmd,       // 首字节命令模式
+    Mode_FirstCmd,       // 首字节命令模式
 } Slave_ModeTypeDef;
 
 /**
@@ -99,7 +99,7 @@ void SPI0_MasterRecv(uint8_t *pbuf, uint16_t len);
 /**
  * @brief   DMA方式连续发送数据
  *
- * @param   pbuf    - 待发送数据起始地址,需要四字节对其
+ * @param   pbuf    - 待发送数据起始地址,需要四字节对齐
  * @param   len     - 待发送数据长度
  */
 void SPI0_MasterDMATrans(uint8_t *pbuf, uint16_t len);
@@ -107,7 +107,7 @@ void SPI0_MasterDMATrans(uint8_t *pbuf, uint16_t len);
 /**
  * @brief   DMA方式连续接收数据
  *
- * @param   pbuf    - 待接收数据存放起始地址,需要四字节对其
+ * @param   pbuf    - 待接收数据存放起始地址,需要四字节对齐
  * @param   len     - 待接收数据长度
  */
 void SPI0_MasterDMARecv(uint8_t *pbuf, uint16_t len);
@@ -198,7 +198,7 @@ void SPI0_SlaveTrans(uint8_t *pbuf, uint16_t len);
 /**
  * @brief   从机模式，接收多字节数据
  *
- * @param   pbuf    - 接收收数据存放起始地址
+ * @param   pbuf    - 接收数据存放起始地址
  * @param   len     - 请求接收数据长度
  */
 void SPI0_SlaveRecv(uint8_t *pbuf, uint16_t len);
@@ -206,7 +206,7 @@ void SPI0_SlaveRecv(uint8_t *pbuf, uint16_t len);
 /**
  * @brief   DMA方式连续发送数据
  *
- * @param   pbuf    - 待发送数据起始地址,需要四字节对其
+ * @param   pbuf    - 待发送数据起始地址,需要四字节对齐
  * @param   len     - 待发送数据长度
  */
 void SPI0_SlaveDMATrans(uint8_t *pbuf, uint16_t len);
@@ -214,7 +214,7 @@ void SPI0_SlaveDMATrans(uint8_t *pbuf, uint16_t len);
 /**
  * @brief   DMA方式连续接收数据
  *
- * @param   pbuf    - 待接收数据存放起始地址,需要四字节对其
+ * @param   pbuf    - 待接收数据存放起始地址,需要四字节对齐
  * @param   len     - 待接收数据长度
  */
 void SPI0_SlaveDMARecv(uint8_t *pbuf, uint16_t len);

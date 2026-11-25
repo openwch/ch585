@@ -7,7 +7,6 @@
 #define WAKEUP_DATA_DEAL_EVT 0x0002
 #define DEBUG_PRINT_EVENT    0x0004
 #define TKY_KEEPALIVE_EVENT  0x0008
-#define TKY_RECALIBRATE_EVT   0x0010
 
 /************************TOUCH_KEY_DEFINE****************************/
 #define TOUCH_KEY_ELEMENTS                  (TKY_MAX_QUEUE_NUM)

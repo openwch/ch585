@@ -2,7 +2,7 @@
  * File Name          : CH58x_lcd.c
  * Author             : WCH
  * Version            : V1.0
- * Date               : 2018/12/15
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -14,7 +14,7 @@
 #include "CH58x_lcd.h"
 
 /*******************************************************************************
-* Function Name  : LCD_DefInit
+* Function Name  : LCD_Init
 * Description    : LCD段式屏驱动初始化配置
 * Input          : duty 占空比
 *                  bias 偏压比

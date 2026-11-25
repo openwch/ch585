@@ -48,6 +48,7 @@ uint32_t Lib_Read_Flash(uint32_t addr, uint32_t num, uint32_t *pBuf)
     return 0;
 }
 
+#define SNV_BUF_SIZE  (((BLE_SNV_BLOCK) * (BLE_SNV_NUM)) > EEPROM_BLOCK_SIZE ? EEPROM_BLOCK_SIZE : ((BLE_SNV_BLOCK) * (BLE_SNV_NUM)))
 /*******************************************************************************
  * @fn      Lib_Write_Flash_584X
  *
@@ -61,12 +62,14 @@ uint32_t Lib_Read_Flash(uint32_t addr, uint32_t num, uint32_t *pBuf)
  */
 void Lib_Write_Flash_584X(uint32_t addr, uint32_t num, uint32_t *pBuf)
 {
-    __attribute__((aligned(4))) uint32_t FLASH_BUF[(BLE_SNV_BLOCK*BLE_SNV_NUM) / 4];
-    EEPROM_READ(addr&0xFFFFF000, FLASH_BUF, BLE_SNV_BLOCK*BLE_SNV_NUM);
-    tmos_memcpy(&FLASH_BUF[addr&0xFFF], pBuf, num * 4);
-    EEPROM_ERASE(addr&0xFFFFF000, ((BLE_SNV_BLOCK*BLE_SNV_NUM+EEPROM_BLOCK_SIZE-1)/EEPROM_BLOCK_SIZE)*EEPROM_BLOCK_SIZE);
-    EEPROM_WRITE(addr&0xFFFFF000, FLASH_BUF, BLE_SNV_BLOCK*BLE_SNV_NUM);
-}
+    __attribute__((aligned(4))) uint32_t FLASH_BUF[SNV_BUF_SIZE / 4];
+    uint32_t base = addr & ~(EEPROM_BLOCK_SIZE - 1);            // 该地址4K页首
+
+    EEPROM_READ(base, FLASH_BUF, SNV_BUF_SIZE);
+    tmos_memcpy(&FLASH_BUF[(addr - base) / 4], pBuf, num * 4);  // 页内偏移
+    EEPROM_ERASE(base, EEPROM_BLOCK_SIZE);
+    EEPROM_WRITE(base, FLASH_BUF, SNV_BUF_SIZE);
+} 
 
 /*******************************************************************************
  * @fn      Lib_Write_Flash
@@ -81,7 +84,7 @@ void Lib_Write_Flash_584X(uint32_t addr, uint32_t num, uint32_t *pBuf)
  */
 uint32_t Lib_Write_Flash(uint32_t addr, uint32_t num, uint32_t *pBuf)
 {
-    if((chip_info&0x0F) == DEF_CHIP_ID_CH584X)
+    if((chip_info&0x0F) == DEF_CHIP_ID_CH584X || (chip_info&0x0F) == DEF_CHIP_ID_CH581M)
     {
         Lib_Write_Flash_584X(addr, num, pBuf);
     }
@@ -213,8 +216,8 @@ tmosEvents HAL_ProcessEvent(tmosTaskID task_id, tmosEvents events)
 #if(defined HAL_KEY) && (HAL_KEY == TRUE)
         HAL_KeyPoll(); /* Check for keys */
         tmos_start_task(halTaskID, HAL_KEY_EVENT, MS1_TO_SYSTEM_TIME(100));
-        return events ^ HAL_KEY_EVENT;
 #endif
+        return events ^ HAL_KEY_EVENT;
     }
     if(events & HAL_REG_INIT_EVENT)
     {

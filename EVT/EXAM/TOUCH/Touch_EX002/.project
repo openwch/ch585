@@ -24,27 +24,27 @@
     <link>
       <name>Ld</name>
       <type>2</type>
-      <locationURI>PARENT-2-PROJECT_LOC/SRC/Ld</locationURI>
+      <location>PARENT-2-PROJECT_LOC/SRC/Ld</location>
     </link>
     <link>
       <name>RVMSIS</name>
       <type>2</type>
-      <locationURI>PARENT-2-PROJECT_LOC/SRC/RVMSIS</locationURI>
+      <location>PARENT-2-PROJECT_LOC/SRC/RVMSIS</location>
     </link>
     <link>
       <name>Startup</name>
       <type>2</type>
-      <locationURI>PARENT-2-PROJECT_LOC/SRC/Startup</locationURI>
+      <location>PARENT-2-PROJECT_LOC/SRC/Startup</location>
     </link>
     <link>
       <name>StdPeriphDriver</name>
       <type>2</type>
-      <locationURI>PARENT-2-PROJECT_LOC/SRC/StdPeriphDriver</locationURI>
+      <location>PARENT-2-PROJECT_LOC/SRC/StdPeriphDriver</location>
     </link>
     <link>
       <name>TKYLIB</name>
       <type>2</type>
-      <locationURI>PARENT-1-PROJECT_LOC/TKYLIB</locationURI>
+      <location>PARENT-1-PROJECT_LOC/TKYLIB</location>
     </link>
   </linkedResources>
   <filteredResources>

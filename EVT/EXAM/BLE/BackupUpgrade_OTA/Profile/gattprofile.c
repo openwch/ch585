@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : gattprofile.C
+ * File Name          : gattprofile.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -14,7 +14,7 @@
  * INCLUDES
  */
 #include "CONFIG.h"
-#include "GATTprofile.h"
+#include "gattprofile.h"
 
 /*********************************************************************
  * MACROS
@@ -33,27 +33,27 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-// Simple GATT Profile Service UUID: 0xFFF0
+// Simple GATT Profile Service UUID: 0xFFE0
 const uint8_t simpleProfileServUUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(SIMPLEPROFILE_SERV_UUID), HI_UINT16(SIMPLEPROFILE_SERV_UUID)};
 
-// Characteristic 1 UUID: 0xFFF1
+// Characteristic 1 UUID: 0xFFE1
 const uint8_t simpleProfilechar1UUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(SIMPLEPROFILE_CHAR1_UUID), HI_UINT16(SIMPLEPROFILE_CHAR1_UUID)};
 
-// Characteristic 2 UUID: 0xFFF2
+// Characteristic 2 UUID: 0xFFE2
 const uint8_t simpleProfilechar2UUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(SIMPLEPROFILE_CHAR2_UUID), HI_UINT16(SIMPLEPROFILE_CHAR2_UUID)};
 
-// Characteristic 3 UUID: 0xFFF3
+// Characteristic 3 UUID: 0xFFE3
 const uint8_t simpleProfilechar3UUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(SIMPLEPROFILE_CHAR3_UUID), HI_UINT16(SIMPLEPROFILE_CHAR3_UUID)};
 
-// Characteristic 4 UUID: 0xFFF4
+// Characteristic 4 UUID: 0xFFE4
 const uint8_t simpleProfilechar4UUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(SIMPLEPROFILE_CHAR4_UUID), HI_UINT16(SIMPLEPROFILE_CHAR4_UUID)};
 
-// Characteristic 5 UUID: 0xFFF5
+// Characteristic 5 UUID: 0xFFE5
 const uint8_t simpleProfilechar5UUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(SIMPLEPROFILE_CHAR5_UUID), HI_UINT16(SIMPLEPROFILE_CHAR5_UUID)};
 
@@ -351,7 +351,7 @@ bStatus_t SimpleProfile_RegisterAppCBs(simpleProfileCBs_t *appCallbacks)
  *
  * @return  bStatus_t
  */
-bStatus_t SimpleProfile_SetParameter(uint8_t param, uint8_t len, void *value)
+bStatus_t SimpleProfile_SetParameter(uint8_t param, uint16_t len, void *value)
 {
     bStatus_t ret = SUCCESS;
     switch(param)
@@ -401,9 +401,9 @@ bStatus_t SimpleProfile_SetParameter(uint8_t param, uint8_t len, void *value)
             break;
 
         case SIMPLEPROFILE_CHAR5:
-            if(len == SIMPLEPROFILE_CHAR5_LEN)
+            if(len <= SIMPLEPROFILE_CHAR5_LEN)
             {
-                tmos_memcpy(simpleProfileChar5, value, SIMPLEPROFILE_CHAR5_LEN);
+                tmos_memcpy(simpleProfileChar5, value, len);
             }
             else
             {
@@ -501,7 +501,7 @@ static bStatus_t simpleProfile_ReadAttrCB(uint16_t connHandle, gattAttribute_t *
             // gattserverapp handles those reads
 
             // characteristics 1 and 2 have read permissions
-            // characteritisc 3 does not have read permissions; therefore it is not
+            // characteristic 3 does not have read permissions; therefore it is not
             //   included here
             // characteristic 4 does not have read permissions, but because it
             //   can be sent as a notification, it is included here
@@ -618,7 +618,7 @@ static bStatus_t simpleProfile_WriteAttrCB(uint16_t connHandle, gattAttribute_t 
         status = ATT_ERR_INVALID_HANDLE;
     }
 
-    // If a charactersitic value changed then callback function to notify application of change
+    // If a characteristic value changed then callback function to notify application of change
     if((notifyApp != 0xFF) && simpleProfile_AppCBs && simpleProfile_AppCBs->pfnSimpleProfileChange)
     {
         simpleProfile_AppCBs->pfnSimpleProfileChange(notifyApp);

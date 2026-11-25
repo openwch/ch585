@@ -189,4 +189,13 @@ extern uint16_t PcdReadValueBlock(uint8_t addr);
 */
 extern void PcdHalt(void);
 
+/**
+ * @brief   set card to halt mode.
+ *
+ * @param   None.
+ *
+ * @return  None.
+*/
+extern void PcdHaltSec(void);
+
 #endif /* _WCH_NFCA_SOFT_PCD_MIFARE_CLASSIC_H_ */

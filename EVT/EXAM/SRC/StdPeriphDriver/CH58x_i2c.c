@@ -2,7 +2,7 @@
  * File Name          : CH58x_i2c.c
  * Author             : WCH
  * Version            : V1.0
- * Date               : 2021/03/15
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -608,7 +608,7 @@ void I2C_ClearFlag(uint32_t I2C_FLAG)
  *
  * @brief   Checks whether the specified I2C interrupt has occurred or not.
  *
- * @param   II2C_IT     - specifies the interrupt source to check.
+ * @param   I2C_IT      - specifies the interrupt source to check.
  *                        I2C_FLAG_SMBALERT     - SMBus Alert flag.
  *                        I2C_FLAG_TIMEOUT      - Timeout or Tlow error flag.
  *                        I2C_FLAG_PECERR       - PEC error in reception flag.

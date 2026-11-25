@@ -1,6 +1,6 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
- * Author             : zhangxiyi @WCH
+ * File Name          : peripheral.c
+ * Author             : @WCH
  * Version            : v0.1
  * Date               : 2020/11/26
  * Description        :
@@ -63,7 +63,7 @@ void on_bleiochubServiceEvt(uint16_t connection_handle, ble_iochub_evt_t *p_evt)
             PRINT("%02x:bleiochub_EVT_TX_NOTI_ENABLED\r\n", connection_handle);
             tmos_start_task(Peripheral_TaskID, IOCHUB_ALL_DP_UPLOAD_EVT, MS1_TO_SYSTEM_TIME(1000));
             break;
-        case BLE_IOCHUB_EVT_BLE_DATA_RECIEVED:
+        case BLE_IOCHUB_EVT_BLE_DATA_RECEIVED:
             PRINT("BLE RX DATA len:%d\r\n", p_evt->data.length);
 
             //for notify back test
@@ -177,7 +177,7 @@ static uint8_t scanRspData[] = {
 };
 
 // GAP - Advertisement data (max size = 31 bytes, though this is
-// best kept short to conserve power while advertisting)
+// best kept short to conserve power while advertising)
 static uint8_t advertData[] = {
     // Flags; this sets the device to use limited discoverable
     // mode (advertises for 30 seconds at a time) instead of general
@@ -243,14 +243,14 @@ static gapBondCBs_t Peripheral_BondMgrCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void Peripheral_Init()
+void Peripheral_Init(void)
 {
     //tx fifo and tx fifo
     //The buffer length should be a power of 2
@@ -555,7 +555,7 @@ uint16_t Peripheral_ProcessEvent(uint8_t task_id, uint16_t events)
 
     if(events & IOCHUB_SWITCH_CHANGE_EVT)
     {
-            ble_send_frame(DP_ID_SWITCH, DP_TYPE_BOOL, (uint8_t *)(&switch_sta), 1);
+        ble_send_frame(DP_ID_SWITCH, DP_TYPE_BOOL, (uint8_t *)(&switch_sta), 1);
         return (events ^ IOCHUB_SWITCH_CHANGE_EVT);
     }
     // Discard unknown events
@@ -706,8 +706,13 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
     switch(newState & GAPROLE_STATE_ADV_MASK)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)
@@ -836,8 +841,9 @@ uint8_t ble_send_frame(uint8_t frame_cmd, uint8_t frame_type, uint8_t* frame_buf
 
     if(frame_buf == NULL)    return 0x01;
 
-    uint16_t send_len = frame_dlc+BLE_HEAD_LEN+BLE_FOMRAT_LEN+BLE_TAIL_LEN;
+    uint16_t send_len = frame_dlc+BLE_HEAD_LEN+BLE_FORMAT_LEN+BLE_TAIL_LEN;
     send_value = (uint8_t *)tmos_msg_allocate(send_len);
+    if(send_value == NULL)    return 0x01;
     uint8_t *p = send_value;
     *p++ = BLE_SEND_FST;
     *p++ = BLE_SEND_SEC;
@@ -854,7 +860,7 @@ uint8_t ble_send_frame(uint8_t frame_cmd, uint8_t frame_type, uint8_t* frame_buf
     app_drv_fifo_write(&app_ble_tx_fifo, (uint8_t *)send_value, &to_write_length);
     PRINT("BLE TX DATA len:%d\r\n", to_write_length);
 
-    for(uint8_t i = 0; i < to_write_length;i++)
+    for(uint16_t i = 0; i < to_write_length;i++)
     {
         PRINT("%02x ",*(send_value+i));
     }

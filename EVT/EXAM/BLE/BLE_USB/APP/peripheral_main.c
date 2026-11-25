@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
+ * File Name          : peripheral_main.c
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2020/08/06
@@ -59,8 +59,8 @@ int main(void)
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);
 #if(defined(HAL_SLEEP)) && (HAL_SLEEP == TRUE)
-    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
+    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
+    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
 #endif
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);

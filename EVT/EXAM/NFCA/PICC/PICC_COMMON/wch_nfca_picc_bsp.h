@@ -29,4 +29,4 @@ extern void nfca_picc_stop(void);
 
 extern uint32_t nfca_picc_rand(void);
 
-#endif /* _WCH_NFCA_PCD_BSP_H_ */
+#endif /* _WCH_NFCA_PICC_BSP_H_ */

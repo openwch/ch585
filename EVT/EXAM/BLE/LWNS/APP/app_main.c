@@ -78,8 +78,8 @@ int main(void)
 #endif
     SetSysClock(SYSCLK_FREQ);
 #if (defined (HAL_SLEEP)) && (HAL_SLEEP == TRUE)
-    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
+    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
+    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
 #endif
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);

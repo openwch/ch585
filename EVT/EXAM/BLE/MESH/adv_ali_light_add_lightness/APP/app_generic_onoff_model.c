@@ -109,7 +109,7 @@ static void gen_onoff_status(struct bt_mesh_model *model,
 }
 
 /*********************************************************************
- * @fn      gen_onoff_get
+ * @fn      gen_lightness_get
  *
  * @brief   天猫精灵下发的获取开关状态命令
  *
@@ -119,7 +119,7 @@ static void gen_onoff_status(struct bt_mesh_model *model,
  *
  * @return  none
  */
-static void gen_onoff_get(struct bt_mesh_model *model,
+static void gen_lightness_get(struct bt_mesh_model *model,
                           struct bt_mesh_msg_ctx *ctx,
                           struct net_buf_simple *buf)
 {
@@ -201,7 +201,7 @@ static void gen_onoff_set_unack(struct bt_mesh_model *model,
 }
 
 const struct bt_mesh_model_op gen_onoff_op[] = {
-    {BLE_MESH_MODEL_OP_GEN_ONOFF_GET, 0, gen_onoff_get},
+    {BLE_MESH_MODEL_OP_GEN_ONOFF_GET, 0, gen_lightness_get},
     {BLE_MESH_MODEL_OP_GEN_ONOFF_SET, 2, gen_onoff_set},
     {BLE_MESH_MODEL_OP_GEN_ONOFF_SET_UNACK, 2, gen_onoff_set_unack},
     BLE_MESH_MODEL_OP_END,

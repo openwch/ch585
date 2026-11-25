@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : peripheral.c
  * Author             : zhangxiyi @WCH
  * Version            : v0.1
  * Date               : 2020/11/26
@@ -41,7 +41,7 @@ static app_drv_fifo_t app_uart_rx_fifo;
 //interupt uart rx flag ,clear at main loop
 bool uart_rx_flag = false;
 
-//for interrupt rx blcak hole ,when uart rx fifo full
+//for interrupt rx black hole ,when uart rx fifo full
 uint8_t for_uart_rx_black_hole = 0;
 
 //fifo length less that MTU-3, retry times
@@ -65,7 +65,7 @@ void app_uart_process(void)
     }
 }
 
-void app_uart_init()
+void app_uart_init(void)
 {
     //tx fifo and tx fifo
     //The buffer length should be a power of 2
@@ -143,13 +143,20 @@ void on_bleuartServiceEvt(uint16_t connection_handle, ble_uart_evt_t *p_evt)
         case BLE_UART_EVT_TX_NOTI_ENABLED:
             PRINT("%02x:bleuart_EVT_TX_NOTI_ENABLED\r\n", connection_handle);
             break;
-        case BLE_UART_EVT_BLE_DATA_RECIEVED:
+        case BLE_UART_EVT_BLE_DATA_RECEIVED:
             PRINT("BLE RX DATA len:%d\r\n", p_evt->data.length);
 
             //for notify back test
             //to ble
             uint16_t to_write_length = p_evt->data.length;
-            app_drv_fifo_write(&app_uart_rx_fifo, (uint8_t *)p_evt->data.p_data, &to_write_length);
+            // concurrent with UART3_IRQHandler writing app_uart_rx_fifo,
+            // must enter critical section, otherwise end index race loses bytes
+            {
+                UINT32 irq_status;
+                SYS_DisableAllIrq(&irq_status);
+                app_drv_fifo_write(&app_uart_rx_fifo, (uint8_t *)p_evt->data.p_data, &to_write_length);
+                SYS_RecoverIrq(irq_status);
+            }
             tmos_start_task(Peripheral_TaskID, UART_TO_BLE_SEND_EVT, 2);
             //end of nofify back test
 
@@ -186,10 +193,10 @@ void on_bleuartServiceEvt(uint16_t connection_handle, ble_uart_evt_t *p_evt)
 // General discoverable mode advertises indefinitely
 #define DEFAULT_DISCOVERABLE_MODE            GAP_ADTYPE_FLAGS_GENERAL
 
-// Minimum connection interval (units of 1.25ms, 10=12.5ms)
+// Minimum connection interval (units of 1.25ms, 8=10ms)
 #define DEFAULT_DESIRED_MIN_CONN_INTERVAL    8
 
-// Maximum connection interval (units of 1.25ms, 100=125ms)
+// Maximum connection interval (units of 1.25ms, 20=25ms)
 #define DEFAULT_DESIRED_MAX_CONN_INTERVAL    20
 
 // Slave latency to use parameter update
@@ -237,9 +244,9 @@ blePaControlConfig_t pa_lna_ctl;
 // GAP - SCAN RSP data (max size = 31 bytes)
 static uint8_t scanRspData[] = {
     // complete name
-    15, // length of this data
+    9, // length of this data
     GAP_ADTYPE_LOCAL_NAME_COMPLETE,
-    'c', 'h', '5', '9', '2', '_', 'b', 'l', 'e', '_', 'u', 'a', 'r', 't',
+    'b', 'l', 'e', '_', 'u', 'a', 'r', 't',
     // connection interval range
     0x05, // length of this data
     GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE,
@@ -255,7 +262,7 @@ static uint8_t scanRspData[] = {
 };
 
 // GAP - Advertisement data (max size = 31 bytes, though this is
-// best kept short to conserve power while advertisting)
+// best kept short to conserve power while advertising)
 static uint8_t advertData[] = {
     // Flags; this sets the device to use limited discoverable
     // mode (advertises for 30 seconds at a time) instead of general
@@ -268,11 +275,11 @@ static uint8_t advertData[] = {
     // in this peripheral
     0x03,                  // length of this data
     GAP_ADTYPE_16BIT_MORE, // some of the UUID's, but not all
-    LO_UINT16(SIMPLEPROFILE_SERV_UUID),
-    HI_UINT16(SIMPLEPROFILE_SERV_UUID)};
+    LO_UINT16(0xFFF0), // 与实际 ble_uart 服务 UUID 保持一致
+    HI_UINT16(0xFFF0)};
 
 // GAP GATT Attributes
-static uint8_t attDeviceName[GAP_DEVICE_NAME_LEN] = "CH585_ble_uart";
+static uint8_t attDeviceName[GAP_DEVICE_NAME_LEN] = "ble_uart";
 
 // Connection item list
 static peripheralConnItem_t peripheralConnList;
@@ -486,7 +493,9 @@ uint16_t Peripheral_ProcessEvent(uint8_t task_id, uint16_t events)
                     }
                     break;
                 }
-                read_length = ATT_GetMTU(peripheralConnList.connHandle) - 3;
+                // to_test_buffer is only BLE_BUFF_MAX_LEN-7 bytes, clamp to buffer size
+                // to avoid app_drv_fifo_read overflow when peer negotiates a large MTU
+                read_length = MIN(ATT_GetMTU(peripheralConnList.connHandle) - 3, sizeof(to_test_buffer));
 
                 if(app_drv_fifo_length(&app_uart_rx_fifo) >= read_length)
                 {
@@ -596,6 +605,19 @@ static void Peripheral_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
 {
     switch(pMsg->event)
     {
+        case GATT_MSG_EVENT:
+        {
+            gattMsgEvent_t *pMsgEvent;
+
+            pMsgEvent = (gattMsgEvent_t *)pMsg;
+            if(pMsgEvent->method == ATT_MTU_UPDATED_EVENT)
+            {
+                // log the peer negotiated MTU, actual tx length still clamped to to_test_buffer
+                PRINT("mtu exchange: %d\n", pMsgEvent->msg.mtuEvt.MTU);
+            }
+            break;
+        }
+
         default:
             break;
     }
@@ -724,8 +746,13 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
     switch(newState & GAPROLE_STATE_ADV_MASK)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)

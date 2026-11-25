@@ -212,14 +212,14 @@ static gapBondCBs_t cyclingBondCB = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void CyclingSensor_Init()
+void CyclingSensor_Init(void)
 {
     sensor_TaskID = TMOS_ProcessEventRegister(CyclingSensor_ProcessEvent);
 
@@ -566,6 +566,7 @@ static void SensorGapStateCB(gapRole_States_t newState, gapRoleEvent_t *pEvent)
         // Set the system ID from the bd addr
         uint8_t systemId[DEVINFO_SYSTEM_ID_LEN];
         GAPRole_GetParameter(GAPROLE_BD_ADDR, systemId);
+        GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, systemId);
 
         // shift three bytes up
         systemId[7] = systemId[5];

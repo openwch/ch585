@@ -477,7 +477,7 @@ typedef enum
  *
  * input parameters
  *
- * @param       fuc - fuction interface of lwns lib. should define by lwns_fuc_interface_t.
+ * @param       fuc - function interface of lwns lib. should define by lwns_fuc_interface_t.
  * @param       cfg - init config params of lwns lib. should define by lwns_config_t.
  *
  * output parameters
@@ -651,7 +651,7 @@ extern void lwns_broadcast_close(lwns_controller_ptr h);
 /*******************************************************************************
  * @fn          lwns_broadcast_send
  *
- * @brief       send a broadcst message through lwns_controller_ptr h.
+ * @brief       send a broadcast message through lwns_controller_ptr h.
  *
  * input parameters
  *
@@ -1074,7 +1074,7 @@ struct lwns_netflood_callbacks
  * @param       queue_time - wait queue_time/2  with a random time to receive message.
  * @param       dups - cannot be 0,if this value is set to over 1,this controller will wait to receive the same message over this value,and then drop the message.
  * @param       hops - the message max transmit life time.when another node send this message,this value will -1 until it is 0.
- * @param       drop_old_packet - FALSE/TRUE,TURE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
+ * @param       drop_old_packet - FALSE/TRUE,TRUE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
  * @param       old_phase_value - this value is for self-healing when network error appeared,
  *                                if seqno is too many than old_phase_value smaller than in memory,
  *                                it will still handle this message.
@@ -1217,11 +1217,11 @@ struct lwns_uninetflood_callbacks
  *                     this controller will wait to receive the same message over this value,
  *                     and then drop the message.
  * @param       hops - the message max transmit life time.when another node send this message,this value will -1 until it is 0.
- * @param       drop_old_packet - FALSE/TRUE,TURE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
+ * @param       drop_old_packet - FALSE/TRUE,TRUE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
  * @param       old_phase_value - this value is for self-healing when network error appeared,
  *                                if seqno is too many than old_phase_value smaller than in memory,
  *                                it will still handle this message.
- * @param       flood_choice - decide whether it will forword a received packet which is not for itself.
+ * @param       flood_choice - decide whether it will forward a received packet which is not for itself.
  * @param       callbacks defined with lwns_uninetflood_callbacks
  *
  * output parameters
@@ -1302,11 +1302,11 @@ struct lwns_multinetflood_callbacks
  *                     this controller will wait to receive the same message over this value,
  *                     and then drop the message.
  * @param       hops - the message max transmit life time.when another node send this message,this value will -1 until it is 0.
- * @param       drop_old_packet - FALSE/TRUE,TURE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
+ * @param       drop_old_packet - FALSE/TRUE,TRUE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
  * @param       old_phase_value - this value is for self-healing when network error appeared,
  *                                if seqno is too many than old_phase_value smaller than in memory,
  *                                it will still handle this message.
- * @param       flood_choice - decide whether it will forword a received packet which is not for itself.
+ * @param       flood_choice - decide whether it will forward a received packet which is not for itself.
  * @param       subaddr      - the array pointer of subscribe addresses.
  * @param       sub_num      - the number of subscribe addresses.
  * @param       callbacks defined with lwns_multinetflood_callbacks
@@ -1541,7 +1541,7 @@ struct lwns_mesh_callbacks
  * @param       route_discovery_hoptime - wait route_discovery_hoptime/2  with a random time to receive message.
  * @param       dups - cannot be 0,if this value is set to over 1,this controller will wait to receive the same message over this value,and then drop the message.
  * @param       hops - the message max transmit life time.when another node send this message,this value will -1 until it is 0.
- * @param       drop_old_packet - FALSE/TRUE,TURE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
+ * @param       drop_old_packet - FALSE/TRUE,TRUE will drop the old packet if we prepare to send a new packet.FALSE will send old message immediately.
  * @param       old_phase_value - this value is for self-healing when network error appeared,
  *                                if seqno is too many than old_phase_value smaller than in memory,
  *                                it will still handle this message.

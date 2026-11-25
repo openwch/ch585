@@ -32,7 +32,7 @@
 /*********************************************************************
  * @fn      DebugInit
  *
- * @brief   µ÷ÊÔ³õÊ¼»¯
+ * @brief   Debug initialization
  *
  * @return  none
  */
@@ -64,6 +64,7 @@ int main(void)
 
     PWR_PeriphWakeUpCfg(ENABLE,RB_SLP_GPIO_WAKE,Short_Delay);
     PWR_PeriphWakeUpCfg(ENABLE,RB_SLP_USB2_WAKE,Short_Delay);
+
     /* Initialize GPIO for keyboard scan */
     KB_Scan_Init( );
     KB_Sleep_Wakeup_Cfg( );
@@ -85,7 +86,7 @@ int main(void)
     PFIC_EnableIRQ( USB2_DEVICE_IRQn );
 
     while (1)
-    {
+    {   
         if( USBHS_DevEnumStatus )
         {
             /* Handle keyboard scan data */

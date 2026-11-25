@@ -2,7 +2,7 @@
  * File Name          : CH58x_adc.h
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : head file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.

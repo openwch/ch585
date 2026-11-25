@@ -1,10 +1,10 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : wch_nfca_mifare_classic.h
  * Author             : WCH
- * Version            : V1.1
- * Date               : 2024/09/23
+ * Version            : V1.2
+ * Date               : 2026/03/02
  * Description        : WCH Mifare Classic One卡操作库
- * Copyright (c) 2024 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Copyright (c) 2026 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 
@@ -188,5 +188,14 @@ extern uint16_t PcdReadValueBlock(uint8_t addr);
  * @return  None.
 */
 extern void PcdHalt(void);
+
+/**
+ * @brief   set card to halt mode.
+ *
+ * @param   None.
+ *
+ * @return  None.
+*/
+extern void PcdHaltSec(void);
 
 #endif /* _WCH_NFCA_MIFARE_CLASSIC_H_ */

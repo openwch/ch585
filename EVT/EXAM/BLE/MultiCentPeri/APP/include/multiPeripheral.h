@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.h
+ * File Name          : multiPeripheral.h
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/11
@@ -40,14 +40,14 @@ extern "C"
 /*********************************************************************
  * MACROS
  */
-  typedef struct
-  {
-      uint8_t taskID;
-    uint16_t connHandle;           // Connection handle of current connection
-    uint16_t connInterval;
-    uint16_t connSlaveLatency;
-    uint16_t connTimeout;
-  } peripheralConnItem_t;
+typedef struct
+{
+    uint8_t taskID;
+  uint16_t connHandle;           // Connection handle of current connection
+  uint16_t connInterval;
+  uint16_t connSlaveLatency;
+  uint16_t connTimeout;
+} peripheralConnItem_t;
 
 
 /*********************************************************************

@@ -179,18 +179,18 @@ static hidDevCB_t hidEmuHidCBs = {
 /*********************************************************************
  * @fn      HidEmu_Init
  *
- * @brief   Initialization function for the HidEmuKbd App Task.
+ * @brief   Initialization function for the HidEmuTouch App Task.
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void HidEmu_Init()
+void HidEmu_Init(void)
 {
     hidEmuTaskId = TMOS_ProcessEventRegister(HidEmu_ProcessEvent);
 
@@ -228,7 +228,7 @@ void HidEmu_Init()
         Batt_SetParameter(BATT_PARAM_CRITICAL_LEVEL, sizeof(uint8_t), &critical);
     }
 
-    // Set up HID keyboard service
+    // Set up HID touch service
     Hid_AddService();
 
     // Register for HID Dev callback
@@ -241,7 +241,7 @@ void HidEmu_Init()
 /*********************************************************************
  * @fn      HidEmu_ProcessEvent
  *
- * @brief   HidEmuKbd Application Task event processor.  This function
+ * @brief   HidEmuTouch Application Task event processor.  This function
  *          is called to process all events for the task.  Events
  *          include timers, messages and any other user defined events.
  *
@@ -337,9 +337,9 @@ static void hidEmu_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
  * @brief   Build and send a HID touch report.
  *
  * @param   touch - whether touch or not
- *					ID - touch ID
- *					X_data - X axis data
- *					Y_data - Y axis data
+ *					@param   ID - touch ID
+ *					@param   X_data - X axis data
+ *					@param   Y_data - Y axis data
  *
  * @return  none
  */
@@ -413,6 +413,8 @@ static void hidEmuStateCB(gapRole_States_t newState, gapRoleEvent_t *pEvent)
             }
             else if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)
             {
+                // 断开后复位连接句柄，避免残留上次连接的句柄
+                hidEmuConnHandle = GAP_CONNHANDLE_INIT;
                 PRINT("Disconnected.. Reason:%x\n", pEvent->linkTerminate.reason);
             }
             else if(pEvent->gap.opcode == GAP_LINK_ESTABLISHED_EVENT)
@@ -469,6 +471,11 @@ static uint8_t hidEmuRptCB(uint8_t id, uint8_t type, uint16_t uuid,
     else if(oper == HID_DEV_OPER_ENABLE)
     {
         tmos_start_task(hidEmuTaskId, START_REPORT_EVT, 500);
+    }
+    // notifications disabled
+    else if(oper == HID_DEV_OPER_DISABLE)
+    {
+        tmos_stop_task(hidEmuTaskId, START_REPORT_EVT);
     }
     return status;
 }

@@ -2,7 +2,7 @@
  * File Name          : CH58x_gpio.h
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : head file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -69,7 +69,7 @@ typedef enum
     GPIO_ITMode_FallEdge,  //下降沿触发
     GPIO_ITMode_RiseEdge,  //上升沿触发
 
-} GPIOITModeTpDef;
+} GPIOITModeTypeDef;
 
 /**
  * @brief   GPIOA端口引脚模式配置
@@ -167,7 +167,7 @@ void GPIOB_ModeCfg(uint32_t pin, GPIOModeTypeDef mode);
  * @param   pin     - PA0-PA15
  * @param   mode    - 触发类型
  */
-void GPIOA_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode);
+void GPIOA_ITModeCfg(uint32_t pin, GPIOITModeTypeDef mode);
 
 /**
  * @brief   GPIOB引脚中断模式配置
@@ -175,7 +175,7 @@ void GPIOA_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode);
  * @param   pin     - PB0-PB15,PB22-PB23,PB[9:8]由RB_PIN_INTX选择对应PB[23:22]或PB[9:8]
  * @param   mode    - 触发类型
  */
-void GPIOB_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode);
+void GPIOB_ITModeCfg(uint32_t pin, GPIOITModeTypeDef mode);
 
 /**
  * @brief   读取GPIOA端口中断标志状态
@@ -238,7 +238,7 @@ void GPIOB_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode);
  *                    RB_PIN_UART2  -  UART2: PA6/PA7 ->  PB22/PB23
  *                    RB_PIN_UART1  -  UART1: PA8/PA9 ->  PB12/PB13
  *                    RB_PIN_UART0  -  UART0: PB4/PB7 ->  PA15/PA14
- *                    RB_PIN_TMR3   -  TMR2:  PA9 ->  PB23
+ *                    RB_PIN_TMR3   -  TMR3:  PA9 ->  PB23
  *                    RB_PIN_TMR2   -  TMR2:  PA11 ->  PB11
  *                    RB_PIN_TMR1   -  TMR1:  PA10 ->  PB10
  *                    RB_PIN_TMR0   -  TMR0:  PA9 ->  PB23

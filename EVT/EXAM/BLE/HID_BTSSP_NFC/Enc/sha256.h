@@ -50,7 +50,7 @@
  *              tc_sha256_update can be called as many times as needed to hash
  *              all of the segments of a string; the order is important.
  *
- *              3) call tc_sha256_final to out put the digest from a hashing
+ *              3) call tc_sha256_final to output the digest from a hashing
  *              operation.
  */
 

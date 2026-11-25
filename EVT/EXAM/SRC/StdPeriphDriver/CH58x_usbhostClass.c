@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : CH58x_usbhost.c
+ * File Name          : CH58x_usbhostClass.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -334,7 +334,7 @@ uint8_t InitRootDevice(void)
                     {
                         //	需保存端点信息以便主程序进行USB传输
                         ThisUsbDev.DeviceStatus = ROOT_DEV_SUCCESS;
-                        ThisUsbDev.DeviceType = DEV_TYPE_UNKNOW;
+                        ThisUsbDev.DeviceType = DEV_TYPE_UNKNOWN;
                         SetUsbSpeed(1);       // 默认为全速
                         return (ERR_SUCCESS); /* 未知设备初始化成功 */
                     }
@@ -520,7 +520,7 @@ uint8_t InitDevOnHub(uint8_t HubPortIndex)
  *
  * @return  错误码
  */
-uint8_t EnumHubPort()
+uint8_t EnumHubPort(void)
 {
     uint8_t i, s;
 

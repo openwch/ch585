@@ -54,11 +54,11 @@ uint16_t PcdRequest(uint8_t req_code)
     nfca_soft_pcd_set_wait_us(200);
 
 retry:
-    if(nfca_soft_pcd_communicate(7, NFCA_PCD_REC_MODE_COLI, 0) == 0)
+    if(nfca_soft_pcd_communicate(7, NFCA_PCD_REC_MODE_NORMAL, 0) == 0)
     {
         status = nfca_soft_pcd_wait_communicate_end();
 
-        if((status == NFCA_PCD_CONTROLLER_STATE_DONE) || (status == NFCA_PCD_CONTROLLER_STATE_COLLISION))
+        if(status == NFCA_PCD_CONTROLLER_STATE_DONE)
         {
             if(g_nfca_pcd_recv_bits == (2 * 9))
             {
@@ -113,7 +113,7 @@ uint16_t PcdAnticoll(uint8_t cmd)
     nfca_soft_pcd_set_wait_ms(PCD_ANTICOLL_OVER_TIME);
     ISO14443ACalOddParityBit((uint8_t *)g_nfca_pcd_send_buf, (uint8_t *)g_nfca_pcd_parity_buf, 2);
 
-    if (nfca_soft_pcd_communicate(16, NFCA_PCD_REC_MODE_NORMAL, 0) == 0) /* RB_NFCA_PCD_IE_COLI */
+    if (nfca_soft_pcd_communicate(16, NFCA_PCD_REC_MODE_NORMAL, 0) == 0)
     {
         status = nfca_soft_pcd_wait_communicate_end();
 
@@ -784,6 +784,37 @@ void PcdHalt(void)
     g_nfca_pcd_send_buf[3] = 0xcd;
 
     ISO14443ACalOddParityBit((uint8_t *)g_nfca_pcd_send_buf, (uint8_t *)g_nfca_pcd_parity_buf, 4);
+
+    nfca_soft_pcd_communicate((4 * 8), NFCA_PCD_REC_MODE_NORMAL, 0);
+    nfca_soft_pcd_wait_communicate_end();
+}
+
+/**
+ * @brief   set card to halt mode.
+ *
+ * @param   None.
+ *
+ * @return  None.
+*/
+void PcdHaltSec(void)
+{
+    nfca_soft_pcd_set_wait_ms(5);
+
+    g_nfca_pcd_send_buf[0] = PICC_HALT;
+    g_nfca_pcd_send_buf[1] = 0;
+
+    //ISO14443AAppendCRCA((uint8_t *)g_nfca_pcd_send_buf, 2); /* 固定为0x57, 0xcd */
+    g_nfca_pcd_send_buf[2] = 0x57;
+    g_nfca_pcd_send_buf[3] = 0xcd;
+
+    if(g_m1_crypto1_cipher.is_encrypted)
+    {
+        nfca_crypto1_encrypt(&g_m1_crypto1_cipher, (uint8_t *)g_nfca_pcd_send_buf, (uint8_t *)g_nfca_pcd_send_buf, (uint8_t *)g_nfca_pcd_parity_buf, (4 * 8));
+    }
+    else
+    {
+        ISO14443ACalOddParityBit((uint8_t *)g_nfca_pcd_send_buf, (uint8_t *)g_nfca_pcd_parity_buf, 4);
+    }
 
     nfca_soft_pcd_communicate((4 * 8), NFCA_PCD_REC_MODE_NORMAL, 0);
     nfca_soft_pcd_wait_communicate_end();

@@ -3,7 +3,7 @@
 * Author             : WCH
 * Version            : V1.0
 * Date               : 2023/10/17
-* Description        : ´¥Ãş°´¼ü²ÎÊıÅäÖÃÍ·ÎÄ¼ş
+* Description        : è§¦æ‘¸æŒ‰é”®å‚æ•°é…ç½®å¤´æ–‡ä»¶
 * ********************************************************************************
 * Copyright(c) 2023 Nanjing Qinheng Microelectronics Co., Ltd.
 * Attention : This software(modified or not) and binary are used for
@@ -41,7 +41,7 @@ TKY_QUEUE_END
 #define TKY_BASE_DOWN_REFRESH_SLOW     			    0
 #define TKY_BASE_REFRESH_SAMPLE_NUM     			  1000
 #define TKY_SHIELD_EN     			                1
-#define TKY_SINGLE_PRESS_MODE     			        0
+#define TKY_SINGLE_PRESS_MODE     			        2
 #define TKY_MAX_QUEUE_NUM     			            8
 
 #define GEN_TKY_CH_INIT(qNum,chNum,chTime,disChTime,slpmode,chBaseline,trs,trs2) \

@@ -1,10 +1,10 @@
-本工程为 FreeRTOS-KernelV10.5.1 在Qingke V4C RISC-V内核的CH585/4上的移植。
+本工程为 FreeRTOS-KernelV11.3.0 在Qingke V3C RISC-V内核的CH585/4上的移植。
 
 需要注意以下几点：
 
 	1.配置文件路径为工程目录下FreeRTOS/FreeRTOSConfig.h
 	
-	2.本移植例程默认使用了硬件压栈（不可关闭），未使用中断嵌套，用户使用的外部中断函数最好使用__attribute__((section(".highcode")))修饰，保证运行速度。
+	2.本移植例程默认使用了硬件压栈（不可关闭），中断嵌套可选，用户使用的外部中断函数最好使用__attribute__((section(".highcode")))修饰，保证运行速度。
 	
 	3.使能中断嵌套会导致每个中断执行会多约10个指令周期，中断嵌套使能通过工程右键 -> properties -> c/c++ Build -> settings -> tool settings -> GNU RISC-V Cross Assembler -> Preprocessor 右边输入框Defined symbols中的 ENABLE_INTERRUPT_NEST=0 修改为 ENABLE_INTERRUPT_NEST=1 即可。
 

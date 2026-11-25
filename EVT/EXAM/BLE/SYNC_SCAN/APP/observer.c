@@ -30,7 +30,7 @@
 // Scan duration in (625us)
 #define DEFAULT_SCAN_DURATION            4800
 
-// Discovey mode (limited, general, all)
+// Discovery mode (limited, general, all)
 #define DEFAULT_DISCOVERY_MODE           DEVDISC_MODE_ALL
 
 // TRUE to use active scan
@@ -73,7 +73,7 @@ static uint8_t syncStatus=0;
 static gapDevRec_t ObserverDevList[DEFAULT_MAX_SCAN_RES];
 
 // Peer device address
-static uint8_t PeerAddrDef[B_ADDR_LEN] = {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84};
+static uint8_t PeerAddrDef[B_ADDR_LEN] = {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84|0xC0};
 
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -109,7 +109,7 @@ static const gapRoleObserverCB_t ObserverRoleCB = {
  *
  * @return  none
  */
-void Observer_Init()
+void Observer_Init(void)
 {
     ObserverTaskId = TMOS_ProcessEventRegister(Observer_ProcessEvent);
 
@@ -214,6 +214,10 @@ static void ObserverEventCB(gapRoleEvent_t *pEvent)
     {
         case GAP_DEVICE_INIT_DONE_EVENT:
         {
+            uint8_t ownAddr[6];
+            PRINT("Discovering...\n");
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             GAPRole_ObserverStartDiscovery(DEFAULT_DISCOVERY_MODE,
                                            DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                            DEFAULT_DISCOVERY_WHITE_LIST);

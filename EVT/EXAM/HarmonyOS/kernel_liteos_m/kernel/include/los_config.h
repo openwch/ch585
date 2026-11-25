@@ -679,6 +679,14 @@ extern UINT8 *m_aucSysMem0;
 #define LOSCFG_KERNEL_PM_IDLE                         0
 #endif
 
+/**
+ * @ingroup los_config
+ * Configuration item to set shell stack size.
+ */
+#ifndef LOSCFG_SHELL_STACK_SIZE
+#define LOSCFG_SHELL_STACK_SIZE                         0x1000
+#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 }

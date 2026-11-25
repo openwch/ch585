@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,11 +10,10 @@
  * See the Mulan PSL v2 for more details.
  * Description: By defining data type for UNICODE string and including "input.inl",
  *             this file generates real underlying function used by scanf family API.
- * Author: lishunda
  * Create: 2014-02-25
  */
 
-/* If some platforms don't have wchar.h, dont't include it */
+/* If some platforms don't have wchar.h, don't include it */
 #if !(defined(SECUREC_VXWORKS_PLATFORM))
 /* If there is no macro below, it will cause vs2010 compiling alarm */
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)

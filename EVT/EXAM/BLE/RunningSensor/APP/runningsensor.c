@@ -3,7 +3,7 @@
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/12
- * Description        : ÅÜ²½´«¸ÐÆ÷Ó¦ÓÃ³ÌÐò£¬³õÊ¼»¯¹ã²¥Á¬½Ó²ÎÊý£¬È»ºó¹ã²¥£¬Ö±ÖÁÁ¬½ÓÖ÷»úºó£¬¶¨Ê±ÉÏ´«ËÙ¶È
+ * Description        : ï¿½Ü²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã³ï¿½ï¿½ò£¬³ï¿½Ê¼ï¿½ï¿½ï¿½ã²¥ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ã²¥ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ó£¬¶ï¿½Ê±ï¿½Ï´ï¿½ï¿½Ù¶ï¿½
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * Attention: This software (modified or not) and binary are used for 
@@ -119,7 +119,7 @@
 /*********************************************************************
  * LOCAL VARIABLES
  */
-static uint8_t sensor_TaskID; // Task ID for internal task/event processing
+static uint8_t sensor_TaskID = INVALID_TASK_ID; // Task ID for internal task/event processing
 
 static gapRole_States_t gapProfileState = GAPROLE_INIT;
 
@@ -221,14 +221,14 @@ static gapBondCBs_t runningBondCB = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void RunningSensor_Init()
+void RunningSensor_Init(void)
 {
     sensor_TaskID = TMOS_ProcessEventRegister(RunningSensor_ProcessEvent);
 

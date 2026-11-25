@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,8 +9,12 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: memset_s function
- * Author: lishunda
  * Create: 2014-02-25
+ */
+/*
+ * [Standardize-exceptions] Use unsafe function: Portability
+ * [reason] Use unsafe function to implement security function to maintain platform compatibility.
+ *          And sufficient input validation is performed before calling
  */
 
 #include "securecutil.h"
@@ -56,10 +60,10 @@ typedef union {
 } SecStrBuf32Union;
 /* C standard initializes the first member of the consortium. */
 static const SecStrBuf32 g_allZero = {{
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'
+    0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+    0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+    0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
+    0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U
 }};
 static const SecStrBuf32 g_allFF = {{
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -68,7 +72,7 @@ static const SecStrBuf32 g_allFF = {{
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 }};
 
-/* Clear coversion warning strict aliasing" */
+/* Clear conversion warning strict aliasing" */
 SECUREC_INLINE const SecStrBuf32Union *SecStrictAliasingCast(const SecStrBuf32 *buf)
 {
     return (const SecStrBuf32Union *)buf;
@@ -414,7 +418,7 @@ SECUREC_INLINE const SecStrBuf32Union *SecStrictAliasingCast(const SecStrBuf32 *
  */
 #define SECUREC_MEMSET_OPT(dest, c, count) do { \
     if ((count) > SECUREC_MEMSET_THRESHOLD_SIZE) { \
-        SECUREC_MEMSET_WARP_OPT((dest), (c), (count)); \
+        SECUREC_MEMSET_PREVENT_DSE((dest), (c), (count)); \
     } else { \
         SECUREC_SMALL_MEM_SET((dest), (c), (count)); \
     } \
@@ -424,7 +428,7 @@ SECUREC_INLINE const SecStrBuf32Union *SecStrictAliasingCast(const SecStrBuf32 *
 /*
  * Handling errors
  */
-SECUREC_INLINE errno_t SecMemsetError(void *dest, size_t destMax, int c, size_t count)
+SECUREC_INLINE errno_t SecMemsetError(void *dest, size_t destMax, int c)
 {
     /* Check destMax is 0 compatible with _sp macro */
     if (destMax == 0 || destMax > SECUREC_MEM_MAX_LEN) {
@@ -435,12 +439,9 @@ SECUREC_INLINE errno_t SecMemsetError(void *dest, size_t destMax, int c, size_t 
         SECUREC_ERROR_INVALID_PARAMTER("memset_s");
         return EINVAL;
     }
-    if (count > destMax) {
-        (void)memset(dest, c, destMax); /* Set entire buffer to value c */
-        SECUREC_ERROR_INVALID_RANGE("memset_s");
-        return ERANGE_AND_RESET;
-    }
-    return EOK;
+    SECUREC_MEMSET_PREVENT_DSE(dest, c, destMax); /* Set entire buffer to value c */
+    SECUREC_ERROR_INVALID_RANGE("memset_s");
+    return ERANGE_AND_RESET;
 }
 
 /*
@@ -455,7 +456,7 @@ SECUREC_INLINE errno_t SecMemsetError(void *dest, size_t destMax, int c, size_t 
  *    count               Number of characters.
  *
  * <OUTPUT PARAMETERS>
- *    dest buffer         is uptdated.
+ *    dest buffer         is updated.
  *
  * <RETURN VALUE>
  *    EOK                 Success
@@ -468,14 +469,14 @@ SECUREC_INLINE errno_t SecMemsetError(void *dest, size_t destMax, int c, size_t 
 errno_t memset_s(void *dest, size_t destMax, int c, size_t count)
 {
     if (SECUREC_MEMSET_PARAM_OK(dest, destMax, count)) {
-        SECUREC_MEMSET_WARP_OPT(dest, c, count);
+        SECUREC_MEMSET_PREVENT_DSE(dest, c, count);
         return EOK;
     }
     /* Meet some runtime violation, return error code */
-    return SecMemsetError(dest, destMax, c, count);
+    return SecMemsetError(dest, destMax, c);
 }
 
-#if SECUREC_IN_KERNEL
+#if SECUREC_EXPORT_KERNEL_SYMBOL
 EXPORT_SYMBOL(memset_s);
 #endif
 
@@ -490,7 +491,7 @@ errno_t memset_sOptAsm(void *dest, size_t destMax, int c, size_t count)
         return EOK;
     }
     /* Meet some runtime violation, return error code */
-    return SecMemsetError(dest, destMax, c, count);
+    return SecMemsetError(dest, destMax, c);
 }
 
 /*
@@ -503,7 +504,7 @@ errno_t memset_sOptTc(void *dest, size_t destMax, int c, size_t count)
         return EOK;
     }
     /* Meet some runtime violation, return error code */
-    return SecMemsetError(dest, destMax, c, count);
+    return SecMemsetError(dest, destMax, c);
 }
 #endif
 

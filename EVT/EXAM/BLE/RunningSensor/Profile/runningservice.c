@@ -406,7 +406,7 @@ void Running_Register(runningServiceCB_t pfnServiceCB)
  * @brief   Set a RSC parameter.
  *
  * @param   param - Profile parameter ID
- * @param   len - length of data to right
+ * @param   len - length of data to write
  * @param   value - pointer to data to write.  This is dependent on
  *          the parameter ID and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to
@@ -528,6 +528,13 @@ bStatus_t Running_MeasNotify(uint16_t connHandle, attHandleValueNoti_t *pNoti)
 static void running_ProcessRSCCmd(uint16_t attrHandle, uint8_t *pValue, uint8_t len)
 {
     uint8_t rscStatus = RSC_SUCCESS;
+
+    // 控制点命令至少包含 1 字节操作码，长度不足直接返回，避免越界读 pValue[0]
+    // 以及后续 (len-1) 无符号回绕导致的越界。
+    if(len < 1)
+    {
+        return;
+    }
 
     // See if need to alloc payload for new indication.
     if(rscCmdInd.pValue == NULL)

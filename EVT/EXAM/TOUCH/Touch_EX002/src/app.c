@@ -1,9 +1,9 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : app_tmos.C
+ * File Name          : app.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2023/8/5
- * Description        : ´¥Ãş°´¼üÀı³Ì
+ * Description        : è§¦æ‘¸æŒ‰é”®ä¾‹ç¨‹
  *******************************************************************************/
 
 /*********************************************************************
@@ -11,7 +11,7 @@
  */
 #include "Touch.h"
 #include "app.h"
-#include "LED.h"
+#include "backlight.h"
 /*********************
  *      DEFINES
  *********************/
@@ -20,8 +20,6 @@
  *      VARIABLES
  **********************/
 uint8_t volatile timerFlag = 0;
-uint8_t volatile TKY_ScanFlag = 0;
-extern volatile uint8_t led_scanflag;
 
 
 static const uint8_t touch_key_ch[ TOUCH_KEY_ELEMENTS ] = {TOUCH_KEY_CHS};
@@ -52,7 +50,7 @@ static void TKY_PeripheralInit(void);
 /*********************************************************************
  * @fn      TKY_dataProcess
  *
- * @brief   ´¥ÃşÊı¾İ´¦Àíº¯Êı£¨ÂãÅÜ£©£¬´òÓ¡»ñÈ¡µ½µÄ°´¼ü´¥·¢Çé¿ö
+ * @brief   è§¦æ‘¸æ•°æ®å¤„ç†å‡½æ•°ï¼ˆè£¸è·‘ï¼‰ï¼Œæ‰“å°è·å–åˆ°çš„æŒ‰é”®è§¦å‘æƒ…å†µ
  *
  * @return  none
  */
@@ -70,7 +68,6 @@ void TKY_dataProcess(void)
 #if PRINT_EN
             touch_InfoDebug();
 #endif
-            touch_Recalibrate();
         }
         recal_time++;
     }
@@ -78,29 +75,29 @@ void TKY_dataProcess(void)
     switch(key_val)
     {
        case KEY_NONE   :   break;
-       case KEY_0_DOWN :   TKY_KeyBacklightOut(0,!getBacklightState(0));  PRINT("KEY_1_DOWN !\n");break;
-       case KEY_0_LONG :   TKY_KeyBacklightOut(0,!getBacklightState(0));  PRINT("KEY_1_LONG !\n");break;
+       case KEY_0_DOWN :   TKY_KeyBacklightOut(0,!TKY_GetBacklightState(0));  PRINT("KEY_1_DOWN !\n");break;
+       case KEY_0_LONG :   TKY_KeyBacklightOut(0,!TKY_GetBacklightState(0));  PRINT("KEY_1_LONG !\n");break;
        case KEY_0_UP   :   TKY_KeyBacklightOut(0,DISABLE); PRINT("KEY_1_UP   !\n");break;
-       case KEY_1_DOWN :   TKY_KeyBacklightOut(1,!getBacklightState(1));  PRINT("KEY_2_DOWN !\n");break;
-       case KEY_1_LONG :   TKY_KeyBacklightOut(1,!getBacklightState(1));  PRINT("KEY_2_LONG !\n");break;
+       case KEY_1_DOWN :   TKY_KeyBacklightOut(1,!TKY_GetBacklightState(1));  PRINT("KEY_2_DOWN !\n");break;
+       case KEY_1_LONG :   TKY_KeyBacklightOut(1,!TKY_GetBacklightState(1));  PRINT("KEY_2_LONG !\n");break;
        case KEY_1_UP   :   TKY_KeyBacklightOut(1,DISABLE); PRINT("KEY_2_UP   !\n");break;
-       case KEY_2_DOWN :   TKY_KeyBacklightOut(2,!getBacklightState(2));  PRINT("KEY_3_DOWN !\n");break;
-       case KEY_2_LONG :   TKY_KeyBacklightOut(2,!getBacklightState(2));  PRINT("KEY_3_LONG !\n");break;
+       case KEY_2_DOWN :   TKY_KeyBacklightOut(2,!TKY_GetBacklightState(2));  PRINT("KEY_3_DOWN !\n");break;
+       case KEY_2_LONG :   TKY_KeyBacklightOut(2,!TKY_GetBacklightState(2));  PRINT("KEY_3_LONG !\n");break;
        case KEY_2_UP   :   TKY_KeyBacklightOut(2,DISABLE); PRINT("KEY_3_UP   !\n");break;
-       case KEY_3_DOWN :   TKY_KeyBacklightOut(3,!getBacklightState(3));  PRINT("KEY_4_DOWN !\n");break;
-       case KEY_3_LONG :   TKY_KeyBacklightOut(3,!getBacklightState(3));  PRINT("KEY_4_LONG !\n");break;
+       case KEY_3_DOWN :   TKY_KeyBacklightOut(3,!TKY_GetBacklightState(3));  PRINT("KEY_4_DOWN !\n");break;
+       case KEY_3_LONG :   TKY_KeyBacklightOut(3,!TKY_GetBacklightState(3));  PRINT("KEY_4_LONG !\n");break;
        case KEY_3_UP   :   TKY_KeyBacklightOut(3,DISABLE); PRINT("KEY_4_UP   !\n");break;
-       case KEY_4_DOWN :   TKY_KeyBacklightOut(4,!getBacklightState(4));  PRINT("KEY_5_DOWN !\n");break;
-       case KEY_4_LONG :   TKY_KeyBacklightOut(4,!getBacklightState(4));  PRINT("KEY_5_LONG !\n");break;
+       case KEY_4_DOWN :   TKY_KeyBacklightOut(4,!TKY_GetBacklightState(4));  PRINT("KEY_5_DOWN !\n");break;
+       case KEY_4_LONG :   TKY_KeyBacklightOut(4,!TKY_GetBacklightState(4));  PRINT("KEY_5_LONG !\n");break;
        case KEY_4_UP   :   TKY_KeyBacklightOut(4,DISABLE); PRINT("KEY_5_UP   !\n");break;
-       case KEY_5_DOWN :   TKY_KeyBacklightOut(5,!getBacklightState(5));  PRINT("KEY_6_DOWN !\n");break;
-       case KEY_5_LONG :   TKY_KeyBacklightOut(5,!getBacklightState(5));  PRINT("KEY_6_LONG !\n");break;
+       case KEY_5_DOWN :   TKY_KeyBacklightOut(5,!TKY_GetBacklightState(5));  PRINT("KEY_6_DOWN !\n");break;
+       case KEY_5_LONG :   TKY_KeyBacklightOut(5,!TKY_GetBacklightState(5));  PRINT("KEY_6_LONG !\n");break;
        case KEY_5_UP   :   TKY_KeyBacklightOut(5,DISABLE); PRINT("KEY_6_UP   !\n");break;
-       case KEY_6_DOWN :   TKY_KeyBacklightOut(6,!getBacklightState(6));  PRINT("KEY_7_DOWN !\n");break;
-       case KEY_6_LONG :   TKY_KeyBacklightOut(6,!getBacklightState(6));  PRINT("KEY_7_LONG !\n");break;
+       case KEY_6_DOWN :   TKY_KeyBacklightOut(6,!TKY_GetBacklightState(6));  PRINT("KEY_7_DOWN !\n");break;
+       case KEY_6_LONG :   TKY_KeyBacklightOut(6,!TKY_GetBacklightState(6));  PRINT("KEY_7_LONG !\n");break;
        case KEY_6_UP   :   TKY_KeyBacklightOut(6,DISABLE); PRINT("KEY_7_UP   !\n");break;
-       case KEY_7_DOWN :   TKY_KeyBacklightOut(7,!getBacklightState(7));  PRINT("KEY_8_DOWN !\n");break;
-       case KEY_7_LONG :   TKY_KeyBacklightOut(7,!getBacklightState(7));  PRINT("KEY_8_LONG !\n");break;
+       case KEY_7_DOWN :   TKY_KeyBacklightOut(7,!TKY_GetBacklightState(7));  PRINT("KEY_8_DOWN !\n");break;
+       case KEY_7_LONG :   TKY_KeyBacklightOut(7,!TKY_GetBacklightState(7));  PRINT("KEY_8_LONG !\n");break;
        case KEY_7_UP   :   TKY_KeyBacklightOut(7,DISABLE); PRINT("KEY_8_UP   !\n");break;
        default : break;
     }
@@ -109,19 +106,28 @@ void TKY_dataProcess(void)
 /*********************************************************************
  * @fn      TKY_Init
  *
- * @brief   ´¥Ãş³õÊ¼»¯º¯Êı£¨²»Ê¹ÓÃtmos£¬ĞèÒªÉè±¸¿ªÆô¶¨Ê±Æ÷£©
+ * @brief   è§¦æ‘¸åˆå§‹åŒ–å‡½æ•°ï¼ˆä¸ä½¿ç”¨tmosï¼Œéœ€è¦è®¾å¤‡å¼€å¯å®šæ—¶å™¨ï¼‰
  *
  * @return  none
  */
 void TKY_Init(void)
 {
-	TKY_PeripheralInit();       /* ³õÊ¼»¯ÍâÉè£¬ÀıÈç±³¹âºÍ·äÃùÆ÷µÈ */
+	TKY_PeripheralInit();       /* åˆå§‹åŒ–å¤–è®¾ï¼ˆèƒŒå…‰ï¼‰ */
 
-	touch_Init(&touch_cfg);				/* ³õÊ¼»¯´¥Ãş¿â  */
+    TKY_SetVarDetectParams( 0,3,5,TKY_MAX_QUEUE_NUM+1);
 
-    TKY_SetSleepStatusValue( ~tkyQueueAll );
+	touch_Init(&touch_cfg);				/* åˆå§‹åŒ–è§¦æ‘¸åº“  */
 
-    TMR0_TimerInit(FREQ_SYS/1000);               //¶¨Ê±ÖÜÆÚÎª1ms
+    TKY_SetSleepStatusValue(0); /* 0=æ‰€æœ‰é˜Ÿåˆ—å¤„äºå”¤é†’æ€ */
+
+    for(int i=0;i<100;i++){
+        TKY_LoadAndRun();
+        TKY_PollForFilter();
+        TKY_SaveAndStop();
+    }
+    touch_ScanWakeUp();// ç½®æˆå”¤é†’çŠ¶æ€
+
+    TMR0_TimerInit(FREQ_SYS/1000);               //å®šæ—¶å‘¨æœŸä¸º1ms
     TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
     PFIC_EnableIRQ( TMR0_IRQn );
 
@@ -136,7 +142,7 @@ void TKY_Init(void)
 /*********************************************************************
  * @fn      TKY_PeripheralInit
  *
- * @brief   ´¥ÃşÏà¹ØÍâÉè³õÊ¼»¯º¯Êı
+ * @brief   è§¦æ‘¸ç›¸å…³å¤–è®¾åˆå§‹åŒ–å‡½æ•°
  *
  * @return  none
  */
@@ -144,13 +150,12 @@ static void TKY_PeripheralInit(void)
 {
     /*You code here*/
     TKY_BacklightInit();
-    TKY_BeepInit();
 }
 
 /*********************************************************************
  * @fn      TMR0_IRQHandler
  *
- * @brief   ¶¨Ê±Æ÷0ÖĞ¶Ï·şÎñº¯Êı
+ * @brief   å®šæ—¶å™¨0ä¸­æ–­æœåŠ¡å‡½æ•°
  *
  * @return  none
  */
@@ -165,7 +170,7 @@ void TMR0_IRQHandler( void )
         if (led_scanflag)
         {
             /*led scan*/
-            TKY_BacklightProcess();          // poll±³¹â×´Ì¬
+            TKY_BacklightProcess();          // pollèƒŒå…‰çŠ¶æ€
         }
     }
 }

@@ -24,8 +24,8 @@
  */
 #define ADV_TIMEOUT       K_MINUTES(10)
 
-#define SELENCE_ADV_ON    0x01
-#define SELENCE_ADV_OF    0x00
+#define SILENCE_ADV_ON    0x01
+#define SILENCE_ADV_OFF    0x00
 
 /*********************************************************************
  * GLOBAL TYPEDEFS
@@ -126,7 +126,7 @@ static const struct bt_mesh_prov app_prov = {
  */
 
 /*********************************************************************
- * @fn      silen_adv_set
+ * @fn      silence_adv_set
  *
  * @brief   …Ë÷√æ≤ƒ¨π„≤•
  *
@@ -134,7 +134,7 @@ static const struct bt_mesh_prov app_prov = {
  *
  * @return  none
  */
-static void silen_adv_set(uint8_t flag)
+static void silence_adv_set(uint8_t flag)
 {
     tm_uuid[13] &= ~BIT(0);
     tm_uuid[13] |= (BIT_MASK(1) & flag);
@@ -151,7 +151,7 @@ static void silen_adv_set(uint8_t flag)
  */
 static void prov_enable(void)
 {
-    silen_adv_set(SELENCE_ADV_OF);
+    silence_adv_set(SILENCE_ADV_OFF);
 
     if(bt_mesh_is_provisioned())
     {
@@ -476,7 +476,7 @@ static void app_silent_adv(void)
         return;
     }
 
-    silen_adv_set(SELENCE_ADV_ON);
+    silence_adv_set(SILENCE_ADV_ON);
 
     /* Disable Scanner not response Provisioner message */
     bt_mesh_scan_disable();

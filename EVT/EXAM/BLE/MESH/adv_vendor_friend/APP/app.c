@@ -22,8 +22,8 @@
  */
 #define ADV_TIMEOUT       K_MINUTES(10)
 
-#define SELENCE_ADV_ON    0x01
-#define SELENCE_ADV_OF    0x00
+#define SILENCE_ADV_ON    0x01
+#define SILENCE_ADV_OFF    0x00
 
 #define APP_WAIT_ADD_APPKEY_DELAY     1600*10
 
@@ -590,7 +590,7 @@ void blemesh_on_sync(void)
  *
  * @return  none
  */
-void App_Init()
+void App_Init(void)
 {
     App_TaskID = TMOS_ProcessEventRegister(App_ProcessEvent);
 

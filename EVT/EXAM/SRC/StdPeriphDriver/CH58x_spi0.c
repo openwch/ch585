@@ -2,7 +2,7 @@
  * File Name          : CH58x_SPI0.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -184,7 +184,7 @@ void SPI0_MasterRecv(uint8_t *pbuf, uint16_t len)
  *
  * @brief   DMA方式连续发送数据
  *
- * @param   pbuf    - 待发送数据起始地址,需要四字节对其
+ * @param   pbuf    - 待发送数据起始地址,需要四字节对齐
  * @param   len     - 待发送数据长度
  *
  * @return  none
@@ -206,7 +206,7 @@ void SPI0_MasterDMATrans(uint8_t *pbuf, uint16_t len)
  *
  * @brief   DMA方式连续接收数据
  *
- * @param   pbuf    - 待接收数据存放起始地址,需要四字节对其
+ * @param   pbuf    - 待接收数据存放起始地址,需要四字节对齐
  * @param   len     - 待接收数据长度
  *
  * @return  none
@@ -273,7 +273,7 @@ void SPI0_SlaveSendByte(uint8_t d)
  *
  * @brief   从机模式，接收多字节数据
  *
- * @param   pbuf    - 接收收数据存放起始地址
+ * @param   pbuf    - 接收数据存放起始地址
  * @param   len     - 请求接收数据长度
  *
  * @return  none
@@ -332,7 +332,7 @@ void SPI0_SlaveTrans(uint8_t *pbuf, uint16_t len)
  *
  * @brief   DMA方式连续接收数据
  *
- * @param   pbuf    - 待接收数据存放起始地址,需要四字节对其
+ * @param   pbuf    - 待接收数据存放起始地址,需要四字节对齐
  * @param   len     - 待接收数据长度
  *
  * @return  none
@@ -354,7 +354,7 @@ void SPI0_SlaveDMARecv(uint8_t *pbuf, uint16_t len)
  *
  * @brief   DMA方式连续发送数据
  *
- * @param   pbuf    - 待发送数据起始地址,需要四字节对其
+ * @param   pbuf    - 待发送数据起始地址,需要四字节对齐
  * @param   len     - 待发送数据长度
  *
  * @return  none

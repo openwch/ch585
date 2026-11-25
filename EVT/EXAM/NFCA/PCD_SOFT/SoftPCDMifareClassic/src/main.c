@@ -1,10 +1,10 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : main.c
  * Author             : WCH
- * Version            : V1.2
- * Date               : 2025/01/21
+ * Version            : V1.3
+ * Date               : 2026/03/02
  * Description        : NFC PCD Mifare Classic测试例程
- * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Copyright (c) 2026 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 
@@ -78,7 +78,7 @@ void nfca_pcd_test(void)
     uint16_t adc_vdd;
     int vdd_value;
 
-#if 1   /* 这段代码为电压检测并根据电压设置输出档位，非必要代码，可以置0屏蔽或者直接删除。 */
+#if 0   /* 这段代码为电压检测并根据电压设置输出档位，非必要代码，可以置0屏蔽或者直接删除。 */
     adc_vdd = sys_get_vdd();
     vdd_value = ADC_VoltConverSignalPGA_MINUS_12dB(adc_vdd);
     PRINTF("vdd_value: %d\n", vdd_value);
@@ -110,7 +110,7 @@ void nfca_pcd_test(void)
     {
         nfca_pcd_start();
 
-#if 0   /* 置1先进行超低功耗检卡，对天线信号幅度影响小的设备可能会无法唤醒，检测距离会比实际通讯距离更近。 */
+#if 1   /* 置1先进行超低功耗检卡，对天线信号幅度影响小的设备可能会无法唤醒，检测距离会比实际通讯距离更近。 */
         if(nfca_pcd_lpcd_check() == 0)
         {
             PRINTF("NO CARD\n");
@@ -140,6 +140,11 @@ void nfca_pcd_test(void)
                 if (res == PCD_NO_ERROR)
                 {
                     PRINTF("\nselect OK, SAK:%02x\n", g_nfca_pcd_recv_buf[0]);
+                    if(g_nfca_pcd_recv_buf[0] != 0x08)
+                    {
+                        PRINTF("SAK SHOULD BE 0x08, EXIT\n");
+                        goto nfc_exit;
+                    }
 
 #if 1   /* 读取前4个块数据测试 */
                     res = PcdAuthState(PICC_AUTHENT1A, 0, default_key, picc_uid);
@@ -244,6 +249,111 @@ nfc_exit:
                     PcdHalt();
                 }
             }
+        }
+        else if(res == 0x0002)  /* Mifare Classic 4K卡片（S70）ATQA为0x0002 */
+        {
+            res = PcdAnticoll(PICC_ANTICOLL1);
+            if (res == PCD_NO_ERROR)
+            {
+                picc_uid[0] = g_nfca_pcd_recv_buf[0];
+                picc_uid[1] = g_nfca_pcd_recv_buf[1];
+                picc_uid[2] = g_nfca_pcd_recv_buf[2];
+                picc_uid[3] = g_nfca_pcd_recv_buf[3];
+                PRINTF("uid: %02x %02x %02x %02x\n", picc_uid[0], picc_uid[1], picc_uid[2], picc_uid[3]);
+
+                res = PcdSelect(PICC_ANTICOLL1, picc_uid);
+                if (res == PCD_NO_ERROR)
+                {
+                    PRINTF("\nselect OK, SAK:%02x\n", g_nfca_pcd_recv_buf[0]);
+                    if(g_nfca_pcd_recv_buf[0] != 0x18)
+                    {
+                        PRINTF("SAK SHOULD BE 0x18, EXIT\n");
+                        goto nfc_exit;
+                    }
+                }
+                else
+                {
+                    goto nfc_exit;
+                }
+
+                res = PcdAuthState(PICC_AUTHENT1A, 0, default_key, picc_uid);
+                if (res != PCD_NO_ERROR)
+                {
+                    goto nfc_exit;
+                }
+
+                for (uint8_t i = 0; i < 4; i++)
+                {
+                    res = PcdRead(i);
+                    if (res != PCD_NO_ERROR)
+                    {
+                        PRINTF("ERR: 0x%x\n", res);
+                        goto nfc_exit;
+                    }
+                    PRINTF("block %02d: ", i);
+                    for (uint8_t j = 0; j < 16; j++)
+                    {
+                        PRINTF("%02x ", g_nfca_pcd_recv_buf[j]);
+                    }
+                    PRINTF("\n");
+                }
+                
+#if 1   /* 所有扇区读取测试 */
+                for (uint8_t l = 1; l < 32; l++)
+                {
+                    res = PcdAuthState(PICC_AUTHENT1A, 4 * l, default_key, picc_uid);
+                    if (res)
+                    {
+                        PRINTF("ERR: 0x%x\n", res);
+                        goto nfc_exit;
+                    }
+
+                    PRINTF("read:\n");
+                    for (uint8_t i = 0; i < 3; i++)
+                    {
+                        res = PcdRead(i + 4 * l);
+                        if (res)
+                        {
+                            PRINTF("ERR: 0x%x\n", res);
+                            goto nfc_exit;
+                        }
+                        PRINTF("block %02d: ", i + 4 * l);
+                        for (uint8_t j = 0; j < 16; j++)
+                        {
+                            PRINTF("%02x ", g_nfca_pcd_recv_buf[j]);
+                        }
+                        PRINTF("\n");
+                    }
+                }
+                for (uint8_t l = 0; l < 8; l++)
+                {
+                    res = PcdAuthState(PICC_AUTHENT1A, 16 * l + 128, default_key, picc_uid);
+                    if (res)
+                    {
+                        PRINTF("ERR: 0x%x\n", res);
+                        goto nfc_exit;
+                    }
+
+                    PRINTF("read:\n");
+                    for (uint8_t i = 0; i < 15; i++)
+                    {
+                        res = PcdRead(i + 16 * l + 128);
+                        if (res)
+                        {
+                            PRINTF("ERR: 0x%x\n", res);
+                            goto nfc_exit;
+                        }
+                        PRINTF("block %02d: ", i + 16 * l + 128);
+                        for (uint8_t j = 0; j < 16; j++)
+                        {
+                            PRINTF("%02x ", g_nfca_pcd_recv_buf[j]);
+                        }
+                        PRINTF("\n");
+                    }
+                }
+#endif  /* 所有扇区读取测试 */
+            }
+            goto nfc_exit;
         }
         else
         {

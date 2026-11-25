@@ -256,9 +256,9 @@ UINT32 OsGetTaskWaterLine(UINT32 taskID)
 }
 
 #if (LOSCFG_BASE_CORE_CPUP == 1)
-LITE_OS_SEC_TEXT_MINOR UINT32 OsGetAllTskCpupInfo(CPUP_INFO_S **cpuLessOneSec,
-                                                  CPUP_INFO_S **cpuTenSec,
-                                                  CPUP_INFO_S **cpuOneSec)
+STATIC UINT32 GetAllTskCpupInfo(CPUP_INFO_S **cpuLessOneSec,
+                                CPUP_INFO_S **cpuTenSec,
+                                CPUP_INFO_S **cpuOneSec)
 {
     if ((cpuLessOneSec == NULL) || (cpuTenSec == NULL) || (cpuOneSec == NULL)) {
         return OS_ERROR;
@@ -304,7 +304,26 @@ LITE_OS_SEC_TEXT_MINOR UINT32 OsGetAllTskCpupInfo(CPUP_INFO_S **cpuLessOneSec,
 }
 #endif
 
-LITE_OS_SEC_TEXT_MINOR VOID OsPrintAllTskInfoHeader(VOID)
+STATIC VOID PrintTskInfo(const LosTaskCB *taskCB)
+{
+    UINT32 semID;
+
+    if (taskCB->taskStatus & OS_TASK_STATUS_EXIT) {
+        PRINTK("%4u%9u%10s%#10x%#10x%#11x%#11x%#10x%#7x",
+               taskCB->taskID, taskCB->priority, OsConvertTskStatus(taskCB->taskStatus),
+               taskCB->stackSize, 0, 0, 0, 0, 0);
+        return;
+    }
+
+    semID = (taskCB->taskSem == NULL) ? OS_NULL_SHORT : (((LosSemCB *)taskCB->taskSem)->semID);
+    PRINTK("%4u%9u%10s%#10x%#10x%#11x%#11x%#10x%#7x",
+           taskCB->taskID, taskCB->priority, OsConvertTskStatus(taskCB->taskStatus),
+           taskCB->stackSize, OsGetTaskWaterLine(taskCB->taskID),
+           (UINT32)(UINTPTR)taskCB->stackPointer, taskCB->topOfStack, taskCB->eventMask, semID);
+    return;
+}
+
+STATIC VOID PrintTskInfoHeader(VOID)
 {
     PRINTK("\r\n TID  Priority   Status StackSize WaterLine StackPoint TopOfStack EventMask  SemID");
 #if (LOSCFG_TASK_MEM_USED == 1)
@@ -341,7 +360,6 @@ LITE_OS_SEC_TEXT_MINOR UINT32 OsGetAllTskInfo(VOID)
 #if (LOSCFG_KERNEL_PRINTF != 0)
     LosTaskCB    *taskCB = (LosTaskCB *)NULL;
     UINT32       loopNum;
-    UINT32       semID;
 #if (LOSCFG_BASE_CORE_CPUP == 1)
     CPUP_INFO_S *cpuLessOneSec = (CPUP_INFO_S *)NULL;
     CPUP_INFO_S *cpuTenSec = (CPUP_INFO_S *)NULL;
@@ -354,12 +372,12 @@ LITE_OS_SEC_TEXT_MINOR UINT32 OsGetAllTskInfo(VOID)
 #endif
 
 #if (LOSCFG_BASE_CORE_CPUP == 1)
-    if (OsGetAllTskCpupInfo(&cpuLessOneSec, &cpuTenSec, &cpuOneSec) != LOS_OK) {
+    if (GetAllTskCpupInfo(&cpuLessOneSec, &cpuTenSec, &cpuOneSec) != LOS_OK) {
         return OS_ERROR;
     }
-#endif
+#endif /* LOSCFG_BASE_CORE_CPUP */
 
-    OsPrintAllTskInfoHeader();
+    PrintTskInfoHeader();
 
     for (loopNum = 0; loopNum < g_taskMaxNum; loopNum++) {
         taskCB = (((LosTaskCB *)g_taskCBArray) + loopNum);
@@ -367,11 +385,7 @@ LITE_OS_SEC_TEXT_MINOR UINT32 OsGetAllTskInfo(VOID)
             continue;
         }
 
-        semID = (taskCB->taskSem == NULL) ? OS_NULL_SHORT : (((LosSemCB *)taskCB->taskSem)->semID);
-        PRINTK("%4u%9u%10s%#10x%#10x%#11x%#11x%#10x%#7x",
-               taskCB->taskID, taskCB->priority, OsConvertTskStatus(taskCB->taskStatus),
-               taskCB->stackSize, OsGetTaskWaterLine(taskCB->taskID),
-               (UINT32)(UINTPTR)taskCB->stackPointer, taskCB->topOfStack, taskCB->eventMask, semID);
+        PrintTskInfo(taskCB);
 #if (LOSCFG_TASK_MEM_USED == 1)
         PRINTK("%#10x", g_taskMemUsed[loopNum]);
 #endif
@@ -662,7 +676,6 @@ LITE_OS_SEC_TEXT_INIT VOID OsTaskEntry(UINT32 taskID)
         PRINT_ERR("Delete Task[TID: %d] Failed!\n", taskCB->taskID);
     }
 }
-
 
 LITE_OS_SEC_TEXT_INIT STATIC_INLINE UINT32 OsTaskInitParamCheck(TSK_INIT_PARAM_S *taskInitParam)
 {

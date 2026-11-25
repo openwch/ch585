@@ -11,8 +11,7 @@
  *******************************************************************************/
 
 /******************************************************************************/
-/* 头文件包�? */
-#include <time_units.h>
+/* 头文件包含 */
 #include "CONFIG.h"
 #include "HAL.h"
 #include "ancs.h"
@@ -159,7 +158,7 @@ static void app_attr_print(const struct bt_ancs_attr *attr)
     if (attr->attr_len != 0) {
         PRINT("%s: %s\n", lit_appid[attr->attr_id],
                (char *)attr->attr_data);
-    } else if (attr->attr_len == 0) {
+    } else {
         PRINT("%s: (N/A)\n", lit_appid[attr->attr_id]);
     }
 }
@@ -371,13 +370,13 @@ void button_changed(uint8_t keys)
 /*********************************************************************
  * @fn      Main_Circulation
  *
- * @brief   主循�?
+ * @brief   主循环
  *
  * @return  none
  */
 __HIGH_CODE
 __attribute__((noinline))
-void Main_Circulation()
+void Main_Circulation(void)
 {
     while(1)
     {
@@ -399,8 +398,8 @@ int main(void)
 #endif
     SetSysClock(SYSCLK_FREQ);
 #if(defined(HAL_SLEEP)) && (HAL_SLEEP == TRUE)
-    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
+    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
+    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
 #endif
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);

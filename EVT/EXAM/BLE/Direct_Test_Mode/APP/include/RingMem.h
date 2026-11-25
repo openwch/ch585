@@ -26,20 +26,20 @@
  * TYPEDEFS
  */
  
-typedef unsigned char   uint8;
-typedef unsigned short  uint16;
-typedef unsigned long   uint32;
+typedef unsigned char   uint8_t;
+typedef unsigned short  uint16_t;
+typedef unsigned long   uint32_t;
 
 //缓冲区结构体
 typedef struct 
 {
-         uint8   *pData;		    //缓冲区首地址
-         uint8 	 *pWrite;           //写指针
-         uint8 	 *pRead;		    //读指针
-         uint8   *pEnd;			    //缓冲区末地址
-volatile uint32  RemanentLen;       //剩余空间大小
-volatile uint32  CurrentLen;        //已用空间大小
-volatile uint32  MaxLen;      	    //总空间大小
+         uint8_t   *pData;		    //缓冲区首地址
+         uint8_t 	 *pWrite;           //写指针
+         uint8_t 	 *pRead;		    //读指针
+         uint8_t   *pEnd;			    //缓冲区末地址
+volatile uint32_t  RemanentLen;       //剩余空间大小
+volatile uint32_t  CurrentLen;        //已用空间大小
+volatile uint32_t  MaxLen;      	    //总空间大小
 }RingMemParm;
 
 /*********************************************************************
@@ -50,19 +50,19 @@ volatile uint32  MaxLen;      	    //总空间大小
  * FUNCTIONS
  */
 
-extern void RingMemInit( RingMemParm *Parm, uint8 *StartAddr, uint32 MaxLen );
+extern void RingMemInit( RingMemParm *Parm, uint8_t *StartAddr, uint32_t MaxLen );
 
-extern uint8 RingMemWrite( RingMemParm *Parm, uint8 *pData, uint32 len );
+extern uint8_t RingMemWrite( RingMemParm *Parm, uint8_t *pData, uint32_t len );
 
-extern uint8 RingMemRead( RingMemParm *Parm, uint8 *pData, uint32 len );
+extern uint8_t RingMemRead( RingMemParm *Parm, uint8_t *pData, uint32_t len );
 
-extern uint8 RingMemCopy( RingMemParm *Parm, uint8 *pData, uint32 len );
+extern uint8_t RingMemCopy( RingMemParm *Parm, uint8_t *pData, uint32_t len );
 
-extern uint8 RingMemDelete( RingMemParm *Parm, uint32 len );
+extern uint8_t RingMemDelete( RingMemParm *Parm, uint32_t len );
 
-extern uint8 RingAddInStart( RingMemParm *Parm, uint8 *pData, uint32 len );
+extern uint8_t RingAddInStart( RingMemParm *Parm, uint8_t *pData, uint32_t len );
 
-extern uint8 RingReturnSingleData( RingMemParm *Parm, uint32 Num );
+extern uint8_t RingReturnSingleData( RingMemParm *Parm, uint32_t Num );
 
 extern int __wrap_memcmp (void *src, const void * dst, size_t size);
 

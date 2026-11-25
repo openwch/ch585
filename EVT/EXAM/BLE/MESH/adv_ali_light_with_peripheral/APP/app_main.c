@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
+ * File Name          : app_main.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2021/03/24
@@ -32,7 +32,7 @@ __attribute__((aligned(4))) uint32_t MEM_BUF[BLE_MEMHEAP_SIZE / 4];
  */
 __HIGH_CODE
 __attribute__((noinline))
-void Main_Circulation()
+void Main_Circulation(void)
 {
     while(1)
     {

@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : simpleGATTprofile.h
+ * File Name          : ble_iochub_service.h
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2022/01/19
@@ -32,7 +32,7 @@ typedef enum
 {
     BLE_IOCHUB_EVT_TX_NOTI_DISABLED = 1,
     BLE_IOCHUB_EVT_TX_NOTI_ENABLED,
-    BLE_IOCHUB_EVT_BLE_DATA_RECIEVED,
+    BLE_IOCHUB_EVT_BLE_DATA_RECEIVED,
 } ble_iochub_evt_type_t;
 
 typedef struct

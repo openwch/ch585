@@ -1,5 +1,5 @@
 /* CH585 Flash-ROM & Data-Flash  */
-/* Website:  http://wch.cn       */
+/* Website:  https://wch.cn       */
 /* Email:    tech@wch.cn         */
 /* Author:   W.ch 2025.05        */
 /* V1.1 FlashROM library for USER/BOOT */
@@ -57,6 +57,7 @@
 
 #define ROM_CFG_MAC_ADDR	0x7F018			// address for MAC address information
 #define ROM_CFG_CHIP_ID     0x7F024
+#define DEF_CHIP_ID_CH581M  0x07
 #define DEF_CHIP_ID_CH584X  0x08
 #define ROM_CFG_BOOT_INFO	0x7DFF8			// address for BOOT information
 

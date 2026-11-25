@@ -7,7 +7,7 @@
 #ifdef TMOS_EN
 #include "CONFIG.h"
 #endif
-//ÊÇ·ñ¿ªÆô´¥ÃşÊı¾İ´òÓ¡
+//æ˜¯å¦å¼€å¯è§¦æ‘¸æ•°æ®æ‰“å°
 
 #ifdef  DEBUG
 #define PRINT_EN 1
@@ -22,15 +22,15 @@
 #endif
 
 /************************KEY_FIFO_DEFINE******************************/
-// #define KEY_COUNT       	TKY_MAX_QUEUE_NUM               // °´¼ü¸öÊı 
+// #define KEY_COUNT       	TKY_MAX_QUEUE_NUM               // æŒ‰é”®ä¸ªæ•° 
 
-/*ÊÇ·ñÆôÓÃTMOS*/
+/*æ˜¯å¦å¯ç”¨TMOS*/
 #ifndef TMOS_EN
 #define TMOS_EN     0
 #endif
-/*ÊÇ·ñÖ§³Ö´¥ÃşĞİÃß¹¦ÄÜ*/
+/*æ˜¯å¦æ”¯æŒè§¦æ‘¸ä¼‘çœ åŠŸèƒ½*/
 #if TMOS_EN
-#define TKY_SLEEP_EN HAL_SLEEP
+#define TKY_SLEEP_EN 0//HAL_SLEEP
 #else
 #define TKY_SLEEP_EN 0
 #endif
@@ -39,14 +39,23 @@
 #define TKY_FILTER_MODE FILTER_MODE_3
 #endif
 
+/* è½®è¯¢æ»¤æ³¢å‡½æ•°é€‰æ‹©ï¼šé»˜è®¤ Mode_3ï¼›CS æ–¹æ¡ˆåœ¨å·¥ç¨‹ TouchKey_CFG.h ä¸­å®šä¹‰ TKY_POLL_FILTER_MODE ä¸º 2 */
+#ifndef TKY_POLL_FILTER_MODE
+#define TKY_POLL_FILTER_MODE    3
+#endif
+
+#if (TKY_POLL_FILTER_MODE == 2)
+#define TKY_PollForFilter() TKY_PollForFilterMode_CS10_Blocking()
+#else
 #define TKY_PollForFilter() TKY_PollForFilterMode_3()
+#endif
 
 
-#define TKY_MEMHEAP_SIZE   		(TKY_MAX_QUEUE_NUM*TKY_BUFLEN)     	 //Íâ²¿¶¨ÒåÊı¾İ»º³åÇø³¤¶È
+#define TKY_MEMHEAP_SIZE   		(TKY_MAX_QUEUE_NUM*TKY_BUFLEN)     	 //å¤–éƒ¨å®šä¹‰æ•°æ®ç¼“å†²åŒºé•¿åº¦
 
 #define TOUCH_OFF_VALUE    					(0xFFFF)
 
-/* °´¼üID, Ö÷ÒªÓÃÓÚtky_GetKeyState()º¯ÊıµÄÈë¿Ú²ÎÊı */
+/* æŒ‰é”®ID, ä¸»è¦ç”¨äºtky_GetKeyState()å‡½æ•°çš„å…¥å£å‚æ•° */
 typedef enum
 {
     KID_K0 = 0,
@@ -64,100 +73,108 @@ typedef enum
 }KEY_ID_E;
 
 
-#define NORMAL_KEY_MODE 0                //¶ÀÁ¢°´¼ü´¥·¢Ä£Ê½
-#define TOUCH_KEY_MODE  1                //´¥Ãş°´¼ü´¥·¢Ä£Ê½
+#define NORMAL_KEY_MODE 0                //ç‹¬ç«‹æŒ‰é”®è§¦å‘æ¨¡å¼
+#define TOUCH_KEY_MODE  1                //è§¦æ‘¸æŒ‰é”®è§¦å‘æ¨¡å¼
 
-#define KEY_MODE    NORMAL_KEY_MODE      //°´¼üÄ£Ê½ÉèÖÃ
-#define KEY_FILTER_TIME   2              //°´¼üÂË²¨´ÎÊı 0 ±íÊ¾²»½øĞĞ°´¼üÂË²¨
-#define KEY_LONG_TIME     0//100              //³¤°´Ê±¼ä 0 ±íÊ¾²»¼ì²â³¤°´¼üÊÂ¼ş£¬Ê±¼äµ¥Î»Îª°´¼üÉ¨Ãèµ¥Î»
-#define KEY_REPEAT_TIME   0//100             //°´¼üÁ¬·¢µÄËÙ¶È£¬0±íÊ¾²»Ö§³ÖÁ¬·¢£¬Ê±¼äµ¥Î»Îª°´¼üÉ¨Ãèµ¥Î»
+#define KEY_MODE    NORMAL_KEY_MODE      //æŒ‰é”®æ¨¡å¼è®¾ç½®
+#define KEY_FILTER_TIME   2              //æŒ‰é”®æ»¤æ³¢æ¬¡æ•° 0 è¡¨ç¤ºä¸è¿›è¡ŒæŒ‰é”®æ»¤æ³¢
+#define KEY_REPEAT_TIME   0//100         //æŒ‰é”®è¿å‘çš„é€Ÿåº¦ï¼Œ0è¡¨ç¤ºä¸æ”¯æŒè¿å‘ï¼Œå•ä½ä¸ºæŒ‰é”®æ‰«ææ¬¡æ•°
+
+//#define KEY_PRESS_TIMEOUT_ENABLE         //ä½¿èƒ½æŒ‰é”®é•¿æŒ‰æ—¶æ— æ•ˆåŠŸèƒ½ï¼Œä½¿èƒ½åæŒ‰é”®é•¿æŒ‰è¶…æ—¶æ— æ•ˆï¼Œè¶…æ—¶ååˆ·æ–°åŸºçº¿
+                                         //ä¸ä½¿èƒ½åˆ™æ­£å¸¸ä½¿ç”¨é•¿æŒ‰é”®åŠŸèƒ½ï¼Œè‹¥æƒ³é•¿æŒ‰é”®åŠŸèƒ½åº”å±è”½æ­¤é¡¹
+
+#define KEY_LONG_TIME    0           //æŒ‰é”®é•¿æŒ‰è¶…æ—¶æ—¶é—´ï¼Œå•ä½ä¸ºæŒ‰é”®æ‰«ææ¬¡æ•°ï¼Œé•¿æŒ‰æ—¶é—´ 0 è¡¨ç¤ºä¸æ£€æµ‹é•¿æŒ‰é”®äº‹ä»¶ã€‚
 
 typedef uint8_t (*pIsKeyDownFunc)(void);
 
 /*
-    Ã¿¸ö°´¼ü¶ÔÓ¦1¸öÈ«¾ÖµÄ½á¹¹Ìå±äÁ¿¡£
+    æ¯ä¸ªæŒ‰é”®å¯¹åº”1ä¸ªå…¨å±€çš„ç»“æ„ä½“å˜é‡ã€‚
 */
 typedef struct
 {
-    /* ÏÂÃæÊÇÒ»¸öº¯ÊıÖ¸Õë£¬Ö¸ÏòÅĞ¶Ï°´¼üÊÖ·ñ°´ÏÂµÄº¯Êı */
-    /* °´¼ü°´ÏÂµÄÅĞ¶Ïº¯Êı,1±íÊ¾°´ÏÂ */
+    /* ä¸‹é¢æ˜¯ä¸€ä¸ªå‡½æ•°æŒ‡é’ˆï¼ŒæŒ‡å‘åˆ¤æ–­æŒ‰é”®æ‰‹å¦æŒ‰ä¸‹çš„å‡½æ•° */
+    /* æŒ‰é”®æŒ‰ä¸‹çš„åˆ¤æ–­å‡½æ•°,1è¡¨ç¤ºæŒ‰ä¸‹ */
     // pIsKeyDownFunc IsKeyDownFunc;
-    uint8_t  Count;         //ÂË²¨Æ÷¼ÆÊıÆ÷
-    uint16_t LongCount;     //³¤°´¼ÆÊıÆ÷
-    uint16_t LongTime;      //°´¼ü°´ÏÂ³ÖĞøÊ±¼ä, 0±íÊ¾²»¼ì²â³¤°´
-    uint8_t  State;         //°´¼üµ±Ç°×´Ì¬£¨°´ÏÂ»¹ÊÇµ¯Æğ£©
-    uint8_t  RepeatSpeed;   //Á¬Ğø°´¼üÖÜÆÚ
-    uint8_t  RepeatCount;   //Á¬Ğø°´¼ü¼ÆÊıÆ÷
+    uint8_t  Count;         //æ»¤æ³¢å™¨è®¡æ•°å™¨
+    uint16_t LongCount;     //é•¿æŒ‰è®¡æ•°å™¨
+    uint16_t LongTime;      //æŒ‰é”®æŒ‰ä¸‹æŒç»­æ—¶é—´, 0è¡¨ç¤ºä¸æ£€æµ‹é•¿æŒ‰
+    uint8_t  State;         //æŒ‰é”®å½“å‰çŠ¶æ€ï¼ˆæŒ‰ä¸‹è¿˜æ˜¯å¼¹èµ·ï¼‰
+    uint8_t  RepeatSpeed;   //è¿ç»­æŒ‰é”®å‘¨æœŸ
+    uint8_t  RepeatCount;   //è¿ç»­æŒ‰é”®è®¡æ•°å™¨
 }KEY_T;
 
 /*
-    ¶¨Òå¼üÖµ´úÂë, ±ØĞë°´ÈçÏÂ´ÎĞò¶¨Ê±Ã¿¸ö¼üµÄ°´ÏÂ¡¢µ¯ÆğºÍ³¤°´ÊÂ¼ş
+    å®šä¹‰é”®å€¼ä»£ç , å¿…é¡»æŒ‰å¦‚ä¸‹æ¬¡åºå®šæ—¶æ¯ä¸ªé”®çš„æŒ‰ä¸‹ã€å¼¹èµ·å’Œé•¿æŒ‰äº‹ä»¶
 
-    ÍÆ¼öÊ¹ÓÃenum, ²»ÓÃ#define£¬Ô­Òò£º
-    (1) ±ãÓÚĞÂÔö¼üÖµ,·½±ãµ÷ÕûË³Ğò£¬Ê¹´úÂë¿´ÆğÀ´Êæ·şµã
-    (2) ±àÒëÆ÷¿É°ïÎÒÃÇ±ÜÃâ¼üÖµÖØ¸´¡£
+    æ¨èä½¿ç”¨enum, ä¸ç”¨#defineï¼ŒåŸå› ï¼š
+    (1) ä¾¿äºæ–°å¢é”®å€¼,æ–¹ä¾¿è°ƒæ•´é¡ºåºï¼Œä½¿ä»£ç çœ‹èµ·æ¥èˆ’æœç‚¹
+    (2) ç¼–è¯‘å™¨å¯å¸®æˆ‘ä»¬é¿å…é”®å€¼é‡å¤ã€‚
 */
 typedef enum
 {
-    KEY_NONE = 0,           //0 ±íÊ¾°´¼üÊÂ¼ş */
+    KEY_NONE = 0,           //0 è¡¨ç¤ºæŒ‰é”®äº‹ä»¶ */
 
-    KEY_0_DOWN,             // 1¼ü°´ÏÂ 
-    KEY_0_UP,               // 1¼üµ¯Æğ 
-    KEY_0_LONG,             // 1¼ü³¤°´ 
+    KEY_0_DOWN,             // 1é”®æŒ‰ä¸‹ 
+    KEY_0_UP,               // 1é”®å¼¹èµ· 
+    KEY_0_LONG,             // 1é”®é•¿æŒ‰ 
 
-    KEY_1_DOWN,             // 2¼ü°´ÏÂ 
-    KEY_1_UP,               // 2¼üµ¯Æğ 
-    KEY_1_LONG,             // 2¼ü³¤°´ 
+    KEY_1_DOWN,             // 2é”®æŒ‰ä¸‹ 
+    KEY_1_UP,               // 2é”®å¼¹èµ· 
+    KEY_1_LONG,             // 2é”®é•¿æŒ‰ 
 
-    KEY_2_DOWN,             // 3¼ü°´ÏÂ 
-    KEY_2_UP,               // 3¼üµ¯Æğ 
-    KEY_2_LONG,             // 3¼ü³¤°´ 
+    KEY_2_DOWN,             // 3é”®æŒ‰ä¸‹ 
+    KEY_2_UP,               // 3é”®å¼¹èµ· 
+    KEY_2_LONG,             // 3é”®é•¿æŒ‰ 
 
-    KEY_3_DOWN,             // 4¼ü°´ÏÂ 
-    KEY_3_UP,               // 4¼üµ¯Æğ 
-    KEY_3_LONG,             // 4¼ü³¤°´ 
+    KEY_3_DOWN,             // 4é”®æŒ‰ä¸‹ 
+    KEY_3_UP,               // 4é”®å¼¹èµ· 
+    KEY_3_LONG,             // 4é”®é•¿æŒ‰ 
 
-    KEY_4_DOWN,             // 5¼ü°´ÏÂ 
-    KEY_4_UP,               // 5¼üµ¯Æğ 
-    KEY_4_LONG,             // 5¼ü³¤°´ 
+    KEY_4_DOWN,             // 5é”®æŒ‰ä¸‹ 
+    KEY_4_UP,               // 5é”®å¼¹èµ· 
+    KEY_4_LONG,             // 5é”®é•¿æŒ‰ 
 
-    KEY_5_DOWN,             // 6¼ü°´ÏÂ 
-    KEY_5_UP,               // 6¼üµ¯Æğ 
-    KEY_5_LONG,             // 6¼ü³¤°´ 
+    KEY_5_DOWN,             // 6é”®æŒ‰ä¸‹ 
+    KEY_5_UP,               // 6é”®å¼¹èµ· 
+    KEY_5_LONG,             // 6é”®é•¿æŒ‰ 
 
-    KEY_6_DOWN,             // 7¼ü°´ÏÂ 
-    KEY_6_UP,               // 7¼üµ¯Æğ 
-    KEY_6_LONG,             // 7¼ü³¤°´ 
+    KEY_6_DOWN,             // 7é”®æŒ‰ä¸‹ 
+    KEY_6_UP,               // 7é”®å¼¹èµ· 
+    KEY_6_LONG,             // 7é”®é•¿æŒ‰ 
 
-    KEY_7_DOWN,             // 8¼ü°´ÏÂ 
-    KEY_7_UP,               // 8¼üµ¯Æğ 
-    KEY_7_LONG,             // 8¼ü³¤°´ 
+    KEY_7_DOWN,             // 8é”®æŒ‰ä¸‹ 
+    KEY_7_UP,               // 8é”®å¼¹èµ· 
+    KEY_7_LONG,             // 8é”®é•¿æŒ‰ 
 
-    KEY_8_DOWN,             // 9¼ü°´ÏÂ 
-    KEY_8_UP,               // 9¼üµ¯Æğ 
-    KEY_8_LONG,             // 9¼ü³¤°´ 
+    KEY_8_DOWN,             // 9é”®æŒ‰ä¸‹ 
+    KEY_8_UP,               // 9é”®å¼¹èµ· 
+    KEY_8_LONG,             // 9é”®é•¿æŒ‰ 
 
-    KEY_9_DOWN,             // 0¼ü°´ÏÂ 
-    KEY_9_UP,               // 0¼üµ¯Æğ 
-    KEY_9_LONG,             // 0¼ü³¤°´ 
+    KEY_9_DOWN,             // 0é”®æŒ‰ä¸‹ 
+    KEY_9_UP,               // 0é”®å¼¹èµ· 
+    KEY_9_LONG,             // 0é”®é•¿æŒ‰ 
 
-    KEY_10_DOWN,            // #¼ü°´ÏÂ 
-    KEY_10_UP,              // #¼üµ¯Æğ 
-    KEY_10_LONG,            // #¼ü³¤°´ 
+    KEY_10_DOWN,            // #é”®æŒ‰ä¸‹ 
+    KEY_10_UP,              // #é”®å¼¹èµ· 
+    KEY_10_LONG,            // #é”®é•¿æŒ‰ 
 
-    KEY_11_DOWN,            // *¼ü°´ÏÂ 
-    KEY_11_UP,              // *¼üµ¯Æğ 
-    KEY_11_LONG,            // *¼ü³¤°´ 
+    KEY_11_DOWN,            // *é”®æŒ‰ä¸‹ 
+    KEY_11_UP,              // *é”®å¼¹èµ· 
+    KEY_11_LONG,            // *é”®é•¿æŒ‰ 
+
+    KEY_12_DOWN,            // *é”®æŒ‰ä¸‹ 
+    KEY_12_UP,              // *é”®å¼¹èµ· 
+    KEY_12_LONG,            // *é”®é•¿æŒ‰ 
 }KEY_ENUM;
 
-/* °´¼üFIFOÓÃµ½±äÁ¿ */
-#define KEY_FIFO_SIZE   64          //¿É¸ù¾İÊ¹ÓÃ»·¾³ºÍÓ²¼şĞèÒª½øĞĞĞŞ¸Ä*/
+/* æŒ‰é”®FIFOç”¨åˆ°å˜é‡ */
+#define KEY_FIFO_SIZE   64          //å¯æ ¹æ®ä½¿ç”¨ç¯å¢ƒå’Œç¡¬ä»¶éœ€è¦è¿›è¡Œä¿®æ”¹*/
 
 typedef struct
 {
-    uint8_t Buf[KEY_FIFO_SIZE];     // ¼üÖµ»º³åÇø
-    uint8_t Read;                   // »º³åÇø¶ÁÖ¸Õë
-    uint8_t Write;                  // »º³åÇøĞ´Ö¸Õë
+    uint8_t Buf[KEY_FIFO_SIZE];     // é”®å€¼ç¼“å†²åŒº
+    uint8_t Read;                   // ç¼“å†²åŒºè¯»æŒ‡é’ˆ
+    uint8_t Write;                  // ç¼“å†²åŒºå†™æŒ‡é’ˆ
 }KEY_FIFO_T;
 
 /** Configuration of each button */
@@ -200,9 +217,9 @@ typedef struct st_touch_cfg_t
 
 extern uint8_t wakeupflag; // 0  sleep mode   1  wakeup sta
 extern uint16_t tkyQueueAll;
-extern uint8_t wakeUpCount, wakeupflag;
-
-/* ¹©Íâ²¿µ÷ÓÃµÄº¯ÊıÉùÃ÷ */
+extern uint8_t wakeUpCount;
+extern const uint32_t TKY_Pin[ 14 ];
+/* ä¾›å¤–éƒ¨è°ƒç”¨çš„å‡½æ•°å£°æ˜ */
 extern void touch_Init(touch_cfg_t *p);
 extern void touch_ScanWakeUp(void);
 extern void touch_ScanEnterSleep(void);
@@ -216,4 +233,6 @@ extern uint16_t touch_GetLineSliderData(void);
 extern uint16_t touch_GetWheelSliderData(void);
 extern void touch_GPIOModeCfg (GPIOModeTypeDef mode, uint32_t channel);
 extern void touch_Recalibrate(void);
+extern void touch_ResetBaselineWakeup (void);
+extern void touch_Recalibrate_Wakeup(void);
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: memcpy_s function
- * Author: lishunda
  * Create: 2014-02-25
  */
 /*
@@ -20,11 +19,7 @@
 
 #include "securecutil.h"
 
-#ifndef SECUREC_MEMCOPY_WITH_PERFORMANCE
-#define SECUREC_MEMCOPY_WITH_PERFORMANCE 0
-#endif
-
-#if SECUREC_WITH_PERFORMANCE_ADDONS || SECUREC_MEMCOPY_WITH_PERFORMANCE
+#if SECUREC_WITH_PERFORMANCE_ADDONS
 #ifndef SECUREC_MEMCOPY_THRESHOLD_SIZE
 #define SECUREC_MEMCOPY_THRESHOLD_SIZE 64UL
 #endif
@@ -456,18 +451,18 @@ SECUREC_INLINE errno_t SecMemcpyError(void *dest, size_t destMax, const void *sr
     if (dest == NULL || src == NULL) {
         SECUREC_ERROR_INVALID_PARAMTER("memcpy_s");
         if (dest != NULL) {
-            (void)memset(dest, 0, destMax);
+            (void)SECUREC_MEMSET_FUNC_OPT(dest, 0, destMax);
             return EINVAL_AND_RESET;
         }
         return EINVAL;
     }
     if (count > destMax) {
-        (void)memset(dest, 0, destMax);
+        (void)SECUREC_MEMSET_FUNC_OPT(dest, 0, destMax);
         SECUREC_ERROR_INVALID_RANGE("memcpy_s");
         return ERANGE_AND_RESET;
     }
     if (SECUREC_MEMORY_IS_OVERLAP(dest, src, count)) {
-        (void)memset(dest, 0, destMax);
+        (void)SECUREC_MEMSET_FUNC_OPT(dest, 0, destMax);
         SECUREC_ERROR_BUFFER_OVERLAP("memcpy_s");
         return EOVERLAP_AND_RESET;
     }
@@ -505,7 +500,7 @@ SECUREC_INLINE errno_t SecMemcpyError(void *dest, size_t destMax, const void *sr
  * <RETURN VALUE>
  *    EOK                      Success
  *    EINVAL                   dest is  NULL and destMax != 0 and destMax <= SECUREC_MEM_MAX_LEN
- *    EINVAL_AND_RESET         dest != NULL and src is NULLL and destMax != 0 and destMax <= SECUREC_MEM_MAX_LEN
+ *    EINVAL_AND_RESET         dest != NULL and src is NULL and destMax != 0 and destMax <= SECUREC_MEM_MAX_LEN
  *    ERANGE                   destMax > SECUREC_MEM_MAX_LEN or destMax is 0
  *    ERANGE_AND_RESET         count > destMax and destMax != 0 and destMax <= SECUREC_MEM_MAX_LEN
  *                             and dest  !=  NULL  and src != NULL
@@ -513,25 +508,21 @@ SECUREC_INLINE errno_t SecMemcpyError(void *dest, size_t destMax, const void *sr
  *                             count <= destMax destMax != 0 and destMax <= SECUREC_MEM_MAX_LEN and dest  !=  NULL
  *                             and src != NULL  and dest != src
  *
- *    if an error occured, dest will be filled with 0.
+ *    if an error occurred, dest will be filled with 0.
  *    If the source and destination overlap, the behavior of memcpy_s is undefined.
  *    Use memmove_s to handle overlapping regions.
  */
 errno_t memcpy_s(void *dest, size_t destMax, const void *src, size_t count)
 {
     if (SECUREC_MEMCPY_PARAM_OK(dest, destMax, src, count)) {
-#if SECUREC_MEMCOPY_WITH_PERFORMANCE
-        SECUREC_MEMCPY_OPT(dest, src, count);
-#else
         SECUREC_MEMCPY_WARP_OPT(dest, src, count);
-#endif
         return EOK;
     }
     /* Meet some runtime violation, return error code */
     return SecMemcpyError(dest, destMax, src, count);
 }
 
-#if SECUREC_IN_KERNEL
+#if SECUREC_EXPORT_KERNEL_SYMBOL
 EXPORT_SYMBOL(memcpy_s);
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef __TC_TEST_H__
-#define __TC_TEST_H__
+#ifndef __GLUE_H__
+#define __GLUE_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +43,7 @@ extern "C" {
 
 void ble_sm_alg_ecc_init(void);
 #ifndef BLE_MODE
-#include "config.h"
+#include "CONFIG.h"
 #endif
 int
 ble_sm_alg_gen_key_pair(uint8_t *pub, uint8_t *priv);
@@ -75,6 +75,6 @@ ble_sm_alg_rand(uint8_t *dst, unsigned int size);
 }
 #endif
 
-#endif /* __TC_TEST_H__ */
+#endif /* __GLUE_H__ */
 
 

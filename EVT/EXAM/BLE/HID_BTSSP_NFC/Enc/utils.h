@@ -47,7 +47,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Copy the the buffer 'from' to the buffer 'to'.
+ * @brief Copy the buffer 'from' to the buffer 'to'.
  * @return returns TC_CRYPTO_SUCCESS (1)
  *         returns TC_CRYPTO_FAIL (0) if:
  *                from_len > to_len.

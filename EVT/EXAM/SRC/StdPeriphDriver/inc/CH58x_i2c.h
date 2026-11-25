@@ -2,7 +2,7 @@
  * File Name          : CH58x_i2c.h
  * Author             : WCH
  * Version            : V1.0
- * Date               : 2024/8/22
+ * Date               : 2026/07/30
  * Description        : head file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -69,8 +69,8 @@ typedef enum
 /* I2C_acknowledged_address - Specifies if 7-bit or 10-bit address is acknowledged. */
 typedef enum
 {
-    I2C_AckAddr_7bit = 0x4000,
-    I2C_AckAddr_10bit = 0xC000,
+    I2C_AckAddr_7bit = 0x0000,
+    I2C_AckAddr_10bit = 0x8000,
 } I2C_AckAddrTypeDef;
 
 /* I2C_interrupts_definition */

@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : multiPeripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2022/03/18
@@ -200,14 +200,14 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void Peripheral_Init()
+void Peripheral_Init(void)
 {
     Peripheral_TaskID = TMOS_ProcessEventRegister(Peripheral_ProcessEvent);
 
@@ -595,8 +595,8 @@ static void Peripheral_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
             pMsgEvent = (gattMsgEvent_t *)pMsg;
             if(pMsgEvent->method == ATT_MTU_UPDATED_EVENT)
             {
-                peripheralMTU = pMsgEvent->msg.exchangeMTUReq.clientRxMTU;
-                PRINT("mtu exchange: %d\n", pMsgEvent->msg.exchangeMTUReq.clientRxMTU);
+                peripheralMTU = pMsgEvent->msg.mtuEvt.MTU;
+                PRINT("mtu exchange: %d\n", pMsgEvent->msg.mtuEvt.MTU);
             }
             break;
         }
@@ -698,6 +698,7 @@ static void Peripheral_LinkTerminated(gapRoleEvent_t *pEvent)
     if(connItem == PERIPHERAL_MAX_CONNECTION)
     {
         //不会执行到此处
+        return;
     }
     peripheralConnList[connItem].connHandle = GAP_CONNHANDLE_INIT;
     peripheralConnList[connItem].connInterval = 0;
@@ -870,8 +871,9 @@ static void performPeriodicTask(uint16_t connHandle)
  *
  * @brief   Prepare and send simpleProfileChar4 notification
  *
+ * @param   connHandle - connection handle
  * @param   pValue - data to notify
- *          len - length of data
+ * @param   len - length of data
  *
  * @return  none
  */
@@ -885,6 +887,7 @@ static void peripheralChar4Notify(uint16_t connHandle, uint8_t *pValue, uint16_t
     }
     noti.len = len;
     noti.pValue = GATT_bm_alloc(connHandle, ATT_HANDLE_VALUE_NOTI, noti.len, NULL, 0);
+    if(noti.pValue == NULL)    return;
     tmos_memcpy(noti.pValue, pValue, noti.len);
     if(simpleProfile_Notify(connHandle, &noti) != SUCCESS)
     {

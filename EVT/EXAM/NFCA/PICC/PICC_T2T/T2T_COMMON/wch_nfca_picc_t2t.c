@@ -1,10 +1,10 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : wch_nfca_picc_t2t.c
  * Author             : WCH
- * Version            : V1.0
- * Date               : 2025/01/21
+ * Version            : V1.2
+ * Date               : 2026/10/16
  * Description        : NFC PICC type2 Tag.
- * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Copyright (c) 2026 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 #include "wch_nfca_picc_t2t.h"
@@ -48,7 +48,7 @@ static void nfca_picc_t2t_offline(void);
 
 nfca_picc_t2t_data_t g_nfca_picc_t2t_data;
 
-#if IS014443A_FAST_CL
+#if ISO14443A_FAST_CL
 uint16_t cl1_pre_len;
 uint8_t iso14443a_cl1_pre_raw_data[NFCA_PICC_TX_PRE_OUT_LEN(ISO14443A_CL_FRAME_SIZE)];
 uint16_t sak1_pre_len;
@@ -93,7 +93,7 @@ static uint16_t nfca_picc_t2t_data_handler(uint16_t bits_num)
             {
                 g_nfca_picc_t2t_data.state = NFCA_PICC_T2T_STATE_READY2;
             }
-#if IS014443A_FAST_CL ==  0
+#if ISO14443A_FAST_CL ==  0
             if(send_bits != 0)
             {
                 ISO14443ACalOddParityBit(g_picc_data_buf, g_picc_parity_buf, send_bits / 8);
@@ -113,13 +113,6 @@ static uint16_t nfca_picc_t2t_data_handler(uint16_t bits_num)
             }
 #endif
         }
-        else if(g_picc_data_buf[0] == ISO14443A_CMD_HLTA)
-        {
-            if(g_picc_data_buf[1] == 0x00)
-            {
-                g_nfca_picc_t2t_data.state = NFCA_PICC_T2T_STATE_IDLE;
-            }
-        }
         else
         {
             g_nfca_picc_t2t_data.state = NFCA_PICC_T2T_STATE_IDLE;
@@ -132,7 +125,7 @@ static uint16_t nfca_picc_t2t_data_handler(uint16_t bits_num)
             {
                 g_nfca_picc_t2t_data.state = NFCA_PICC_T2T_STATE_ACTIVE;
             }
-#if IS014443A_FAST_CL ==  0
+#if ISO14443A_FAST_CL ==  0
             if(send_bits != 0)
             {
                 ISO14443ACalOddParityBit(g_picc_data_buf, g_picc_parity_buf, send_bits / 8);
@@ -165,19 +158,16 @@ static uint16_t nfca_picc_t2t_data_handler(uint16_t bits_num)
         }
         break;
     case NFCA_PICC_T2T_STATE_ACTIVE:
-
-        if(g_picc_data_buf[0] == ISO14443A_CMD_HLTA)
-        {
-            if(g_picc_data_buf[1] == 0x00)
-            {
-                g_nfca_picc_t2t_data.state = NFCA_PICC_T2T_STATE_IDLE;
-            }
-        }
-        else if(g_picc_data_buf[0] == CMD_READ)
+        if(g_picc_data_buf[0] == CMD_READ)
         {
             uint8_t page_address;
-            uint8_t offset;
-            if(g_picc_data_buf[1] < WCH_NFCA_PICC_T2T_PAGES_NUM)
+            /* READ 命令为 4 字节（cmd+page+CRC），带校验位共 36bit；先校验长度与 CRC */
+            if((bits_num != (4 * 9)) || (ISO14443_CRCA(g_picc_data_buf, 4) != 0))
+            {
+                g_picc_data_buf[0] = NAK_CRC_ERROR;
+                send_bits = 4;
+            }
+            else if(g_picc_data_buf[1] < WCH_NFCA_PICC_T2T_PAGES_NUM)
             {
                 page_address = g_picc_data_buf[1];
                 for(uint8_t i = 0; i < 4; i++)
@@ -200,9 +190,14 @@ static uint16_t nfca_picc_t2t_data_handler(uint16_t bits_num)
         }
         else if(g_picc_data_buf[0] == CMD_WRITE)
         {
-            uint8_t page_address = g_picc_data_buf[1];
-            if((page_address < WCH_NFCA_PICC_T2T_PAGES_NUM) && (page_address > 3))
+            /* WRITE 命令为 8 字节（cmd+page+4data+CRC），带校验位共 72bit；先校验长度与 CRC */
+            if((bits_num != (8 * 9)) || (ISO14443_CRCA(g_picc_data_buf, 8) != 0))
             {
+                g_picc_data_buf[0] = NAK_CRC_ERROR;
+            }
+            else if((g_picc_data_buf[1] < WCH_NFCA_PICC_T2T_PAGES_NUM) && (g_picc_data_buf[1] > 3))
+            {
+                uint8_t page_address = g_picc_data_buf[1];
                 g_nfca_picc_t2t_data.pages[page_address].data8[0] = g_picc_data_buf[2];
                 g_nfca_picc_t2t_data.pages[page_address].data8[1] = g_picc_data_buf[3];
                 g_nfca_picc_t2t_data.pages[page_address].data8[2] = g_picc_data_buf[4];
@@ -280,7 +275,7 @@ void nfca_picc_t2t_enable(uint8_t *uid)
     g_nfca_picc_t2t_data.pages[4].data8[2] = 0xfe;
     g_nfca_picc_t2t_data.pages[4].data8[3] = 0x00;
 
-#if IS014443A_FAST_CL
+#if ISO14443A_FAST_CL
     data[0] = g_nfca_picc_t2t_data.uid_cl1[0];
     data[1] = g_nfca_picc_t2t_data.uid_cl1[1];
     data[2] = g_nfca_picc_t2t_data.uid_cl1[2];

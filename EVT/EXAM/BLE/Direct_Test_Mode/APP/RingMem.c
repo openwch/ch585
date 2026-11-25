@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
-* File Name          : RingMem.C
+* File Name          : RingMem.c
 * Author             : WCH
 * Version            : V1.0
 * Date               : 2025/04/28
@@ -25,12 +25,14 @@
  *
  * @brief   初始化
  *
- * @param   none
+ * @param   Parm - 缓冲区结构体指针
+ * @param   StartAddr - 缓冲区首地址
+ * @param   MaxLen - 缓冲区总长度
  *
  * @return  none
  */
 __HIGH_CODE
-void RingMemInit( RingMemParm *Parm, uint8_t *StartAddr, uint32 MaxLen )
+void RingMemInit( RingMemParm *Parm, uint8_t *StartAddr, uint32_t MaxLen )
 {
 	Parm->pData		= StartAddr;
 	Parm->pWrite 	= StartAddr;
@@ -46,14 +48,16 @@ void RingMemInit( RingMemParm *Parm, uint8_t *StartAddr, uint32 MaxLen )
  *
  * @brief   往里写
  *
- * @param   none
+ * @param   Parm - 缓冲区结构体指针
+ * @param   pData - 待写入数据
+ * @param   len - 写入长度
  *
- * @return  none
+ * @return  SUCCESS:成功; !SUCCESS:剩余空间不足
  */
 __HIGH_CODE
-uint8_t RingMemWrite( RingMemParm *Parm, uint8_t *pData, uint32 len )
+uint8_t RingMemWrite( RingMemParm *Parm, uint8_t *pData, uint32_t len )
 {
-	uint32 i,edgelen;
+	uint32_t i,edgelen;
 
 	if( len > Parm->RemanentLen )							//要写长度超了
 		return !SUCCESS;
@@ -90,14 +94,16 @@ uint8_t RingMemWrite( RingMemParm *Parm, uint8_t *pData, uint32 len )
  *
  * @brief   往外读
  *
- * @param   none
+ * @param   Parm - 缓冲区结构体指针
+ * @param   pData - 读出数据存放地址
+ * @param   len - 读出长度
  *
- * @return  none
+ * @return  SUCCESS:成功; !SUCCESS:可读长度不足
  */
 __HIGH_CODE
-uint8_t RingMemRead( RingMemParm *Parm, uint8_t *pData, uint32 len )
+uint8_t RingMemRead( RingMemParm *Parm, uint8_t *pData, uint32_t len )
 {
-	uint32 i,edgelen;
+	uint32_t i,edgelen;
 
 	if( len > Parm->CurrentLen )						//能读长度不够
 		return !SUCCESS;
@@ -134,14 +140,16 @@ uint8_t RingMemRead( RingMemParm *Parm, uint8_t *pData, uint32 len )
  *
  * @brief   读了不删
  *
- * @param   none
+ * @param   Parm - 缓冲区结构体指针
+ * @param   pData - 读出数据存放地址
+ * @param   len - 复制长度
  *
- * @return  none
+ * @return  SUCCESS:成功; !SUCCESS:可复制长度不足
  */
 __HIGH_CODE
-uint8_t RingMemCopy( RingMemParm *Parm, uint8_t *pData, uint32 len )
+uint8_t RingMemCopy( RingMemParm *Parm, uint8_t *pData, uint32_t len )
 {
-	uint32 i,edgelen;
+	uint32_t i,edgelen;
 	uint8_t *pRead = Parm->pRead;
 
 	if( len > Parm->CurrentLen )						//能复制的长度不够
@@ -176,14 +184,15 @@ uint8_t RingMemCopy( RingMemParm *Parm, uint8_t *pData, uint32 len )
  *
  * @brief   直接删
  *
- * @param   none
+ * @param   Parm - 缓冲区结构体指针
+ * @param   len - 删除长度
  *
- * @return  none
+ * @return  SUCCESS:成功; !SUCCESS:可删除长度不足
  */
 __HIGH_CODE
-uint8_t RingMemDelete( RingMemParm *Parm, uint32 len )
+uint8_t RingMemDelete( RingMemParm *Parm, uint32_t len )
 {
-	uint32 edgelen;
+	uint32_t edgelen;
 
 	if( len > Parm->CurrentLen )						//能删除长度不够
 		return !SUCCESS;
@@ -211,14 +220,16 @@ uint8_t RingMemDelete( RingMemParm *Parm, uint32 len )
  *
  * @brief   向缓冲区开始处添加数据
  *
- * @param   none
+ * @param   Parm - 缓冲区结构体指针
+ * @param   pData - 待写入数据
+ * @param   len - 写入长度
  *
- * @return  none
+ * @return  SUCCESS:成功; !SUCCESS:剩余空间不足
  */
 __HIGH_CODE
-uint8_t RingAddInStart( RingMemParm *Parm, uint8_t *pData, uint32 len )
+uint8_t RingAddInStart( RingMemParm *Parm, uint8_t *pData, uint32_t len )
 {
-	uint32 i,edgelen;
+	uint32_t i,edgelen;
 
 	if( len > Parm->RemanentLen )							//要写长度的超了
 		return !SUCCESS;
@@ -251,18 +262,19 @@ uint8_t RingAddInStart( RingMemParm *Parm, uint8_t *pData, uint32 len )
 }
 
 /*********************************************************************
- * @fn      RingCopyOneData
+ * @fn      RingReturnSingleData
  *
  * @brief   以首地址为基础返回第几个数据
  *
- * @param   none
+ * @param   Parm - 缓冲区结构体指针
+ * @param   Num - 数据序号
  *
- * @return  none
+ * @return  第 Num 个数据（未读到数据时为 0）
  */
 __HIGH_CODE
-uint8 RingReturnSingleData( RingMemParm *Parm, uint32 Num )
+uint8_t RingReturnSingleData( RingMemParm *Parm, uint32_t Num )
 {
-  uint32 edgelen;
+  uint32_t edgelen;
 
   if( Parm->RemanentLen < Parm->MaxLen )
   {

@@ -226,11 +226,11 @@ static void uuid_generate(struct bt_als_cfg const *cfg)
      01£ºBLE4.2
      10£ºBLE5.0
      11£ºBLE5.0ÒÔÉÏ */
-    /* Advertising Verison */
+    /* Advertising Version */
     tm_uuid[2] = BIT(0) | /* adv version */
                  BIT(4) | /* secret */
                  BIT(5) | /* ota */
-                 BIT(7);  /* ble verison */
+                 BIT(7);  /* ble Version */
 
     /* Product Id */
     tm_uuid[2 + 1] = cfg->pid;
@@ -244,7 +244,7 @@ static void uuid_generate(struct bt_als_cfg const *cfg)
         tm_uuid[2 + 1 + 4 + i] = cfg->mac[5 - i];
     }
 
-    /* UUID Verison */
+    /* UUID Version */
     tm_uuid[2 + 1 + 4 + 6] = BIT(1);
 
     /* RFU */
@@ -567,7 +567,7 @@ int als_vendor_init(struct bt_mesh_model *model)
     oob_key_generate(&cfg);
 
     /** Random Local TID Value
-     *  @Caution Don't use single octer only.
+     *  @Caution Don't use single octet only.
      */
     ran = tmos_rand();
     als_tid += ((uint8_t *)&ran)[0];

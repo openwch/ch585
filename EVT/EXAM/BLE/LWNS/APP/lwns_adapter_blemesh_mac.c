@@ -292,7 +292,7 @@ static void ble_new_neighbor_callback(lwns_addr_t *n)
  * @param   dataptr     - 待发送的数据缓冲头指针.
  * @param   len         - 待发送的数据缓冲长度.
  *
- * @return  TRUE if success, FLASE is failed.
+ * @return  TRUE if success, FALSE is failed.
  */
 static BOOL ble_phy_output(uint8_t *dataptr, uint8_t len)
 {
@@ -435,51 +435,54 @@ static uint16_t lwns_phyoutput_ProcessEvent(uint8_t task_id, uint16_t events)
     }
     if (events & LWNS_PHY_OUTPUT_FINISH_EVT)    /* 发送完成任务 */
     {
-        if (ble_phy_channelmap_send_seq < sizeof(ble_phy_channelmap))
+        if(blemesh_phy_manage_list_head != NULL)
         {
-            if (ble_phy_channelmap_send_seq == 0)
+            if (ble_phy_channelmap_send_seq < sizeof(ble_phy_channelmap))
             {
-                /* 只需要在开始发送的时候停任务，发送期间，停止继续切换接收通道，变相停止任务，占用内存不释放 */
-                tmos_start_reload_task(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT, TMOS_TASK_STOP_RELOAD_TIME);
-                tmos_clear_event(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT); /* 停止可能已经置位的、可能会打开接收的任务 */
-                tmos_clear_event(lwns_adapter_taskid, LWNS_PHY_RX_OPEN_EVT);           /* 停止可能已经置位的、可能会打开接收的任务 */
-            }
-            ble_phy_channelmap_send_seq++;
-            tmos_start_reload_task(lwns_phyoutput_taskid, LWNS_PHY_OUTPUT_FINISH_EVT, MS1_TO_SYSTEM_TIME(LWNS_PHY_OUTPUT_TIMEOUT_MS)); /* 开始发送超时计数，防止有意外打断发送，导致无法继续发送 */
-            RF_Shut();
-            RF_SetChannel(ble_phy_channelmap[ble_phy_channelmap_send_seq]); /* 周期性更改发送通道 */
-            tx_end_flag = 0;
-            if (!RF_Tx((uint8_t *)(blemesh_phy_manage_list_head->data + 1),
-                       blemesh_phy_manage_list_head->data[0], USER_RF_RX_TX_TYPE,
-                       USER_RF_RX_TX_TYPE))
-            {
-                RF_Wait_Tx_End();
-            }
-        }
-        else
-        {
-            /* 三个通道一次发送结束完 */
-            ble_phy_send_cnt++;
-            tmos_set_event(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT); /* 间隔期间继续接收 */
-            tmos_start_reload_task(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT, MS1_TO_SYSTEM_TIME(LWNS_MAC_PERIOD_MS));
-            if (ble_phy_send_cnt < LWNS_MAC_TRANSMIT_TIMES)
-            {
-                /* 发送次数不够 */
-                tmos_set_event(lwns_phyoutput_taskid, LWNS_PHY_OUTPUT_PREPARE_EVT); /* 启动发送 */
+                if (ble_phy_channelmap_send_seq == 0)
+                {
+                    /* 只需要在开始发送的时候停任务，发送期间，停止继续切换接收通道，变相停止任务，占用内存不释放 */
+                    tmos_start_reload_task(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT, TMOS_TASK_STOP_RELOAD_TIME);
+                    tmos_clear_event(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT); /* 停止可能已经置位的、可能会打开接收的任务 */
+                    tmos_clear_event(lwns_adapter_taskid, LWNS_PHY_RX_OPEN_EVT);           /* 停止可能已经置位的、可能会打开接收的任务 */
+                }
+                tmos_start_reload_task(lwns_phyoutput_taskid, LWNS_PHY_OUTPUT_FINISH_EVT, MS1_TO_SYSTEM_TIME(LWNS_PHY_OUTPUT_TIMEOUT_MS)); /* 开始发送超时计数，防止有意外打断发送，导致无法继续发送 */
+                RF_Shut();
+                RF_SetChannel(ble_phy_channelmap[ble_phy_channelmap_send_seq]); /* 周期性更改发送通道 */
+                ble_phy_channelmap_send_seq++;
+                tx_end_flag = 0;
+                if (!RF_Tx((uint8_t *)(blemesh_phy_manage_list_head->data + 1),
+                        blemesh_phy_manage_list_head->data[0], USER_RF_RX_TX_TYPE,
+                        USER_RF_RX_TX_TYPE))
+                {
+                    RF_Wait_Tx_End();
+                }
             }
             else
             {
-                /* 指定次数发送结束 */
-                ble_phy_send_cnt = 0;                                              /* 清空发送次数计数 */
-                tmos_msg_deallocate(blemesh_phy_manage_list_head->data);           /* 释放内存 */
-                blemesh_phy_manage_list_head->data = NULL;                         /* 恢复默认参数 */
-                blemesh_phy_manage_list_head = blemesh_phy_manage_list_head->next; /* 链表pop，去除掉首元素 */
-                if (blemesh_phy_manage_list_head != NULL)
+                /* 三个通道一次发送结束完 */
+                ble_phy_send_cnt++;
+                tmos_set_event(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT); /* 间隔期间继续接收 */
+                tmos_start_reload_task(lwns_adapter_taskid, LWNS_PHY_RX_CHANGE_CHANNEL_EVT, MS1_TO_SYSTEM_TIME(LWNS_MAC_PERIOD_MS));
+                if (ble_phy_send_cnt < LWNS_MAC_TRANSMIT_TIMES)
                 {
+                    /* 发送次数不够 */
                     tmos_set_event(lwns_phyoutput_taskid, LWNS_PHY_OUTPUT_PREPARE_EVT); /* 启动发送 */
                 }
+                else
+                {
+                    /* 指定次数发送结束 */
+                    ble_phy_send_cnt = 0;                                              /* 清空发送次数计数 */
+                    tmos_msg_deallocate(blemesh_phy_manage_list_head->data);           /* 释放内存 */
+                    blemesh_phy_manage_list_head->data = NULL;                         /* 恢复默认参数 */
+                    blemesh_phy_manage_list_head = blemesh_phy_manage_list_head->next; /* 链表pop，去除掉首元素 */
+                    if (blemesh_phy_manage_list_head != NULL)
+                    {
+                        tmos_set_event(lwns_phyoutput_taskid, LWNS_PHY_OUTPUT_PREPARE_EVT); /* 启动发送 */
+                    }
+                }
+                tmos_start_reload_task(lwns_phyoutput_taskid, LWNS_PHY_OUTPUT_FINISH_EVT, TMOS_TASK_STOP_RELOAD_TIME);      /* 变相停止任务，占用内存不释放 */
             }
-            tmos_start_reload_task(lwns_phyoutput_taskid, LWNS_PHY_OUTPUT_FINISH_EVT, TMOS_TASK_STOP_RELOAD_TIME);      /* 变相停止任务，占用内存不释放 */
         }
         return (events ^ LWNS_PHY_OUTPUT_FINISH_EVT);
     }

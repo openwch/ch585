@@ -1,9 +1,5 @@
 ENTRY( _start )
 
-__stack_size = 512;
-
-PROVIDE( _stack_size = __stack_size );
-
 MEMORY
 {
 	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 448K
@@ -20,18 +16,18 @@ SECTIONS
 		. = ALIGN(4);
 		_einit = .;
 	} >FLASH AT>FLASH
-	
+
  /*   .vector :
     {
         *(.vector);
     } >FLASH AT>FLASH */
-        
+
     .highcode_initlalign :  
     {       
         . = ALIGN(4);
         PROVIDE(_highcode_init_lma = .); 
     } >FLASH AT>FLASH 
-    
+
     .highcode_init : 
     {
         PROVIDE(_highcode_init_vma_start = .);
@@ -43,13 +39,13 @@ SECTIONS
 		. = ALIGN(4); 
         PROVIDE(_highcode_init_vma_end = .);
     } >RAM AT>FLASH
-    
+
     .highcodelalign :  
     {       
         . = ALIGN(4);
         PROVIDE(_highcode_lma = .); 
     } >FLASH AT>FLASH 
-    
+
     .highcode : 
     {
         . = ALIGN(4);
@@ -57,10 +53,17 @@ SECTIONS
 		. = ALIGN(4);
         *(.highcode);
         *(.highcode.*);
+		/*
+         * Hot kernel functions promoted to .highcode (run from RAM for speed).
+         */
+        *(.text.vTaskSwitchContext);
+        *(.text.xTaskIncrementTick);
+		
+		
 		. = ALIGN(4); 
         PROVIDE(_highcode_vma_end = .);
     } >RAM AT>FLASH
-     
+
 	.text :
 	{
 		. = ALIGN(4);
@@ -91,7 +94,7 @@ SECTIONS
 	  KEEP (*(.preinit_array))
 	  PROVIDE_HIDDEN (__preinit_array_end = .);
 	} >FLASH AT>FLASH 
-	
+
 	.init_array     :
 	{
 	  PROVIDE_HIDDEN (__init_array_start = .);
@@ -99,7 +102,7 @@ SECTIONS
 	  KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
 	  PROVIDE_HIDDEN (__init_array_end = .);
 	} >FLASH AT>FLASH 
-	
+
 	.fini_array     :
 	{
 	  PROVIDE_HIDDEN (__fini_array_start = .);
@@ -107,7 +110,7 @@ SECTIONS
 	  KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
 	  PROVIDE_HIDDEN (__fini_array_end = .);
 	} >FLASH AT>FLASH 
-	
+
 	.ctors          :
 	{
 	  /* gcc uses crtbegin.o to find the start of
@@ -129,7 +132,7 @@ SECTIONS
 	  KEEP (*(SORT(.ctors.*)))
 	  KEEP (*(.ctors))
 	} >FLASH AT>FLASH 
-	
+
 	.dtors          :
 	{
 	  KEEP (*crtbegin.o(.dtors))
@@ -181,16 +184,13 @@ SECTIONS
 
 	PROVIDE( _end = _ebss);
 	PROVIDE( end = . );
-	
-    .stack ORIGIN(RAM) + LENGTH(RAM) - __stack_size :
-    {
-        PROVIDE( _heap_end = . );   
-        . = ALIGN(4);
-        PROVIDE(_susrstack = . );
-        . = . + __stack_size;
-        PROVIDE( _eusrstack = .);
+
+	.stack ORIGIN(RAM)+LENGTH(RAM) :
+	{
+		. = ALIGN(4);
+		PROVIDE(_eusrstack = . );
         PROVIDE( __freertos_irq_stack_top = .);
-    } >RAM 
+	} >RAM  
 }
 
 

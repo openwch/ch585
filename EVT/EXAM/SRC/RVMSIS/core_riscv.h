@@ -2,7 +2,7 @@
  * File Name          : core_riscv.h
  * Author             : WCH
  * Version            : V1.0.0
- * Date               : 2024/07/25
+ * Date               : 2026/10/16
  * Description        : CH585 Series RISC-V Core Peripheral Access Layer Header File
  *********************************************************************************
  * Copyright (c) 2024 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -23,7 +23,7 @@ extern "C" {
 
 #elif defined ( __ICCARM__ )
 #define __ASM           __asm                                       /*!< asm keyword for IAR Compiler          */
-#define __INLINE        inline                                      /*!< inline keyword for IAR Compiler. Only avaiable in High optimization mode! */
+#define __INLINE        inline                                      /*!< inline keyword for IAR Compiler. Only available in High optimization mode! */
 
 #elif defined   (  __GNUC__  )
 #define __ASM            __asm                                      /*!< asm keyword for GNU Compiler          */
@@ -449,7 +449,7 @@ __attribute__((always_inline)) RV_STATIC_INLINE void __set_MTVEC(uint32_t value)
 /*********************************************************************
  * @fn      __get_MSCRATCH
  *
- * @brief   Return the Machine Seratch Register
+ * @brief   Return the Machine Scratch Register
  *
  * @return  mscratch value
  */
@@ -464,7 +464,7 @@ __attribute__((always_inline)) RV_STATIC_INLINE uint32_t __get_MSCRATCH(void)
 /*********************************************************************
  * @fn      __set_MSCRATCH
  *
- * @brief   Set the Machine Seratch Register
+ * @brief   Set the Machine Scratch Register
  *
  * @param   value  - set mscratch value
  *
@@ -518,7 +518,7 @@ __attribute__((always_inline)) RV_STATIC_INLINE uint32_t __get_MCAUSE(void)
 }
 
 /*********************************************************************
- * @fn      __set_MEPC
+ * @fn      __set_MCAUSE
  *
  * @brief   Set the Machine Cause Register
  *
@@ -690,4 +690,4 @@ RV_STATIC_INLINE uint32_t __SysTick_Config(uint32_t ticks)
 }
 #endif
 
-#endif /* __CORE_RV3A_H__ */
+#endif /* __CORE_RISCV_H__ */

@@ -52,7 +52,7 @@ void i2c_app_init(uint8_t address)
     i2c_send_stop = true;
     i2c_in_repstart = false;
 
-    GPIOB_ModeCfg(GPIO_Pin_14 | GPIO_Pin_15, GPIO_ModeIN_PU);
+    GPIOB_ModeCfg(GPIO_Pin_12 | GPIO_Pin_13, GPIO_ModeIN_PU);
 
     I2C_Init(I2C_Mode_I2C, 400000, I2C_DutyCycle_16_9, I2C_Ack_Enable,
             I2C_AckAddr_7bit, address);
@@ -301,7 +301,7 @@ void I2C_IRQHandler(void)
                 I2C_DBG("  NACK received, sent stop\n");
             }
         } else {
-        /* I2C Master reveiver */
+        /* I2C Master receiver */
             I2C_DBG("Master receiver:\n");
 
             /* address sent, ack received */
@@ -312,7 +312,7 @@ void I2C_IRQHandler(void)
                     I2C_DBG("  address sent\n");
                     I2C_DBG("  ACK next\n");
                 } else {
-                    //XXX: Should not delay too match before NACK 
+                    //XXX: Should not delay too much before NACK
                     I2C_AcknowledgeConfig(DISABLE);
                     is_nack_sent = true;
                     I2C_DBG("  address sent\n");
@@ -320,7 +320,7 @@ void I2C_IRQHandler(void)
                 }
             }
 
-            /* data reveived */
+            /* data received */
             if (event & (RB_I2C_RxNE)) {
                 /* put byte into buffer */ 
                 i2c_master_buffer[i2c_master_buffer_index++] = I2C_ReceiveData();
@@ -329,7 +329,7 @@ void I2C_IRQHandler(void)
                     I2C_AcknowledgeConfig(ENABLE);
                     I2C_DBG("  ACK next\n");
                 } else {
-                    //XXX: Should not delay too match before NACK 
+                    //XXX: Should not delay too much before NACK
                     I2C_AcknowledgeConfig(DISABLE);
                     I2C_DBG("  NACK next\n");
 
@@ -399,7 +399,7 @@ void I2C_IRQHandler(void)
                     slave_cb->on_transmit(i2c_slave_txbuffer, &i2c_slave_txbuffer_length);
                 }
             } else {
-                I2C_DBG("Slave reveiver address matched\n");
+                I2C_DBG("Slave receiver address matched\n");
 
                 i2c_state = I2C_SRX;
                 i2c_slave_rxbuffer_index = 0;
@@ -407,7 +407,7 @@ void I2C_IRQHandler(void)
         }
 
         if (event & (RB_I2C_TRA << 16)) { //TODO: STOP?
-            /* Slave transmintter */
+            /* Slave transmitter */
             I2C_AcknowledgeConfig(ENABLE);
             I2C_DBG("Slave transmitter:\n");
 
@@ -457,7 +457,7 @@ void I2C_IRQHandler(void)
                 /* ack future responses and leave slave receiver state */
                 R16_I2C_CTRL1 |= RB_I2C_PE; //clear flag
 
-                I2C_DBG("  reveive stop\n");
+                I2C_DBG("  receive stop\n");
 
                 /* callback to user defined callback */
                 if (slave_cb && slave_cb->on_receive) {

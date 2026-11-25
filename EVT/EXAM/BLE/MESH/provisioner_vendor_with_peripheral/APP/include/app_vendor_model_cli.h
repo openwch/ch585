@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : app_generic_onoff_model_cli.h
+ * File Name          : app_vendor_model_cli.h
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2021/11/18

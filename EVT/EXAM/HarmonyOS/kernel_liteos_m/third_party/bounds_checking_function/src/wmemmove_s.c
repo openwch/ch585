@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,8 +9,12 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: wmemmove_s  function
- * Author: lishunda
  * Create: 2014-02-25
+ */
+/*
+ * [Standardize-exceptions] Use unsafe function: Portability
+ * [reason] Use unsafe function to implement security function to maintain platform compatibility.
+ *          And sufficient input validation is performed before calling
  */
 
 #include "securecutil.h"
@@ -33,7 +37,7 @@
  *    EOK                      Success
  *    EINVAL                   dest is  NULL and destMax != 0 and count <= destMax
  *                             and destMax <= SECUREC_WCHAR_MEM_MAX_LEN
- *    EINVAL_AND_RESET         dest != NULL and src is NULLL and destMax != 0
+ *    EINVAL_AND_RESET         dest != NULL and src is NULL and destMax != 0
  *                             and destMax <= SECUREC_WCHAR_MEM_MAX_LEN and count <= destMax
  *    ERANGE                   destMax > SECUREC_WCHAR_MEM_MAX_LEN or destMax is 0 or
  *                             (count > destMax and dest is  NULL and destMax != 0
@@ -42,7 +46,7 @@
  *                             and destMax <= SECUREC_WCHAR_MEM_MAX_LEN
  *
  *
- *     If an error occured, dest will  be filled with 0 when dest and destMax valid.
+ *     If an error occurred, dest will  be filled with 0 when dest and destMax valid.
  *     If some regions of the source area and the destination overlap, wmemmove_s
  *     ensures that the original source bytes in the overlapping region are copied
  *     before being overwritten
@@ -56,7 +60,7 @@ errno_t wmemmove_s(wchar_t *dest, size_t destMax, const wchar_t *src, size_t cou
     if (count > destMax) {
         SECUREC_ERROR_INVALID_PARAMTER("wmemmove_s");
         if (dest != NULL) {
-            (void)memset(dest, 0, destMax * sizeof(wchar_t));
+            (void)SECUREC_MEMSET_FUNC_OPT(dest, 0, destMax * sizeof(wchar_t));
             return ERANGE_AND_RESET;
         }
         return ERANGE;

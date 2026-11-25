@@ -191,7 +191,7 @@ uint8_t ISO14443ASelect(uint8_t *data, uint16_t *bit_count, uint8_t *uid, uint8_
     switch (cmd)
     {
     case ISO14443A_NVB_AC_START:
-#if IS014443A_FAST_CL == 0
+#if ISO14443A_FAST_CL == 0
         data[0] = uid[0];
         data[1] = uid[1];
         data[2] = uid[2];
@@ -204,7 +204,7 @@ uint8_t ISO14443ASelect(uint8_t *data, uint16_t *bit_count, uint8_t *uid, uint8_
     case ISO14443A_NVB_AC_END:
         if ((data[2] == uid[0]) && (data[3] == uid[1]) && (data[4] == uid[2]) && (data[5] == uid[3]))
         {
-#if IS014443A_FAST_CL == 0
+#if ISO14443A_FAST_CL == 0
             data[0] = sak;
             ISO14443AAppendCRCA((void *)data, 1);
 #endif
@@ -221,7 +221,7 @@ uint8_t ISO14443ASelect(uint8_t *data, uint16_t *bit_count, uint8_t *uid, uint8_
             _ISO14443ASelectB1(data, mask, uid, collision_byte_cnt, collision_bit_cnt)  ||
             _ISO14443ASelectB2(data, mask, uid, collision_byte_cnt, collision_bit_cnt))
         {
-#if IS014443A_FAST_CL == 0
+#if ISO14443A_FAST_CL == 0
             data[0] = uid[0];
             data[1] = uid[1];
             data[2] = uid[2];

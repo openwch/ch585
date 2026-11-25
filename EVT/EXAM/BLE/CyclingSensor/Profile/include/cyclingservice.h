@@ -55,7 +55,7 @@ extern "C" {
 #define CSC_MULTI_SENS_SUPP            0x04
 #define CSC_FULL_SUPPORT               0x07
 
-//CSC Censor Locations
+//CSC Sensor Locations
 #define CSC_SENSOR_LOC_OTHER           0
 #define CSC_SENSOR_LOC_TOP_OF_SHOE     1
 #define CSC_SENSOR_LOC_IN_SHOE         2
@@ -171,7 +171,7 @@ extern void Cycling_Register(cyclingServiceCB_t pfnServiceCB);
  * @brief   Set a CSC parameter.
  *
  * @param   param - Profile parameter ID
- * @param   len - length of data to right
+ * @param   len - length of data to write
  * @param   value - pointer to data to write.  This is dependent on
  *          the parameter ID and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to

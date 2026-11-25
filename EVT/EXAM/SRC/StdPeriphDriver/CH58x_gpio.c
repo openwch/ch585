@@ -2,7 +2,7 @@
  * File Name          : CH58x_gpio.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -116,7 +116,7 @@ void GPIOB_ModeCfg(uint32_t pin, GPIOModeTypeDef mode)
  *
  * @return  none
  */
-void GPIOA_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode)
+void GPIOA_ITModeCfg(uint32_t pin, GPIOITModeTypeDef mode)
 {
     switch(mode)
     {
@@ -157,7 +157,7 @@ void GPIOA_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode)
  *
  * @return  none
  */
-void GPIOB_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode)
+void GPIOB_ITModeCfg(uint32_t pin, GPIOITModeTypeDef mode)
 {
     uint32_t Pin = pin | ((pin & (GPIO_Pin_22 | GPIO_Pin_23)) >> 14);
     switch(mode)
@@ -195,18 +195,18 @@ void GPIOB_ITModeCfg(uint32_t pin, GPIOITModeTpDef mode)
  * @brief   外设功能引脚映射
  *
  * @param   s       - 是否使能映射
- * @param   perph   - RB_RF_ANT_SW_EN -  RF antenna switch control output on PA4/PA5/PA12/PA13/PA14/PA15
+ * @param   perph   - RB_RF_ANT_SW_EN -  RF antenna switch control output on PB16/PB17/PB18/PB19/PB20/PB21
  *                    RB_PIN_U0_INV -  RXD0/RXD0_/TXD0/TXD0_ invert input/output
  *                    RB_PIN_INTX   -  INTX: INT24/INT25 PB8/PB9 -> INT24_/INT25_ PB22/PB23
- *                    RB_PIN_MODEM  -  MODEM: PA6/PA7 -> PB12/PB13
- *                    RB_PIN_I2C    -  I2C: PB14/PB15 -> PB14/PB15
- *                    RB_PIN_PWMX   -  PWMX: PA12/PA13/PB7/PB6/PB4 -> PA6/PA7/PB3/PB2/PB1
+ *                    RB_PIN_MODEM  -  MODEM: PB1/PB5 -> PB14/PB15
+ *                    RB_PIN_I2C    -  I2C: PB13/PB12 -> PB21/PB20
+ *                    RB_PIN_PWMX   -  PWMX: PA12/PA13/PB4/PB6/PB7 -> PA6/PA7/PB1/PB2/PB3
  *                    RB_PIN_SPI0   -  SPI0:  PA12/PA13/PA14/PA15 -> PB12/PB13/PB14/PB15
- *                    RB_PIN_UART3  -  UART3: PA4/PA5 ->  PA4/PA5
- *                    RB_PIN_UART2  -  UART2: PB22/PB23 ->  PA6/PA7
+ *                    RB_PIN_UART3  -  UART3: PA4/PA5 ->  PB20/PB21
+ *                    RB_PIN_UART2  -  UART2: PA6/PA7 ->  PB22/PB23
  *                    RB_PIN_UART1  -  UART1: PA8/PA9 ->  PB12/PB13
  *                    RB_PIN_UART0  -  UART0: PB4/PB7 ->  PA15/PA14
- *                    RB_PIN_TMR3   -  TMR2:  PB22 ->  PB22
+ *                    RB_PIN_TMR3   -  TMR2:  PA9 ->  PB23
  *                    RB_PIN_TMR2   -  TMR2:  PA11 ->  PB11
  *                    RB_PIN_TMR1   -  TMR1:  PA10 ->  PB10
  *                    RB_PIN_TMR0   -  TMR0:  PA9 ->  PB23
@@ -233,7 +233,7 @@ void GPIOPinRemap(FunctionalState s, uint16_t perph)
  * @param   s       -   ENABLE  - 打开模拟外设功能，关闭数字功能
  *                      DISABLE - 启用数字功能，关闭模拟外设功能
  * @param   perph   -   RB_DEBUG_PIN_SEL  - SWDIO/SWCLK alternate pin enable: 0=SWDIO/SWCLK on PA[8]/PA[9], 1=SWDIO/SWCLK on PA[14]/PA[15]
- *                      RB_PB16_8_SEL  - interupt pin select,0=PB8, 1=PB16
+ *                      RB_PB16_8_SEL  - interrupt pin select,0=PB8, 1=PB16
  *                      RB_PIN_USB2_EN  - USB high speed comunication pin select, 0=PB12/13 not use, 1=PB12/13 used
  *                      RB_UDP_PU_EN  - enable USB ud+ pin pulled upresistance , 0=control by RB_UC_DEV_PU_EN, 1=force pulled up
  *                      RB_PIN_USB_EN  - enable USB fast speed pin, 0=PB10/PB11 not used, 1=PB10/PB11 used

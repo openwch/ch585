@@ -135,7 +135,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Profile"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="RVMSIS"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Startup"/>
-						<entry excluding="CH59x_usbdev.c|CH59x_usbhostClass.c|CH59x_usbhostBase.c|CH59x_pwm.c|CH59x_spi0.c|CH59x_timer1.c|CH59x_timer2.c|CH59x_timer3.c|CH59x_uart0.c|CH59x_uart2.c|CH59x_uart3.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="StdPeriphDriver"/>
+						<entry excluding="" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="StdPeriphDriver"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

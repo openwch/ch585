@@ -1,20 +1,12 @@
-/*
- * Copyright (c) 2021 Nuclei Limited. All rights reserved.
- *
+/********************************** (C) COPYRIGHT *******************************
+ * File Name          : los_context.c
+ * Author             : WCH
+ * Version            : V1.0
+ * Date               : 2026/09/18
+ * Description        : kernel_liteos_m移植，上下文接口文件
+ * Copyright (c) 2026 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
- *
- * Licensed under the Apache License, Version 2.0 (the License); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an AS IS BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ *******************************************************************************/
 
 #include "los_task.h"
 #include "los_memory.h"
@@ -22,14 +14,9 @@
 #include "los_sched.h"
 #include "los_interrupt.h"
 #include "CH58x_common.h"
-
 #include "los_arch_context.h"
-#include "los_arch_interrupt.h"
 #include "los_arch_timer.h"
-#include "riscv_bits.h"
-#include "riscv_encoding.h"
-
-extern VOID HalHwiInit(VOID);
+#include "securec.h"
 
 #define ALIGN_DOWN(size, align)         ((size) & ~((align) - 1))
 
@@ -41,7 +28,6 @@ extern "C" {
 
 LITE_OS_SEC_TEXT_INIT VOID ArchInit(VOID)
 {
-    HalHwiInit();
 }
 
 LITE_OS_SEC_TEXT_MINOR VOID ArchSysExit(VOID)
@@ -54,24 +40,24 @@ LITE_OS_SEC_TEXT_MINOR VOID ArchSysExit(VOID)
 
 LITE_OS_SEC_TEXT_INIT VOID *ArchTskStackInit(UINT32 taskID, UINT32 stackSize, VOID *topStack)
 {
-    UINT32 index;
-    UINT8 *stk = 0;
-    TaskContext  *context = NULL;
+    TaskContext *context = (TaskContext *)((UINTPTR)topStack + stackSize - sizeof(TaskContext));
 
-    /* initialize the task stack, write magic num to stack top */
-    *((UINT32 *)(topStack)) = OS_TASK_MAGIC_WORD;
+    context->epc = (UINT32)(UINTPTR)OsTaskEntry;
+    context->a0 = taskID;
+    context->ra = (UINT32)(UINTPTR)ArchSysExit;
+    return (VOID *)context;
+}
 
-    stk = ((UINT8 *)topStack) + stackSize + sizeof(STACK_TYPE);
-    stk = (UINT8 *)ALIGN_DOWN((uintptr_t)stk, REGBYTES);
-    context = (TaskContext *)(stk - sizeof(TaskContext));
+LITE_OS_SEC_TEXT_MINOR VOID *ArchSignalContextInit(VOID *stackPointer, VOID *stackTop,
+                                                   UINTPTR sigHandler, UINT32 param)
+{
+    UNUSED(stackTop);
+    TaskContext *context = (TaskContext *)((UINTPTR)stackPointer - sizeof(TaskContext));
+    (VOID)memset_s((VOID *)context, sizeof(TaskContext), 0, sizeof(TaskContext));
 
-    for (index = 1; index < sizeof(TaskContext) / sizeof(STACK_TYPE); index ++)
-    {
-        ((STACK_TYPE *)context)[index] = OS_TASK_STACK_INIT;
-    }
-    context->ra      = (STACK_TYPE)ArchSysExit;
-    context->a0      = (STACK_TYPE)taskID;
-    context->epc     = (STACK_TYPE)OsTaskEntry;
+    context->a0  = (STACK_TYPE)param;
+    context->ra  = (STACK_TYPE)ArchSysExit;
+    context->epc = (STACK_TYPE)sigHandler;
 
     return (VOID *)context;
 }
@@ -93,7 +79,6 @@ LITE_OS_SEC_TEXT_INIT UINT32 ArchStartSchedule(VOID)
 __attribute__((section(".highcode")))
 VOID ArchTaskSchedule(VOID)
 {
-//    PRINT("sw\r\n");
     PFIC_SetPendingIRQ(SWI_IRQn);
 }
 
@@ -109,4 +94,5 @@ VOID HalTaskSwitch(VOID)
 #if __cplusplus
 }
 #endif /* __cplusplus */
+
 #endif /* __cplusplus */

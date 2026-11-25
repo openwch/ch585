@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: strtok_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -51,7 +50,7 @@ SECUREC_INLINE char *SecFindRest(char *strToken, const char *strDelimit)
     char *token = strToken;
     while (*token != '\0') {
         if (SecIsInDelimit(*token, strDelimit) != 0) {
-            /* Find a delimiter, set string termintor */
+            /* Find a delimiter, set string terminator */
             *token = '\0';
             ++token;
             break;
@@ -111,7 +110,7 @@ char *strtok_s(char *strToken, const char *strDelimit, char **context)
     orgToken = SecFindBegin(orgToken, strDelimit);
     return SecUpdateToken(orgToken, strDelimit, context);
 }
-#if SECUREC_IN_KERNEL
+#if SECUREC_EXPORT_KERNEL_SYMBOL
 EXPORT_SYMBOL(strtok_s);
 #endif
 

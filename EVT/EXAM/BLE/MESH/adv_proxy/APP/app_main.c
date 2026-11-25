@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
+ * File Name          : app_main.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2021/03/24
@@ -35,7 +35,7 @@ const uint8_t MacAddr[6] = {0x84, 0xC2, 0xE4, 0x03, 0x02, 0x02};
  */
 __HIGH_CODE
 __attribute__((noinline))
-void Main_Circulation()
+void Main_Circulation(void)
 {
     while(1)
     {

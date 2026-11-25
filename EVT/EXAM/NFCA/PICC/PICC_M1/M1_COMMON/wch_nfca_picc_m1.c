@@ -1,10 +1,10 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : wch_nfca_picc_m1.c
  * Author             : WCH
- * Version            : V1.3
- * Date               : 2025/04/29
+ * Version            : V1.4
+ * Date               : 2026/03/03
  * Description        : NFC PICC M1 head file for WCH chips.
- * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Copyright (c) 2026 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 #include "wch_nfca_picc_m1.h"
@@ -77,7 +77,7 @@ nfca_picc_m1_data_t g_nfca_picc_m1_data;
 nfca_crypto1_cipher_t g_nfca_picc_m1_crypto1_cipher;
 nfca_picc_crypto1_auth_t g_nfca_picc_crypto1_auth;
 
-#if IS014443A_FAST_CL
+#if ISO14443A_FAST_CL
 uint16_t cl_pre_len;
 uint8_t iso14443a_cl_pre_raw_data[NFCA_PICC_TX_PRE_OUT_LEN(ISO14443A_CL_FRAME_SIZE)];
 uint16_t sak_pre_len;
@@ -211,7 +211,7 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
                 g_nfca_picc_m1_crypto1_cipher.is_encrypted = 0;
                 g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_ACTIVE;
             }
-#if IS014443A_FAST_CL ==  0
+#if ISO14443A_FAST_CL ==  0
             if(send_bits != 0)
             {
                 ISO14443ACalOddParityBit(g_picc_data_buf, g_picc_parity_buf, send_bits / 8);
@@ -231,27 +231,13 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
             }
 #endif
         }
-        else if(g_picc_data_buf[0] == PICC_HALT)
-        {
-            if(g_picc_data_buf[1] == 0x00)
-            {
-                g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_IDLE;
-            }
-        }
         else
         {
             g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_IDLE;
         }
         break;
     case NFCA_PICC_M1_STATE_ACTIVE:
-        if(g_picc_data_buf[0] == PICC_HALT)
-        {
-            if(g_picc_data_buf[1] == 0x00)
-            {
-                g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_IDLE;
-            }
-        }
-        else if((g_picc_data_buf[0] == PICC_AUTHENT1A) || (g_picc_data_buf[0] == PICC_AUTHENT1B))
+        if((g_picc_data_buf[0] == PICC_AUTHENT1A) || (g_picc_data_buf[0] == PICC_AUTHENT1B))
         {
             if (ISO14443_CRCA(g_picc_data_buf, 4) == 0)
             {
@@ -326,9 +312,10 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
         }
         break;
     case NFCA_PICC_M1_STATE_AUTHED_IDLE:
+        /** 在任何情况下，读卡器都可以发送原始的HALT指令，必须在此做出提前判断 */
         if(g_picc_data_buf[0] == PICC_HALT)
         {
-            if(g_picc_data_buf[1] == 0x00)
+            if((g_picc_data_buf[1] == 0x00) && (g_picc_data_buf[2] == 0x57) && (g_picc_data_buf[3] == 0xcd))
             {
                 g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_IDLE;
             }
@@ -460,9 +447,20 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
         }
         else if(g_picc_data_buf[0] == PICC_WRITE)
         {
-            g_nfca_picc_m1_data.block_in_use = g_picc_data_buf[1] & 0x3f;   /* M1卡有64个块，地址为0-63 */
-            g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_WRITING;
-            g_picc_data_buf[0] = ACK_VALUE;
+            uint8_t blk    = g_picc_data_buf[1] & 0x3f;                     /* M1卡有64个块，地址为0-63 */
+            uint8_t sector = blk >> 2;                                      /* 目标块所属扇区 */
+
+            /* 块0不可写；且目标块必须属于当前已认证的扇区，否则拒绝写入 */
+            if((blk == 0) || (sector != g_nfca_picc_m1_data.authed_sector))
+            {
+                g_picc_data_buf[0] = NAK_INVALID_ARG;
+            }
+            else
+            {
+                g_nfca_picc_m1_data.block_in_use = blk;
+                g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_WRITING;
+                g_picc_data_buf[0] = ACK_VALUE;
+            }
             send_bits = ACK_NAK_FRAME_SIZE;
             nfca_crypto1_encrypt(
                     (nfca_crypto1_cipher_t *)&g_nfca_picc_m1_crypto1_cipher,
@@ -524,12 +522,17 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
             }
             if (ISO14443_CRCA(g_picc_data_buf, 18) == 0)
             {
-                /* 写入成功，这里应加上用户自己的写入回调，如果不给写入第0块，增加判断即可 */
-                if(g_nfca_picc_m1_data.block_in_use != 0)
+                /* 写入校验：块号非0 且 属于当前已认证扇区，才允许写入 */
+                if((g_nfca_picc_m1_data.block_in_use != 0)
+                   && ((g_nfca_picc_m1_data.block_in_use >> 2) == g_nfca_picc_m1_data.authed_sector))
                 {
                     __MCPY((void *)&g_nfca_picc_m1_data.blocks[g_nfca_picc_m1_data.block_in_use], (void *)g_picc_data_buf, (void *)(g_picc_data_buf + 16));
+                    g_picc_data_buf[0] = ACK_VALUE;
                 }
-                g_picc_data_buf[0] = ACK_VALUE;
+                else
+                {
+                    g_picc_data_buf[0] = NAK_INVALID_ARG;
+                }
             }
             else
             {
@@ -601,7 +604,7 @@ void nfca_picc_m1_enable(uint8_t *uid)
         __MCPY((void *)g_nfca_picc_m1_data.blocks[4 * i + 3], (void *)sector_trailer, (void *)((uint32_t)sector_trailer + 16));
     }
 
-#if IS014443A_FAST_CL
+#if ISO14443A_FAST_CL
     ISO14443ACalOddParityBit(g_nfca_picc_m1_data.manufacturer_data.uid, parity, (ISO14443A_CL_UID_SIZE + ISO14443A_CL_BCC_SIZE));
     cl_pre_len = nfca_picc_tx_prepare_raw_buf(iso14443a_cl_pre_raw_data, g_nfca_picc_m1_data.manufacturer_data.uid, parity, ISO14443A_CL_FRAME_SIZE, 0);
 
@@ -623,7 +626,7 @@ void nfca_picc_m1_change_uid(uint8_t *uid)
     g_nfca_picc_m1_data.manufacturer_data.uid[3] = uid[3];
     g_nfca_picc_m1_data.manufacturer_data.bcc = ISO14443A_CALC_BCC(g_nfca_picc_m1_data.manufacturer_data.uid);
 
-#if IS014443A_FAST_CL
+#if ISO14443A_FAST_CL
     ISO14443ACalOddParityBit(g_nfca_picc_m1_data.manufacturer_data.uid, parity, (ISO14443A_CL_UID_SIZE + ISO14443A_CL_BCC_SIZE));
     cl_pre_len = nfca_picc_tx_prepare_raw_buf(iso14443a_cl_pre_raw_data, g_nfca_picc_m1_data.manufacturer_data.uid, parity, ISO14443A_CL_FRAME_SIZE, 0);
 #endif

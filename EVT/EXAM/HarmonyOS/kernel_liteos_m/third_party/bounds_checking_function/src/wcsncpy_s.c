@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: wcsncpy_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -61,7 +60,7 @@ SECUREC_INLINE errno_t SecDoCpyLimitW(wchar_t *strDest, size_t destMax, const wc
  * <RETURN VALUE>
  *    EOK                  Success
  *    EINVAL               strDest is  NULL and destMax != 0 and destMax <= SECUREC_WCHAR_STRING_MAX_LEN
- *    EINVAL_AND_RESET     strDest != NULL and strSrc is NULLL and destMax != 0
+ *    EINVAL_AND_RESET     strDest != NULL and strSrc is NULL and destMax != 0
  *                         and destMax <= SECUREC_WCHAR_STRING_MAX_LEN
  *    ERANGE               destMax > SECUREC_WCHAR_STRING_MAX_LEN or destMax is 0
  *    ERANGE_AND_RESET     count > SECUREC_WCHAR_STRING_MAX_LEN or

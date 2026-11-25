@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : OTAprofile.C
+ * File Name          : OTAprofile.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -33,11 +33,11 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-// Simple GATT Profile Service UUID: 0xFFF0
+// OTA Profile Service UUID: 0xFEE0
 const uint8_t OTAProfileServUUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(OTAPROFILE_SERV_UUID), HI_UINT16(OTAPROFILE_SERV_UUID)};
 
-// Characteristic 1 UUID: 0xFFF1
+// Characteristic 1 UUID: 0xFEE1
 const uint8_t OTAProfilechar1UUID[ATT_BT_UUID_SIZE] = {
     LO_UINT16(OTAPROFILE_CHAR_UUID), HI_UINT16(OTAPROFILE_CHAR_UUID)};
 
@@ -59,16 +59,16 @@ static OTAProfileCBs_t *OTAProfile_AppCBs = NULL;
  * Profile Attributes - variables
  */
 
-// Simple Profile Service attribute
+// OTA Profile Service attribute
 static const gattAttrType_t OTAProfileService = {ATT_BT_UUID_SIZE, OTAProfileServUUID};
 
-// Simple Profile Characteristic 1 Properties
+// OTA Profile Characteristic Properties
 static uint8_t OTAProfileCharProps = GATT_PROP_READ | GATT_PROP_WRITE | GATT_PROP_WRITE_NO_RSP;
 
 // Characteristic 1 Value
 static uint8_t OTAProfileChar = 0;
 
-// Simple Profile Characteristic 1 User Description
+// OTA Profile Characteristic User Description
 static uint8_t OTAProfileCharUserDesp[12] = "OTA Channel";
 
 // write and read buffer
@@ -82,7 +82,7 @@ static uint8_t OTAProfileWriteBuf[IAP_LEN];
  */
 
 static gattAttribute_t OTAProfileAttrTbl[4] = {
-    // Simple Profile Service
+    // OTA Profile Service
     {
         {ATT_BT_UUID_SIZE, primaryServiceUUID}, /* type */
         GATT_PERMIT_READ,                       /* permissions */
@@ -225,7 +225,7 @@ static bStatus_t OTAProfile_ReadAttrCB(uint16_t connHandle, gattAttribute_t *pAt
             }
             default:
             {
-                // Should never get here! (characteristics 3 and 4 do not have read permissions)
+                // Should never get here!
                 *pLen = 0;
                 status = ATT_ERR_ATTR_NOT_FOUND;
                 break;
@@ -285,7 +285,7 @@ static bStatus_t OTAProfile_WriteAttrCB(uint16_t connHandle, gattAttribute_t *pA
             }
 
             default:
-                // Should never get here! (characteristics 2 and 4 do not have write permissions)
+                // Should never get here!
                 status = ATT_ERR_ATTR_NOT_FOUND;
                 break;
         }

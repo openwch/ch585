@@ -44,7 +44,7 @@
 #define HID_HIGH_ADV_TIMEOUT              5
 #define HID_LOW_ADV_TIMEOUT               0
 
-// Heart Rate Task Events
+// HID Dev Task Events
 #define START_DEVICE_EVT                  0x0001
 #define BATT_PERIODIC_EVT                 0x0002
 
@@ -122,7 +122,7 @@ static void    hidDevHighAdvertising(void);
 static void    hidDevLowAdvertising(void);
 static void    hidDevInitialAdvertising(void);
 static uint8_t hidDevBondCount(void);
-static uint8_t HidDev_sendNoti(uint16_t handle, uint8_t len, uint8_t *pData);
+static uint8_t hidDevSendNoti(uint16_t handle, uint8_t len, uint8_t *pData);
 /*********************************************************************
  * PROFILE CALLBACKS
  */
@@ -151,14 +151,14 @@ static gapBondCBs_t hidDevBondCB = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void HidDev_Init()
+void HidDev_Init(void)
 {
     hidDevTaskId = TMOS_ProcessEventRegister(HidDev_ProcessEvent);
 
@@ -248,7 +248,7 @@ uint16_t HidDev_ProcessEvent(uint8_t task_id, uint16_t events)
  * @brief   Register a callback function with HID Dev.
  *
  * @param   pCfg - Parameter configuration.
- * @param   pfnServiceCB - Callback function.
+ * @param   pCBs - Callback function.
  *
  * @return  None.
  */
@@ -347,7 +347,7 @@ void HidDev_Close(void)
  * @brief   Set a HID Dev parameter.
  *
  * @param   param - Profile parameter ID
- * @param   len - length of data to right
+ * @param   len - length of data to write
  * @param   pValue - pointer to data to write.  This is dependent on
  *          the parameter ID and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to
@@ -519,7 +519,7 @@ bStatus_t HidDev_ReadAttrCB(uint16_t connHandle, gattAttribute_t *pAttr,
 /*********************************************************************
  * @fn      HidDev_WriteAttrCB
  *
- * @brief   HID Dev attribute read callback.
+ * @brief   HID Dev attribute write callback.
  *
  * @param   connHandle - connection message was received on
  * @param   pAttr - pointer to attribute
@@ -748,6 +748,7 @@ static void hidDevDisconnected(void)
     // Reset state variables
     hidDevConnSecure = FALSE;
     hidProtocolMode = HID_PROTOCOL_MODE_REPORT;
+    gapConnHandle = INVALID_CONNHANDLE; /* 断开后复位连接句柄，避免残留上次连接的句柄 */
 
     // if bonded and normally connectable start advertising
     if((hidDevBondCount() > 0) &&
@@ -1050,7 +1051,7 @@ static uint8_t hidDevSendReport(uint8_t id, uint8_t type, uint8_t len, uint8_t *
             if(value & GATT_CLIENT_CFG_NOTIFY)
             {
                 // Send report notification
-                state = HidDev_sendNoti(pRpt->handle, len, pData);
+                state = hidDevSendNoti(pRpt->handle, len, pData);
             }
         }
     }
@@ -1058,7 +1059,7 @@ static uint8_t hidDevSendReport(uint8_t id, uint8_t type, uint8_t len, uint8_t *
 }
 
 /*********************************************************************
- * @fn      hidDevSendNoti
+ * @fn      HidDev_sendNoti
  *
  * @brief   Send a HID notification.
  *
@@ -1068,7 +1069,7 @@ static uint8_t hidDevSendReport(uint8_t id, uint8_t type, uint8_t len, uint8_t *
  *
  * @return  Success or failure.
  */
-static uint8_t HidDev_sendNoti(uint16_t handle, uint8_t len, uint8_t *pData)
+static uint8_t hidDevSendNoti(uint16_t handle, uint8_t len, uint8_t *pData)
 {
     uint8_t              status;
     attHandleValueNoti_t noti;
@@ -1099,7 +1100,7 @@ static uint8_t HidDev_sendNoti(uint16_t handle, uint8_t len, uint8_t *pData)
  * @fn      hidDevHighAdvertising
  *
  * @brief   Start advertising at a high duty cycle.
-
+ *
  * @param   None.
  *
  * @return  None.

@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : rf_basic.c
+ * File Name          : RF_dtm.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2024/08/15
@@ -12,21 +12,19 @@
 /******************************************************************************/
 /* 头文件包含 */
 #include "rf_test.h"
-#include "hal.h"
+#include "HAL.h"
 #include "RingMem.h"
 #include "app_usb.h"
 /*********************************************************************
  * GLOBAL TYPEDEFS
  */
-#define  ALIGNED4(x)       ((x+3)/4*4)
-
 tmosTaskID rfTaskID;
 rfRoleParam_t gParm;
 
 rfipTx_t gTxParam;
 rfipRx_t gRxParam;
 
-__attribute__((__aligned__(4))) uint8_t TxBuf[255]; //最长发送字节255
+__attribute__((__aligned__(4))) uint8_t TxBuf[264];
 __attribute__((__aligned__(4))) uint8_t RxBuf[264]; // 接收DMA buf不能小于264字节
 
 
@@ -35,19 +33,22 @@ RingMemParm uartRingParm = {0};
 uint8_t usbRingMemBuff[1024];
 RingMemParm usbRingParm = {0};
 
-const uint8_t endTestCmd[4]={0x01, 0x1F, 0x20, 0x00};
-const uint8_t resetCmd[4]={0x01, 0x03, 0x0C, 0x00};
-const uint8_t receiverCmd[4]={0x01, 0x1D, 0x20, 0x01};
-const uint8_t transmitterCmd[4]={0x01, 0x1E, 0x20, 0x03};
-const uint8_t receiver2MCmd[4]={0x01, 0x33};
-const uint8_t transmitter2MCmd[4]={0x01, 0x34};
-const uint8_t setPowerCmd[4]={0x01, 0x01, 0xFF, 0x01};
-const uint8_t pFCmd[4]={0x01, 0x02, 0xFF, 0x01};
-const uint8_t SingleCarrierCmd[4]={0x01, 0x03, 0xFF, 0x01};
-uint8_t cmdCompleteEvt[23]={0x04, 0x0E};
-uint8_t TEST_MODE= 0xFF;   // 测试模式，发送或者接收
-uint8_t ttflag=0; //发送完成标志
-uint8_t ch;
+const uint8_t endTestCmd[4]               =   DTM_CMD_END_TEST;
+const uint8_t resetCmd[4]                 =   DTM_CMD_RESET;
+const uint8_t receiverCmd[4]              =   DTM_CMD_RX_1M;
+const uint8_t transmitterCmd[4]           =   DTM_CMD_TX_1M;
+const uint8_t receiver2MCmd[4]            =   DTM_CMD_RX_2M;
+const uint8_t transmitter2MCmd[4]         =   DTM_CMD_TX_2M;
+const uint8_t setPowerCmd[4]              =   DTM_CMD_SET_POWER;
+const uint8_t pFCmd[4]                    =   DTM_CMD_SET_PF;
+const uint8_t setPACmd[4]               =   DTM_CMD_SET_PA;
+const uint8_t setLNACmd[4]              =   DTM_CMD_SET_LNA;
+const uint8_t SingleCarrierCmd[4]         =   DTM_CMD_SINGLE_CARRIER;
+uint8_t cmdCompleteEvt[DTM_CMD_BUF_LEN]   =   {0x04, 0x0E};
+volatile uint8_t TEST_MODE = dtm_init;   // 测试模式，发送或者接收
+volatile uint8_t ttflag = 0; //发送完成标志
+volatile uint8_t ch;
+volatile uint8_t single = 0;
 rfRoleConfig_t rf_cfg= {0};
 #define  MODE_RX     0
 #define  MODE_TX     1
@@ -57,8 +58,8 @@ rfRoleConfig_t rf_cfg= {0};
 int8_t gRssi;
 
 int8_t gRssiAverage;
-uint32_t gTxCount;
-uint32_t gRxCount;
+volatile uint32_t gTxCount;
+volatile uint32_t gRxCount;
 
 /******************************** 发送相关函数 ********************************/
 /*******************************************************************************
@@ -182,14 +183,16 @@ void m_UART_SendString(uint8_t *buf, uint16_t l)
  * @return  None.
  */
 __HIGH_CODE
-uint16_t m_UART_RecvString(uint8_t *buf)
+uint16_t m_UART_RecvString(uint8_t *buf, uint8_t maxlen)
 {
     uint16_t len = 0;
 
     while(R8_UART1_RFC)
     {
         *buf++ = R8_UART1_RBR;
-        len++;
+        if(++len >= maxlen){
+            break;
+        }
     }
 
     return (len);
@@ -292,12 +295,12 @@ void RFRole_Init(void)
         RFRole_BasicInit( &conf );
     }
     {
-        gParm.accessAddress = 0x71764129;
-        gParm.crcInit = 0x555555;
+        gParm.accessAddress = DTM_AA_VAL;
+        gParm.crcInit = DTM_CRC_INIT_VAL;
         // 配置PHY类型
         gParm.properties = WHITE_OFF | LLE_MODE_PHY_1M;
         // 配置发送稳定时间
-        gParm.sendTime = 20*2;
+        gParm.sendTime = TX_WAITTIME;
         RFRole_SetParam( &gParm );
     }
     // TX相关参数，全局变量
@@ -340,13 +343,13 @@ void UART1_IRQHandler()
             case UART_II_RECV_RDY:       //接收数据可用
             case UART_II_RECV_TOUT:      //接收超时
             {
-                uint8_t uartRecBuff[10];
+                uint8_t uartRecBuff[UART_REC_LEN];
                 uint8_t uartRecLen;
-                uartRecLen = m_UART_RecvString( uartRecBuff );
+                uartRecLen = m_UART_RecvString( uartRecBuff, UART_REC_LEN);
                 // 写入缓冲区
                 if( RingMemWrite( &uartRingParm, uartRecBuff, uartRecLen ) )
                 {
-                    PRINT("RingMem err %d %d %d \n",uartRecLen,uartRingParm.RemanentLen,uartRingParm.MaxLen);
+                    //RingMem err;
                 }
                 break;
             }
@@ -366,7 +369,7 @@ void UART1_IRQHandler()
  * @return  BLE通道.
  */
 __HIGH_CODE
-uint8 Choose_CH( uint8 cch )
+uint8_t Choose_CH( uint8_t cch )
 {
   if( cch == 0 )
     return 37;
@@ -391,23 +394,26 @@ uint8 Choose_CH( uint8 cch )
  *
  * @return  None.
  */
-uint8 single =0;
 __HIGH_CODE
 void UART_Process_Data(void)
 {
  if( uartRingParm.CurrentLen >= 4  )
  {
-    uint8_t pData[23];
-    uint8 dataLen;
+    uint8_t pData[DTM_CMD_BUF_LEN];
+    uint8_t dataLen;
     if( RingReturnSingleData( &uartRingParm, 0 )!=0x01 )
     {
-      RingMemDelete( &uartRingParm, 1 );
-      return;
+        RingMemDelete( &uartRingParm, 1 );
+        return;
     }
     dataLen = RingReturnSingleData( &uartRingParm, 3 );
+    if( dataLen+4 > DTM_CMD_BUF_LEN ){
+        RingMemDelete( &uartRingParm, 1 );
+        return;
+    }
     if( uartRingParm.CurrentLen < dataLen+4 )
     {
-      return;
+        return;
     }
     RingMemCopy( &uartRingParm, pData, dataLen+4 );
 
@@ -498,7 +504,7 @@ void UART_Process_Data(void)
       m_UART_SendString( cmdCompleteEvt, 7 );
       ch = Choose_CH(pData[4]);
       gRxCount = 0;
-      gTxParam.properties &=~(3<<4);;
+      gTxParam.properties &=~(3<<4);
       gTxParam.frequency = ch;
       TxBuf[1] = pData[5];
       TxBuf[0] = pData[6];
@@ -531,6 +537,38 @@ void UART_Process_Data(void)
       R8_XT32M_TUNE &= ~RB_XT32M_C_LOAD;
       R8_XT32M_TUNE |= pData[4]<<4;
       R8_SAFE_ACCESS_SIG = 0;
+   }
+   else if( __wrap_memcmp( pData, setPACmd, 4 ) == 0)
+   {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      m_UART_SendString( cmdCompleteEvt, 7 );
+       //PA
+      R32_PA_CTRL &= ~(0x07 << 16);
+      R32_PA_CTRL |= pData[4] << 16;
+      R32_PA_CTRL &= ~(0x07 << 20);
+      R32_PA_CTRL |= pData[5] << 20;
+      R32_PA_CTRL &= ~(0x07 << 24);
+      R32_PA_CTRL |= pData[6] << 24;
+   }
+   else if( __wrap_memcmp( pData, setLNACmd, 4 ) == 0)
+   {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      m_UART_SendString( cmdCompleteEvt, 7 );
+      //LNA
+      R32_LNA_CTRL1 &= ~(0x07 << 16);
+      R32_LNA_CTRL1 |= pData[4] << 16;
+      R32_LNA_CTRL2 &= ~0x07;
+      R32_LNA_CTRL2 |= pData[5];
+      R32_LNA_CTRL2 &= ~(0x07 << 4);
+      R32_LNA_CTRL2 |= pData[6] << 4;
    }
    else if( __wrap_memcmp( pData, receiver2MCmd, 2 ) == 0)
    {
@@ -604,7 +642,7 @@ void UART_Process_Data(void)
 /*******************************************************************************
  * @fn      USB_Process_Data
  *
- * @brief   串口信令处理
+ * @brief   USB信令处理
  *
  * @param   None.
  *
@@ -615,17 +653,21 @@ void USB_Process_Data(void)
 {
  if( usbRingParm.CurrentLen >= 4  )
  {
-    uint8_t pData[23];
-    uint8 dataLen;
+    uint8_t pData[DTM_CMD_BUF_LEN];
+    uint8_t dataLen;
     if( RingReturnSingleData( &usbRingParm, 0 )!=0x01 )
     {
-      RingMemDelete( &usbRingParm, 1 );
-      return;
+        RingMemDelete( &usbRingParm, 1 );
+        return;
     }
     dataLen = RingReturnSingleData( &usbRingParm, 3 );
+    if( dataLen+4 > DTM_CMD_BUF_LEN ){
+        RingMemDelete( &usbRingParm, 1 );
+        return;
+    }
     if( usbRingParm.CurrentLen < dataLen+4 )
     {
-      return;
+        return;
     }
     RingMemCopy( &usbRingParm, pData, dataLen+4 );
 
@@ -750,6 +792,38 @@ void USB_Process_Data(void)
       R8_XT32M_TUNE |= pData[4]<<4;
       R8_SAFE_ACCESS_SIG = 0;
    }
+   else if( __wrap_memcmp( pData, setPACmd, 4 ) == 0)
+   {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+       //PA
+      R32_PA_CTRL &= ~(0x07 << 16);
+      R32_PA_CTRL |= pData[4] << 16;
+      R32_PA_CTRL &= ~(0x07 << 20);
+      R32_PA_CTRL |= pData[5] << 20;
+      R32_PA_CTRL &= ~(0x07 << 24);
+      R32_PA_CTRL |= pData[6] << 24;
+   }
+   else if( __wrap_memcmp( pData, setLNACmd, 4 ) == 0)
+   {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      //LNA
+      R32_LNA_CTRL1 &= ~(0x07 << 16);
+      R32_LNA_CTRL1 |= pData[4] << 16;
+      R32_LNA_CTRL2 &= ~0x07;
+      R32_LNA_CTRL2 |= pData[5];
+      R32_LNA_CTRL2 &= ~(0x07 << 4);
+      R32_LNA_CTRL2 |= pData[6] << 4;
+   }
    else if( __wrap_memcmp( pData, receiver2MCmd, 2 ) == 0)
    {
       RFRole_Shut();
@@ -829,12 +903,12 @@ void USB_Process_Data(void)
  *
  * @return  None.
  */
-uint16 PRBS9_INIT=0x01FF;
+uint16_t PRBS9_INIT=0x01FF;
 __HIGH_CODE
-void PRBS9_Get( uint8 *pData, uint16 len )
+void PRBS9_Get( uint8_t *pData, uint16_t len )
 {
-  uint8 outData=0;
-  uint8 i,j;
+  uint8_t outData=0;
+  uint8_t i,j;
   for(j=0; j<len; j++)
   {
     outData=0;
@@ -858,12 +932,12 @@ void PRBS9_Get( uint8 *pData, uint16 len )
  *
  * @return  None.
  */
-uint16 PRBS15_INIT=0x7FFF;
+uint16_t PRBS15_INIT=0x7FFF;
 __HIGH_CODE
-void PRBS15_Get( uint8 *pData, uint16 len )
+void PRBS15_Get( uint8_t *pData, uint16_t len )
 {
-  uint8 outData=0;
-  uint8 i,j;
+  uint8_t outData=0;
+  uint8_t i,j;
   for(j=0; j<len; j++)
   {
     outData=0;
@@ -935,6 +1009,12 @@ void TX_DATA( uint8_t* buf, uint8_t len )
   buf[1] = len;
 }
 
+__HIGH_CODE
+void DtmConfig(void)
+{
+    SRG_CAST(0x4000C13C) |= (31<<0);
+    SRG_CAST(0x4000D03C) = (SRG_CAST(0x4000D03C) &~ (0x0f<<12)) | (5<<12);
+}
 /*******************************************************************************
  * @fn      DtmProcess
  *
@@ -947,17 +1027,18 @@ void TX_DATA( uint8_t* buf, uint8_t len )
 __HIGH_CODE
 void DtmProcess(void)
 {
-  while(1)
-  {
-    UART_Process_Data();
-    USB_Process_Data();
-    if(ttflag)
+    DtmConfig();
+    while(1)
     {
-      mDelayuS(150);
-      ttflag = 0;
-      TX_DATA( TxBuf, TxBuf[1] );
-      rf_tx_start(TxBuf);
+        UART_Process_Data();
+        USB_Process_Data();
+        if(ttflag)
+        {
+          mDelayuS(150);//延时过短时CMW会收包异常
+          ttflag = 0;
+          TX_DATA( TxBuf, TxBuf[1] );
+          rf_tx_start(TxBuf);
+        }
     }
-  }
 }
 /******************************** endfile @rf ******************************/

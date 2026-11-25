@@ -62,7 +62,7 @@
  *              2) call tc_hmac_prng_reseed to process the seed and additional
  *              input.
  *
- *              3) call tc_hmac_prng_generate to out put the pseudo-random data.
+ *              3) call tc_hmac_prng_generate to output the pseudo-random data.
  */
 
 #ifndef __TC_HMAC_PRNG_H__

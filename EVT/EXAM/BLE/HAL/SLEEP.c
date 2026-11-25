@@ -70,8 +70,6 @@ uint32_t CH58x_LowPower(uint32_t time)
     {
         uint8_t x32Mpw;
 
-        LowPower_Sleep_WFE(RB_PWR_RAM32K | RB_PWR_RAM96K | RB_PWR_EXTEND);
-
         // 切换32M电流
         x32Mpw = R8_XT32M_TUNE;
         x32Mpw = (x32Mpw & 0xfc) | 0x03; // 150%额定电流
@@ -79,27 +77,37 @@ uint32_t CH58x_LowPower(uint32_t time)
         R8_XT32M_TUNE = x32Mpw;
         sys_safe_access_disable();
 
-        if(!(R8_RTC_FLAG_CTRL&RB_RTC_TRIG_FLAG)) //非RTC唤醒
+        if(chip_info&0x0F000000)
         {
-            // 注意此时32M还需等待稳定，也可执行一些时钟要求不高的代码
-            DelayUs(1400);
-            SetSysClock( SYSCLK_FREQ );
-            SYS_RecoverIrq(irq_status);
-            return 0;
+            LowPower_Sleep_WFE(RB_PWR_RAM32K | RB_PWR_RAM96K | RB_PWR_EXTEND | RB_XT_PRE_EN);
         }
-
-        R8_RTC_FLAG_CTRL = (RB_RTC_TMR_CLR | RB_RTC_TRIG_CLR);
-        RTC_SetTignTime(time);
-        sys_safe_access_enable();
-        R8_HFCK_PWR_CTRL |= RB_CLK_XT32M_KEEP;
-        sys_safe_access_disable();
-        if(!(R8_RTC_FLAG_CTRL&RB_RTC_TRIG_FLAG)) //非RTC唤醒
+        else
         {
-            LowPower_Halt_WFE();
+            LowPower_Sleep_WFE(RB_PWR_RAM32K | RB_PWR_RAM96K | RB_PWR_EXTEND);
+
+            if(!(R8_RTC_FLAG_CTRL&RB_RTC_TRIG_FLAG)) //非RTC唤醒
+            {
+                // 注意此时32M还需等待稳定，也可执行一些时钟要求不高的代码
+                DelayUs(1400);
+                SetSysClock( SYSCLK_FREQ );
+                SYS_RecoverIrq(irq_status);
+                HSECFG_Current(HSE_RCur_100); // 降为额定电流(低功耗函数中提升了HSE偏置电流)
+                return 0;
+            }
+
+            R8_RTC_FLAG_CTRL = (RB_RTC_TMR_CLR | RB_RTC_TRIG_CLR);
+            RTC_SetTignTime(time);
+            sys_safe_access_enable();
+            R8_HFCK_PWR_CTRL |= RB_CLK_XT32M_KEEP;
+            sys_safe_access_disable();
+            if(!(R8_RTC_FLAG_CTRL&RB_RTC_TRIG_FLAG)) //非RTC唤醒
+            {
+                LowPower_Halt_WFE();
+            }
+
         }
         // 恢复时钟
         SetSysClock( SYSCLK_FREQ );
-        R8_RTC_FLAG_CTRL = (RB_RTC_TMR_CLR | RB_RTC_TRIG_CLR);
         SYS_RecoverIrq(irq_status);
         HSECFG_Current(HSE_RCur_100); // 降为额定电流(低功耗函数中提升了HSE偏置电流)
         return 0;

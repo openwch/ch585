@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: vwscanf_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -47,14 +46,22 @@ int vwscanf_s(const wchar_t *format, va_list argList)
     int retVal;                 /* If initialization causes  e838 */
     SecFileStream fStr;
     SECUREC_FILE_STREAM_FROM_STDIN(&fStr);
+#if SECUREC_ENABLE_SCANF_FILE
     if (format == NULL || fStr.pf == NULL) {
+#else
+    if (format == NULL) {
+#endif
         SECUREC_ERROR_INVALID_PARAMTER("vwscanf_s");
         return SECUREC_SCANF_EINVAL;
     }
 
+#if SECUREC_ENABLE_SCANF_FILE
     SECUREC_LOCK_STDIN(0, fStr.pf);
+#endif
     retVal = SecInputSW(&fStr, format, argList);
+#if SECUREC_ENABLE_SCANF_FILE
     SECUREC_UNLOCK_STDIN(0, fStr.pf);
+#endif
     if (retVal < 0) {
         SECUREC_ERROR_INVALID_PARAMTER("vwscanf_s");
         return SECUREC_SCANF_EINVAL;

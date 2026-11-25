@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT ******************************
  * File Name         : CH58xBLE_ROM.H
  * Author            : WCH
- * Version           : v1.40
- * Date              : 2025/02/07
+ * Version           : v1.51
+ * Date              : 2025/11/25
  * Description       : head file(ch585/ch584)
  *                    Address Space
  *                       CODE:   00040000H - 0006FFFFH   192K
@@ -157,7 +157,7 @@ typedef struct
 /*********************************************************************
  * GLOBAL MACROS
  */
-#define VER_FILE  "CH585_BLE_LIB_V1.4"
+#define VER_FILE  "CH585_BLE_LIB_V1.5"
 extern const uint8_t VER_LIB[];  // LIB version
 #define SYSTEM_TIME_MICROSEN            625   // unit of process event timer is 625us
 #define MS1_TO_SYSTEM_TIME(x)  ((x)*1000/SYSTEM_TIME_MICROSEN)   // transform unit in ms to unit in 625us ( attentional bias )
@@ -2358,6 +2358,8 @@ typedef int (*pfnEcc_alg_f6_t)( uint8_t *w, uint8_t *n1, uint8_t *n2, uint8_t *r
 
 typedef void (*pfnSm_randkey_t)( uint8_t *randkey, uint8_t keylen );
 
+typedef void (*pfnSm_numericComparison_t)( uint16_t connHandle, uint32_t val );
+
 /**
  * Callback Registration Structure
  */
@@ -4264,7 +4266,7 @@ typedef struct tag_rf_config
  * @return  SUCCESS - bond record found and changed
  *          bleIncorrectMode - Link not found.
  */
-#define   GAPBondMgr_OobRsp ((  bStatus_t (*) ( uint16_t connHandle, uint8_t status, uint8_t *oob, uint8_t * c_peer )£©  BLE_LIB_JT(139) )
+#define   GAPBondMgr_OobRsp ((  bStatus_t (*) ( uint16_t connHandle, uint8_t status, uint8_t *oob, uint8_t * c_peer ))  BLE_LIB_JT(139) )
 
 /**
  * @brief   Initialization function for the ecc-function callback.
@@ -4273,7 +4275,18 @@ typedef struct tag_rf_config
  *
  * @return  null.
  */
-#define   GAPBondMgr_EccInit  ((  void  (*) ( gapEccCBs_t *pEcc )£©  BLE_LIB_JT(140) )
+#define   GAPBondMgr_EccInit  ((  void  (*) ( gapEccCBs_t *pEcc ))  BLE_LIB_JT(140) )
+
+/**
+ * @brief   Respond to a jw or  request.
+ *
+ * @param   connHandle - connection handle
+ *
+ */
+#define   GAPBondMgr_JwOrNcRsp   (( bStatus_t  (*) ( uint16_t connHandle, uint8_t status ))  BLE_LIB_JT(149) ) ;
+
+
+
 
 /**
  * @brief   Send a security request

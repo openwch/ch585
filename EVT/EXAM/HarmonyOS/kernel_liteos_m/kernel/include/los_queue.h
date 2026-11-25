@@ -39,6 +39,7 @@
 
 #include "los_list.h"
 #include "los_config.h"
+#include "los_task.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -453,7 +454,7 @@ extern UINT32 LOS_QueueCreateStatic(const CHAR *queueName,
  * first.</li>
  * <li>bufferAddr stores the obtained data.</li>
  * <li>Do not read or write a queue in unblocking modes such as an interrupt.</li>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * <li>The argument timeOut is a relative time.</li>
  * </ul>
  *
@@ -489,6 +490,50 @@ extern UINT32 LOS_QueueReadCopy(UINT32 queueID,
 
 /**
  * @ingroup los_queue
+ * @brief Read a queue in interrupt service routine.
+ *
+ * @par Description:
+ * This API is used to read data in a specified queue, and store the obtained data to the address specified
+ * by bufferAddr. The address and the size of the data to be read are defined by users. 
+ * It is safe to use this API from within an interrupt service routine.
+ * @attention
+ * <ul>
+ * <li>The specific queue should be created firstly.</li>
+ * <li>Queue reading adopts the fist in first out (FIFO) mode. The data that is first stored in the queue is read
+ * first.</li>
+ * <li>This API read a queue in unblocking modes.</li>
+ * <li>bufferAddr stores the obtained data.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
+ * </ul>
+ *
+ * @param queueID        [IN]     Queue ID created by LOS_QueueCreate. The value range is
+ * [1,LOSCFG_BASE_IPC_QUEUE_LIMIT].
+ * @param bufferAddr     [OUT]    Starting address that stores the obtained data. The starting address must not be
+ * null.
+ * @param bufferSize     [IN/OUT] Where to maintain the buffer expected-size before read, and the real-size after read.
+ *
+ * @retval   #LOS_OK                              The queue is successfully read.
+ * @retval   #LOS_ERRNO_QUEUE_INVALID             The handle of the queue that is being read is invalid.
+ * @retval   #LOS_ERRNO_QUEUE_READ_PTR_NULL       The pointer passed in during queue reading is null.
+ * @retval   #LOS_ERRNO_QUEUE_READSIZE_ISZERO     The buffer size passed in during queue reading is 0.
+ * @retval   #LOS_ERRNO_QUEUE_NOT_CREATE          The queue to be read is not created.
+ * @retval   #LOS_ERRNO_QUEUE_ISEMPTY             No resource is in the queue that is being read when the time for
+ * waiting to processing the queue expires.
+ * @retval   #LOS_ERRNO_QUEUE_READ_SIZE_TOO_SMALL The buffer size passed in during queue reading is less than
+ * the queue size.
+ * @par Dependency:
+ * <ul><li>los_queue.h: the header file that contains the API declaration.</li></ul>
+ * @see LOS_QueueWriteCopy | LOS_QueueCreate
+ */
+STATIC INLINE  UINT32 LOS_QueueReadCopyIsr(UINT32 queueID,
+                                           VOID *bufferAddr,
+                                           UINT32 *bufferSize)
+{
+    return LOS_QueueReadCopy(queueID, bufferAddr, bufferSize, LOS_NO_WAIT);
+}
+
+/**
+ * @ingroup los_queue
  * @brief Write data into a queue.
  *
  * @par Description:
@@ -498,7 +543,7 @@ extern UINT32 LOS_QueueReadCopy(UINT32 queueID,
  * <ul>
  * <li>The specific queue should be created firstly.</li>
  * <li>Do not read or write a queue in unblocking modes such as interrupt.</li>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * <li>The data to be written is of the size specified by bufferSize and is stored at the address specified by
  * BufferAddr.</li>
  * <li>The argument timeOut is a relative time.</li>
@@ -535,6 +580,47 @@ extern UINT32 LOS_QueueWriteCopy(UINT32 queueID,
 
 /**
  * @ingroup los_queue
+ * @brief Write data into a queue in interrupt service routine.
+ *
+ * @par Description:
+ * This API is used to write the data of the size specified by bufferSize and stored at the address specified by
+ * bufferAddr into a queue.It is safe to use this API from within an interrupt service routine.
+ * @attention
+ * <ul>
+ * <li>The specific queue should be created firstly.</li>
+ * <li>This API write data into a queue in unblocking modes.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
+ * <li>The data to be written is of the size specified by bufferSize and is stored at the address specified by
+ * BufferAddr.</li>
+ * </ul>
+ *
+ * @param queueID        [IN]        Queue ID created by LOS_QueueCreate. The value range is
+ * [1,LOSCFG_BASE_IPC_QUEUE_LIMIT].
+ * @param bufferAddr     [IN]        Starting address that stores the data to be written.The starting address must
+ * not be null.
+ * @param bufferSize     [IN]        Passed-in buffer size. The value range is [1,USHRT_MAX - sizeof(UINT32)].
+ *
+ * @retval   #LOS_OK                                 The data is successfully written into the queue.
+ * @retval   #LOS_ERRNO_QUEUE_INVALID                The queue handle passed in during queue writing is invalid.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_PTR_NULL         The pointer passed in during queue writing is null.
+ * @retval   #LOS_ERRNO_QUEUE_WRITESIZE_ISZERO       The buffer size passed in during queue writing is 0.
+ * @retval   #LOS_ERRNO_QUEUE_NOT_CREATE             The queue into which the data is written is not created.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_SIZE_TOO_BIG     The buffer size passed in during queue writing is bigger than
+ * the queue size.
+ * @retval   #LOS_ERRNO_QUEUE_ISFULL                 No free node is available during queue writing.
+ * @par Dependency:
+ * <ul><li>los_queue.h: the header file that contains the API declaration.</li></ul>
+ * @see LOS_QueueReadCopy | LOS_QueueCreate
+ */
+STATIC INLINE UINT32 LOS_QueueWriteCopyIsr(UINT32 queueID,
+                                           VOID *bufferAddr,
+                                           UINT32 bufferSize)
+{
+    return LOS_QueueWriteCopy(queueID, bufferAddr, bufferSize, LOS_NO_WAIT);
+}
+
+/**
+ * @ingroup los_queue
  * @brief Read a queue.
  *
  * @par Description:
@@ -547,7 +633,7 @@ extern UINT32 LOS_QueueWriteCopy(UINT32 queueID,
  * read first.</li>
  * <li>bufferAddr stores the obtained data address.</li>
  * <li>Do not read or write a queue in unblocking modes such as an interrupt.</li>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * <li>The argument timeOut is a relative time.</li>
  * <li>The bufferSize is not really used in LOS_QueueRead, because the interface is only used to
  * obtain the address of data.</li>
@@ -584,6 +670,50 @@ extern UINT32 LOS_QueueRead(UINT32 queueID,
 
 /**
  * @ingroup los_queue
+ * @brief Read a queue in interrupt service routine.
+ *
+ * @par Description:
+ * This API is used to read the address of data in a specified queue, and store it to the address specified by
+ * bufferAddr.It is safe to use this API from within an interrupt service routine.
+ * @attention
+ * <ul>
+ * <li>The specific queue should be created firstly.</li>
+ * <li>Queue reading adopts the fist in first out (FIFO) mode. The data that is first stored in the queue is
+ * read first.</li>
+ * <li>This API read a queue in unblocking modes.</li>
+ * <li>bufferAddr stores the obtained data address.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
+ * <li>The bufferSize is not really used in LOS_QueueRead, because the interface is only used to
+ * obtain the address of data.</li>
+ * <li>The buffer which the bufferAddr pointing to must be greater than or equal to 4 bytes.</li>
+ * </ul>
+ *
+ * @param queueID        [IN]        Queue ID created by LOS_QueueCreate. The value range is
+ * [1,LOSCFG_BASE_IPC_QUEUE_LIMIT].
+ * @param bufferAddr     [OUT]       Starting address that stores the obtained data. The starting address must
+ * not be null.
+ * @param bufferSize     [IN]        Passed-in buffer size, which must not be 0. The value range is [1,0xffffffff].
+ *
+ * @retval   #LOS_OK                               The queue is successfully read.
+ * @retval   #LOS_ERRNO_QUEUE_INVALID              The handle of the queue that is being read is invalid.
+ * @retval   #LOS_ERRNO_QUEUE_READ_PTR_NULL        The pointer passed in during queue reading is null.
+ * @retval   #LOS_ERRNO_QUEUE_READSIZE_ISZERO      The buffer size passed in during queue reading is 0.
+ * @retval   #LOS_ERRNO_QUEUE_NOT_CREATE           The queue to be read is not created.
+ * @retval   #LOS_ERRNO_QUEUE_ISEMPTY              No resource is in the queue that is being read when the time for
+ * waiting to processing the queue expires.
+ * @par Dependency:
+ * <ul><li>los_queue.h: The header file that contains the API declaration.</li></ul>
+ * @see LOS_QueueWrite | LOS_QueueCreate
+ */
+STATIC INLINE UINT32 LOS_QueueReadIsr(UINT32 queueID,
+                                      VOID *bufferAddr,
+                                      UINT32 bufferSize)
+{
+    return LOS_QueueRead(queueID, bufferAddr, bufferSize, LOS_NO_WAIT);
+}
+
+/**
+ * @ingroup los_queue
  * @brief Write data into a queue.
  *
  * @par Description:
@@ -592,7 +722,7 @@ extern UINT32 LOS_QueueRead(UINT32 queueID,
  * <ul>
  * <li>The specific queue should be created firstly.</li>
  * <li>Do not read or write a queue in unblocking modes such as an interrupt.</li>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * <li>The address of the data of the size specified by bufferSize and stored at the address specified by
  * BufferAddr is to be written.</li>
  * <li>The argument timeOut is a relative time.</li>
@@ -631,6 +761,49 @@ extern UINT32 LOS_QueueWrite(UINT32 queueID,
 
 /**
  * @ingroup los_queue
+ * @brief Write data into a queue in interrupt service routine.
+ *
+ * @par Description:
+ * This API is used to write the address of data specified by bufferAddr into a queue.
+ * It is safe to use this API from within an interrupt service routine.
+ * @attention
+ * <ul>
+ * <li>The specific queue should be created firstly.</li>
+ * <li>This API write data into a queue in unblocking modes.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
+ * <li>The address of the data of the size specified by bufferSize and stored at the address specified by
+ * BufferAddr is to be written.</li>
+ * <li>The bufferSize is not really used in LOS_QueueWriteIsr, because the interface is only used to write the address
+ * of data specified by bufferAddr into a queue.</li>
+ * </ul>
+ *
+ * @param queueID        [IN]        Queue ID created by LOS_QueueCreate. The value range is
+ * [1,LOSCFG_BASE_IPC_QUEUE_LIMIT].
+ * @param bufferAddr     [IN]        Starting address that stores the data to be written. The starting address
+ * must not be null.
+ * @param bufferSize     [IN]        Passed-in buffer size, which must not be 0. The value range is [1,0xffffffff].
+ *
+ * @retval   #LOS_OK                                The data is successfully written into the queue.
+ * @retval   #LOS_ERRNO_QUEUE_INVALID               The queue handle passed in during queue writing is invalid.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_PTR_NULL        The pointer passed in during queue writing is null.
+ * @retval   #LOS_ERRNO_QUEUE_WRITESIZE_ISZERO      The buffer size passed in during queue writing is 0.
+ * @retval   #LOS_ERRNO_QUEUE_NOT_CREATE            The queue into which the data is written is not created.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_SIZE_TOO_BIG    The buffer size passed in during queue writing is bigger than
+ * the queue size.
+ * @retval   #LOS_ERRNO_QUEUE_ISFULL                No free node is available during queue writing.
+ * @par Dependency:
+ * <ul><li>los_queue.h: The header file that contains the API declaration.</li></ul>
+ * @see LOS_QueueRead | LOS_QueueCreate
+ */
+STATIC INLINE UINT32 LOS_QueueWriteIsr(UINT32 queueID,
+                                       VOID *bufferAddr,
+                                       UINT32 bufferSize)
+{
+    return LOS_QueueWrite(queueID, bufferAddr, bufferSize, LOS_NO_WAIT);
+}
+
+/**
+ * @ingroup los_queue
  * @brief Write data into a queue header.
  *
  * @par Description:
@@ -639,7 +812,7 @@ extern UINT32 LOS_QueueWrite(UINT32 queueID,
  * @attention
  * <ul>
  * <li>Do not read or write a queue in unblocking modes such as an interrupt.</li>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * <li>The address of the data of the size specified by bufferSize and stored at the address specified by
  * BufferAddr is to be written.</li>
  * <li>The argument timeOut is a relative time.</li>
@@ -678,6 +851,48 @@ extern UINT32 LOS_QueueWriteHead(UINT32 queueID,
 
 /**
  * @ingroup los_queue
+ * @brief Write data into a queue header in interrupt service routine.
+ *
+ * @par Description:
+ * This API is used to write the data of the size specified by bufferSize and stored at the address specified by
+ * bufferAddr into a queue header.It is safe to use this API from within an interrupt service routine.
+ * @attention
+ * <ul>
+ * <li>This API cannot be called before the kernel is initialized.</li>
+ * <li>This API write data into a queue header in unblocking modes.</li>
+ * <li>The address of the data of the size specified by bufferSize and stored at the address specified by
+ * BufferAddr is to be written.</li>
+ * <li>LOS_QueueRead and LOS_QueueWriteHeadIsr are a set of interfaces, and the two groups of interfaces need to be used.
+ * <li>
+ * </ul>
+ *
+ * @param queueID        [IN]        Queue ID created by LOS_QueueCreate. The value range is
+ * [1,LOSCFG_BASE_IPC_QUEUE_LIMIT].
+ * @param bufferAddr     [OUT]       Starting address that stores the data to be written. The starting address
+ * must not be null.
+ * @param bufferSize     [IN]        Passed-in buffer size, which must not be 0. The value range is [1,0xffffffff].
+ *
+ * @retval   #LOS_OK                                 The data is successfully written into the queue.
+ * @retval   #LOS_ERRNO_QUEUE_INVALID                The queue handle passed in during queue writing is invalid.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_PTR_NULL         The pointer passed in during queue writing is null.
+ * @retval   #LOS_ERRNO_QUEUE_WRITESIZE_ISZERO       The buffer size passed in during queue writing is 0.
+ * @retval   #LOS_ERRNO_QUEUE_NOT_CREATE             The queue into which the data is written is not created.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_SIZE_TOO_BIG     The buffer size passed in during queue writing is bigger than
+ * the queue size.
+ * @retval   #LOS_ERRNO_QUEUE_ISFULL                 No free node is available during queue writing.
+ * @par Dependency:
+ * <ul><li>los_queue.h: The header file that contains the API declaration.</li></ul>
+ * @see LOS_QueueRead | LOS_QueueCreate
+ */
+STATIC INLINE UINT32 LOS_QueueWriteHeadIsr(UINT32 queueID,
+                                           VOID *bufferAddr,
+                                           UINT32 bufferSize)
+{
+    return LOS_QueueWriteHead(queueID, bufferAddr, bufferSize, LOS_NO_WAIT);
+}
+
+/**
+ * @ingroup los_queue
  * @brief Write data into a queue header.
  *
  * @par Description:
@@ -686,7 +901,7 @@ extern UINT32 LOS_QueueWriteHead(UINT32 queueID,
  * @attention
  * <ul>
  * <li>Do not read or write a queue in unblocking modes such as an interrupt.</li>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * <li>The address of the data of the size specified by bufferSize and stored at the address specified by
  * BufferAddr is to be written.</li>
  * <li>The argument timeOut is a relative time.</li>
@@ -722,6 +937,48 @@ extern UINT32 LOS_QueueWriteHeadCopy(UINT32 queueID,
                                      VOID *bufferAddr,
                                      UINT32 bufferSize,
                                      UINT32 timeOut);
+
+/**
+ * @ingroup los_queue
+ * @brief Write data into a queue header in interrupt service routine.
+ *
+ * @par Description:
+ * This API is used to write the data of the size specified by bufferSize and stored at the address specified by
+ * bufferAddr into a queue header.It is safe to use this API from within an interrupt service routine.
+ * @attention
+ * <ul>
+ * <li>This API cannot be called before the kernel is initialized.</li>
+ * <li>This API write data into a queue header in unblocking modes.</li>
+ * <li>The address of the data of the size specified by bufferSize and stored at the address specified by
+ * BufferAddr is to be written.</li>
+ * <li>LOS_QueueReadCopy and LOS_QueueWriteHeadCopyIsr are a set of interfaces, and the two groups of interfaces need to be
+ * used.<li>
+ * </ul>
+ *
+ * @param queueID        [IN]        Queue ID created by LOS_QueueCreate. The value range is
+ * [1,LOSCFG_BASE_IPC_QUEUE_LIMIT].
+ * @param bufferAddr     [OUT]       Starting address that stores the data to be written.
+ * The starting address must not be null.
+ * @param bufferSize     [IN]        Passed-in buffer size, which must not be 0. The value range is [1,0xffffffff].
+ *
+ * @retval   #LOS_OK                                 The data is successfully written into the queue.
+ * @retval   #LOS_ERRNO_QUEUE_INVALID                The queue handle passed in during queue writing is invalid.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_PTR_NULL         The pointer passed in during queue writing is null.
+ * @retval   #LOS_ERRNO_QUEUE_WRITESIZE_ISZERO       The buffer size passed in during queue writing is 0.
+ * @retval   #LOS_ERRNO_QUEUE_NOT_CREATE             The queue into which the data is written is not created.
+ * @retval   #LOS_ERRNO_QUEUE_WRITE_SIZE_TOO_BIG     The buffer size passed in during queue writing is bigger than
+ * the queue size.
+ * @retval   #LOS_ERRNO_QUEUE_ISFULL                 No free node is available during queue writing.
+ * @par Dependency:
+ * <ul><li>los_queue.h: The header file that contains the API declaration.</li></ul>
+ * @see LOS_QueueWrite | LOS_QueueWriteHeadIsr
+ */
+STATIC INLINE UINT32 LOS_QueueWriteHeadCopyIsr(UINT32 queueID,
+                                               VOID *bufferAddr,
+                                               UINT32 bufferSize)
+{
+    return LOS_QueueWriteHeadCopy(queueID, bufferAddr, bufferSize, LOS_NO_WAIT);
+}
 
 /**
  * @ingroup los_queue
@@ -889,7 +1146,7 @@ extern LosQueueCB *g_allQueue;
  * @attention
  * <ul>
  * <li>Do not alloc memory in unblocking modes such as interrupt.</li>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * <li>The argument timeOut is a relative time.</li>
  * </ul>
  *
@@ -913,7 +1170,7 @@ extern VOID *OsQueueMailAlloc(UINT32 queueID, VOID *mailPool, UINT32 timeOut);
  * This API is used to free a stationary memory for a mail according to queueID.
  * @attention
  * <ul>
- * <li>This API cannot be called before the Huawei LiteOS is initialized.</li>
+ * <li>This API cannot be called before the kernel is initialized.</li>
  * </ul>
  *
  * @param queueID         [IN]        Queue ID. The value range is [1,LOSCFG_BASE_IPC_QUEUE_LIMIT].

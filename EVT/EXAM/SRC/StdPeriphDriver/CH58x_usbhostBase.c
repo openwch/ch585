@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : CH58x_usbhost.c
+ * File Name          : CH58x_usbhostBase.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -267,7 +267,7 @@ uint8_t WaitUSB_Interrupt(void)
  * @fn      USBHostTransact
  *
  * @brief   传输事务,输入目的端点地址/PID令牌,同步标志,以20uS为单位的NAK重试总时间(0则不重试,0xFFFF无限重试),返回0成功,超时/出错重试
- *          本子程序着重于易理解,而在实际应用中,为了提供运行速度,应该对本子程序代码进行优化
+ *          本子程序着重于易理解,而在实际应用中,为了提高运行速度,应该对本子程序代码进行优化
  *
  * @param   endp_pid    - 令牌和地址, 高4位是token_pid令牌, 低4位是端点地址
  * @param   tog         - 同步标志
@@ -649,7 +649,7 @@ uint8_t CtrlClearEndpStall(uint8_t endp)
 }
 
 /*********************************************************************
- * @fn      CtrlSetUsbIntercace
+ * @fn      CtrlSetUsbInterface
  *
  * @brief   设置USB设备接口
  *
@@ -657,7 +657,7 @@ uint8_t CtrlClearEndpStall(uint8_t endp)
  *
  * @return  ERR_SUCCESS     成功
  */
-uint8_t CtrlSetUsbIntercace(uint8_t cfg)
+uint8_t CtrlSetUsbInterface(uint8_t cfg)
 {
     CopySetupReqPkg(SetupSetUsbInterface);
     pSetupReq->wValue = cfg;               // USB设备配置

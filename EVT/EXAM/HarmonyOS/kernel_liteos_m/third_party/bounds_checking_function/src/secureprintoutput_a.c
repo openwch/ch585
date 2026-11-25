@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,7 +10,6 @@
  * See the Mulan PSL v2 for more details.
  * Description: By defining corresponding macro for ANSI string and including "output.inl",
  *              this file generates real underlying function used by printf family API.
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -84,7 +83,9 @@ int SecVsnprintfImpl(char *string, size_t count, const char *format, va_list arg
         string[0] = '\0';
         return -1;
     }
+    SECUREC_MASK_VSPRINTF_WARNING
     retVal = vsnprintf(string, count, format, argList);
+    SECUREC_END_MASK_VSPRINTF_WARNING
     if (retVal >= (int)count) { /* The size_t to int is ok, count max is SECUREC_STRING_MAX_LEN */
         /* The buffer was too small; we return truncation */
         string[count - 1] = '\0';
@@ -107,68 +108,5 @@ int SecVsnprintfImpl(char *string, size_t count, const char *format, va_list arg
 
 #include "output.inl"
 
-/*
- * Multi character formatted output implementation
- */
-int SecVsnprintfImpl(char *string, size_t count, const char *format, va_list argList)
-{
-    SecPrintfStream str;
-    int retVal;
-
-    str.count = (int)count; /* The count include \0 character, must be greater than zero */
-    str.cur = string;
-
-    retVal = SecOutputS(&str, format, argList);
-    if (retVal >= 0) {
-        if (SecPutZeroChar(&str) == 0) {
-            return retVal;
-        }
-    }
-    if (str.count < 0) {
-        /* The buffer was too small, then truncate */
-        string[count - 1] = '\0';
-        return SECUREC_PRINTF_TRUNCATE;
-    }
-    string[0] = '\0'; /* Empty the dest string */
-    return -1;
-}
-
-/*
- * Write a wide character
- */
-SECUREC_INLINE void SecWriteMultiChar(char ch, int num, SecPrintfStream *f, int *pnumwritten)
-{
-    int count;
-    for (count = num; count > 0; --count) {
-        --f->count; /* f -> count may be negative,indicating insufficient space */
-        if (f->count < 0) {
-            *pnumwritten = -1;
-            return;
-        }
-        *(f->cur) = ch;
-        ++f->cur;
-        *pnumwritten = *pnumwritten + 1;
-    }
-}
-
-/*
- * Write string function, where this function is called, make sure that len is greater than 0
- */
-SECUREC_INLINE void SecWriteString(const char *string, int len, SecPrintfStream *f, int *pnumwritten)
-{
-    const char *str = string;
-    int count;
-    for (count = len; count > 0; --count) {
-        --f->count; /* f -> count may be negative,indicating insufficient space */
-        if (f->count < 0) {
-            *pnumwritten = -1;
-            return;
-        }
-        *(f->cur) = *str;
-        ++f->cur;
-        ++str;
-    }
-    *pnumwritten = *pnumwritten + (int)(size_t)(str - string);
-}
 #endif
 

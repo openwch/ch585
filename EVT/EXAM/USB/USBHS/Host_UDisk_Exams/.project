@@ -24,22 +24,22 @@
     <link>
       <name>Ld</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/Ld</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/Ld</location>
     </link>
     <link>
       <name>RVMSIS</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/RVMSIS</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/RVMSIS</location>
     </link>
     <link>
       <name>Startup</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/Startup</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/Startup</location>
     </link>
     <link>
       <name>StdPeriphDriver</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/StdPeriphDriver</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/StdPeriphDriver</location>
     </link>
     <link>
       <name>Udisk_Lib</name>

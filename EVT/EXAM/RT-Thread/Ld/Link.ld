@@ -53,6 +53,25 @@ SECTIONS
 		. = ALIGN(4);
         *(.highcode);
         *(.highcode.*);
+
+		/*
+         * Hot kernel functions promoted to .highcode (run from RAM for speed).
+         */
+		*(.text.rt_tick_get)
+		*(.text.rt_tick_set)
+		*(.text.rt_tick_increase)
+		*(.text.rt_interrupt_leave)
+		*(.text.rt_interrupt_enter)
+		*(.text.rt_schedule)
+		*(.text.rt_schedule_insert_thread)
+		*(.text.rt_schedule_remove_thread)
+		*(.text.rt_thread_self)
+		*(.text.rt_thread_yield)
+		*(.text.rt_timer_check)
+		*(.text.rt_enter_critical)
+		*(.text.rt_exit_critical)
+		*(.text.rt_critical_level)
+
 		. = ALIGN(4); 
         PROVIDE(_highcode_vma_end = .);
     } >RAM AT>FLASH

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: vsscanf_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -66,7 +65,7 @@ int vsscanf_s(const char *buffer, const char *format, va_list argList)
     }
 #if defined(SECUREC_VXWORKS_PLATFORM) && !SECUREC_IN_KERNEL
     /*
-     * On vxworks platform when buffer is white string, will set first %s argument tu zero.like following useage:
+     * On vxworks platform when buffer is white string, will set first %s argument to zero.Like following usage:
      * "   \v\f\t\r\n", "%s", str, strSize
      * Do not check all character, just first and last character then consider it is white string
      */
@@ -82,7 +81,7 @@ int vsscanf_s(const char *buffer, const char *format, va_list argList)
     }
     return retVal;
 }
-#if SECUREC_IN_KERNEL
+#if SECUREC_EXPORT_KERNEL_SYMBOL
 EXPORT_SYMBOL(vsscanf_s);
 #endif
 

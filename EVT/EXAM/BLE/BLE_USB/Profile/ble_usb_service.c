@@ -88,7 +88,7 @@ static uint8_t ble_usb_TxCharProps = GATT_PROP_NOTIFY;
 // Characteristic 2 Value
 static uint8_t ble_usb_TxCharValue = 0;
 
-// Simple Profile Characteristic 2 User Description
+// ble_usb Profile Characteristic 2 User Description
 static gattCharCfg_t ble_usb_TxCCCD[4];
 
 /*********************************************************************
@@ -96,7 +96,7 @@ static gattCharCfg_t ble_usb_TxCCCD[4];
  */
 
 static gattAttribute_t ble_usb_ProfileAttrTbl[] = {
-    // Simple Profile Service
+    // ble_usb Profile Service
     {
         {ATT_BT_UUID_SIZE, primaryServiceUUID}, /* type */
         GATT_PERMIT_READ,                       /* permissions */
@@ -154,7 +154,7 @@ static void ble_usb_HandleConnStatusCB(uint16_t connHandle, uint8_t changeType);
 /*********************************************************************
  * PROFILE CALLBACKS
  */
-// Simple Profile Service Callbacks
+// ble_usb Profile Service Callbacks
 gattServiceCBs_t ble_usb_ProfileCBs = {
     ble_usb_ReadAttrCB,  // Read callback function pointer
     ble_usb_WriteAttrCB, // Write callback function pointer
@@ -166,9 +166,9 @@ gattServiceCBs_t ble_usb_ProfileCBs = {
  */
 
 /*********************************************************************
- * @fn      ble_usb_AddService
+ * @fn      ble_usb_add_service
  *
- * @brief   Initializes the Simple Profile service by registering
+ * @brief   Initializes the ble_usb service by registering
  *          GATT attributes with the GATT server.
  *
  * @param   services - services to add. This is a bit map and can
@@ -233,7 +233,7 @@ static bStatus_t ble_usb_ReadAttrCB(uint16_t connHandle, gattAttribute_t *pAttr,
 }
 
 /*********************************************************************
- * @fn      simpleProfile_WriteAttrCB
+ * @fn      ble_usb_WriteAttrCB
  *
  * @brief   Validate attribute data prior to a write operation
  *
@@ -276,13 +276,13 @@ static bStatus_t ble_usb_WriteAttrCB(uint16_t connHandle, gattAttribute_t *pAttr
             }
         }
 
-        //  UUID
+        // 16-bit UUID
         if(pAttr->handle == ble_usb_ProfileAttrTbl[RAWPASS_RX_VALUE_HANDLE].handle)
         {
             if(ble_usb_AppCBs)
             {
                 ble_usb_evt_t evt;
-                evt.type = BLE_USB_EVT_BLE_DATA_RECIEVED;
+                evt.type = BLE_USB_EVT_BLE_DATA_RECEIVED;
                 evt.data.length = (uint16_t)len;
                 evt.data.p_data = pValue;
                 ble_usb_AppCBs(connHandle, &evt);

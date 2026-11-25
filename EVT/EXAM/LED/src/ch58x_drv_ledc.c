@@ -53,7 +53,7 @@ void ch58x_led_controller_send(uint32_t *data, uint16_t length)
  *
  * @return  none
  */
-void TMR_DMACfg(uint8_t s, uint32_t startAddr, uint16_t len, DMAModeTypeDef m)
+void LED_DMACfg(uint8_t s, uint32_t startAddr, uint16_t len, DMAModeTypeDef m)
 {
     if(s == DISABLE)
     {

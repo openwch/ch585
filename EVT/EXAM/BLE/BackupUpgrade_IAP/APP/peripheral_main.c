@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
+ * File Name          : peripheral_main.c
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2019/11/05
@@ -13,15 +13,15 @@
 /******************************************************************************/
 /* 头文件包含 */
 #include "CH58x_common.h"
-#include "OTA.h"
+#include "ota.h"
 
 /* 记录当前的Image */
 unsigned char CurrImageFlag = 0xff;
 
-/* flash的数据临时存储 */
+/* flash的数据临时存储（仅使用4字节，即ImageFlag区） */
 __attribute__((aligned(8))) uint8_t block_buf[16];
 
-#define jumpApp    ((void (*)(void))((int *)IMAGE_A_START_ADD))
+#define jumpApp    ((void (*)(void))IMAGE_A_START_ADDR)
 
 /*********************************************************************
  * GLOBAL TYPEDEFS
@@ -38,45 +38,42 @@ __attribute__((aligned(8))) uint8_t block_buf[16];
  */
 void SwitchImageFlag(uint8_t new_flag)
 {
-    uint16_t i;
-    uint32_t ver_flag;
-
     /* 读取第一块 */
-    EEPROM_READ(OTA_DATAFLASH_ADD, (uint32_t *)&block_buf[0], 4);
+    EEPROM_READ(OTA_DATAFLASH_ADDR, (uint32_t *)&block_buf[0], 4);
 
     /* 擦除第一块 */
-    EEPROM_ERASE(OTA_DATAFLASH_ADD, EEPROM_PAGE_SIZE);
+    EEPROM_ERASE(OTA_DATAFLASH_ADDR, EEPROM_PAGE_SIZE);
 
     /* 更新Image信息 */
     block_buf[0] = new_flag;
 
     /* 编程DataFlash */
-    EEPROM_WRITE(OTA_DATAFLASH_ADD, (uint32_t *)&block_buf[0], 4);
+    EEPROM_WRITE(OTA_DATAFLASH_ADDR, (uint32_t *)&block_buf[0], 4);
 }
 
 /*********************************************************************
- * @fn      jump_APP
+ * @fn      jump_app
  *
  * @brief   切换APP程序
  *
  * @return  none
  */
-void jump_APP(void)
+void jump_app(void)
 {
     if(CurrImageFlag == IMAGE_IAP_FLAG)
     {
         __attribute__((aligned(8))) uint8_t flash_Data[1024];
 
-        uint8_t i;
-        FLASH_ROM_ERASE(IMAGE_A_START_ADD, IMAGE_A_SIZE);
+        uint32_t i;
+        FLASH_ROM_ERASE(IMAGE_A_START_ADDR, IMAGE_A_SIZE);
         for(i = 0; i < IMAGE_A_SIZE / 1024; i++)
         {
-            FLASH_ROM_READ(IMAGE_B_START_ADD + (i * 1024), flash_Data, 1024);
-            FLASH_ROM_WRITE(IMAGE_A_START_ADD + (i * 1024), flash_Data, 1024);
+            FLASH_ROM_READ(IMAGE_B_START_ADDR + (i * 1024), flash_Data, 1024);
+            FLASH_ROM_WRITE(IMAGE_A_START_ADDR + (i * 1024), flash_Data, 1024);
         }
         SwitchImageFlag(IMAGE_A_FLAG);
         // 销毁备份代码
-        FLASH_ROM_ERASE(IMAGE_B_START_ADD, IMAGE_A_SIZE);
+        FLASH_ROM_ERASE(IMAGE_B_START_ADDR, IMAGE_A_SIZE);
     }
     jumpApp();
 }
@@ -90,9 +87,9 @@ void jump_APP(void)
  */
 void ReadImageFlag(void)
 {
-    OTADataFlashInfo_t p_image_flash;
+    __attribute__((aligned(4))) OTADataFlashInfo_t p_image_flash;
 
-    EEPROM_READ(OTA_DATAFLASH_ADD, &p_image_flash, 4);
+    EEPROM_READ(OTA_DATAFLASH_ADDR, &p_image_flash, 4);
     CurrImageFlag = p_image_flash.ImageFlag;
 
     /* 程序第一次执行，或者没有更新过，以后更新后在擦除DataFlash */
@@ -119,8 +116,8 @@ int main(void)
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);
 #if(defined(HAL_SLEEP)) && (HAL_SLEEP == TRUE)
-    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
+    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
+    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
 #endif
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);
@@ -130,7 +127,7 @@ int main(void)
     UART0_DefInit();
 #endif
     ReadImageFlag();
-    jump_APP();
+    jump_app();
 }
 
 /******************************** endfile @ main ******************************/

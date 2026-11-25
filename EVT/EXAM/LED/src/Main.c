@@ -41,7 +41,7 @@ void DebugInit(void)
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);
@@ -61,20 +61,20 @@ int main()
     GPIOA_ModeCfg( GPIO_Pin_2, GPIO_ModeOut_PP_5mA );
     //LED 3
     GPIOA_ModeCfg( GPIO_Pin_3, GPIO_ModeOut_PP_5mA );
-    //lED 4
+    //LED 4
     GPIOA_ModeCfg( GPIO_Pin_5 , GPIO_ModeOut_PP_5mA );
-    //lED 5
+    //LED 5
     GPIOA_ModeCfg( GPIO_Pin_6 , GPIO_ModeOut_PP_5mA );
-    //lED 6
+    //LED 6
     GPIOA_ModeCfg( GPIO_Pin_7 , GPIO_ModeOut_PP_5mA );
-    //lED 7
+    //LED 7
     GPIOA_ModeCfg( GPIO_Pin_8 , GPIO_ModeOut_PP_5mA );
 
     //配置分频和模式选择
     ch58x_led_controller_init(CH58X_LED_OUT_MODE_SINGLE, 128);
 
     //开始发送,后面再发送就在中断里面发送了
-    TMR_DMACfg(ENABLE, (uint16_t)(uint32_t)&tx_data, 2, Mode_Single);
+    LED_DMACfg(ENABLE, (uint16_t)(uint32_t)&tx_data, 2, Mode_Single);
 
 #if LSB_HSB   //LSB HSB
     R8_LED_CTRL_MOD ^= RB_LED_BIT_ORDER;
@@ -102,9 +102,9 @@ __HIGH_CODE
 void LED_IRQHandler(void)
 {
     //清空中断标志
-    if(LED_GetITFlag(RB_LED_IF_DMA_END))  // 获取中断标志
+    if(LED_GetITFlag(RB_LED_IF_DMA_INT))  // 获取中断标志
     {
-       LED_ClearITFlag(RB_LED_IF_DMA_END); // 清除中断标志
+       LED_ClearITFlag(RB_LED_IF_DMA_INT); // 清除中断标志
        ch58x_led_controller_send(tx_data, 2);
     }
 }

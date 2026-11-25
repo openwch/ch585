@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: wcscpy_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -43,7 +42,7 @@ SECUREC_INLINE errno_t SecDoCpyW(wchar_t *strDest, size_t destMax, const wchar_t
 /*
  * <FUNCTION DESCRIPTION>
  *   The wcscpy_s function copies the wide string pointed to by strSrc
- *   (including theterminating null wide character) into the array pointed to by strDest
+ *   (including the terminating null wide character) into the array pointed to by strDest
 
  * <INPUT PARAMETERS>
  *    strDest               Destination string buffer
@@ -56,7 +55,7 @@ SECUREC_INLINE errno_t SecDoCpyW(wchar_t *strDest, size_t destMax, const wchar_t
  * <RETURN VALUE>
  *    EOK                   Success
  *    EINVAL                strDest is  NULL and destMax != 0 and destMax <= SECUREC_WCHAR_STRING_MAX_LEN
- *    EINVAL_AND_RESET      strDest != NULL and strSrc is NULLL and destMax != 0
+ *    EINVAL_AND_RESET      strDest != NULL and strSrc is NULL and destMax != 0
  *                          and destMax <= SECUREC_WCHAR_STRING_MAX_LEN
  *    ERANGE                destMax > SECUREC_WCHAR_STRING_MAX_LEN or destMax is 0
  *    ERANGE_AND_RESET      destMax <= length of strSrc and strDest != strSrc

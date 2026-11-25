@@ -3,7 +3,7 @@
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
- * Description        : 设备信息服务
+ * Description        : 璁惧淇℃伅鏈嶅姟
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
@@ -335,6 +335,7 @@ bStatus_t DevInfo_SetParameter(uint8_t param, uint8_t len, void *value)
     switch(param)
     {
         case DEVINFO_SYSTEM_ID:
+            if (len > sizeof(devInfoSystemId)) return bleInvalidRange;
             tmos_memcpy(devInfoSystemId, value, len);
             break;
 

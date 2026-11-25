@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
+ * File Name          : peripheral_main.c
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2019/11/05
@@ -14,9 +14,9 @@
 /* 头文件包含 */
 #include "CONFIG.h"
 #include "HAL.h"
-#include "GATTprofile.h"
-#include "Peripheral.h"
-#include "OTA.h"
+#include "gattprofile.h"
+#include "peripheral.h"
+#include "ota.h"
 #include "OTAprofile.h"
 
 /* 记录当前的Image */
@@ -47,9 +47,9 @@ __attribute__((aligned(4))) uint32_t Image_Flag __attribute__((section(".ImageFl
  */
 void ReadImageFlag(void)
 {
-    OTADataFlashInfo_t p_image_flash;
+    __attribute__((aligned(4))) OTADataFlashInfo_t p_image_flash;
 
-    EEPROM_READ(OTA_DATAFLASH_ADD, &p_image_flash, 4);
+    EEPROM_READ(OTA_DATAFLASH_ADDR, &p_image_flash, 4);
     CurrImageFlag = p_image_flash.ImageFlag;
 
     /* 程序第一次执行，或者没有更新过，以后更新后在擦除DataFlash */
@@ -68,7 +68,7 @@ void ReadImageFlag(void)
  */
 __HIGH_CODE
 __attribute__((noinline))
-void Main_Circulation()
+void Main_Circulation(void)
 {
     while(1)
     {
@@ -91,8 +91,8 @@ int main(void)
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);
 #if(defined(HAL_SLEEP)) && (HAL_SLEEP == TRUE)
-    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
+    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
+    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
 #endif
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);

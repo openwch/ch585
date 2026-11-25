@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : Peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -106,7 +106,7 @@ static uint8_t scanRspData[31] = {
 };
 
 // GAP - Advertisement data (max size = 31 bytes, though this is
-// best kept short to conserve power while advertisting)
+// best kept short to conserve power while advertising)
 static uint8_t advertData[] = {
     // Flags; this sets the device to use limited discoverable
     // mode (advertises for 30 seconds at a time) instead of general
@@ -137,10 +137,6 @@ uint32_t OpAdd = 0;
 
 /* flash的数据临时存储 */
 __attribute__((aligned(8))) uint8_t block_buf[16];
-
-/* Image跳转函数地址定义 */
-typedef int (*pImageTaskFn)(void);
-pImageTaskFn user_image_tasks;
 
 /* Flash 擦除过程 */
 uint32_t EraseAdd = 0;      //擦除地址
@@ -180,7 +176,7 @@ static gapBondCBs_t Peripheral_BondMgrCBs = {
 
 // Simple GATT Profile Callbacks
 static OTAProfileCBs_t Peripheral_OTA_IAPProfileCBs = {
-    OTA_IAPReadDataComplete, // Charactersitic value change callback
+    OTA_IAPReadDataComplete, // Characteristic value change callback
     OTA_IAPWriteData};
 
 // Callback when the connection parameteres are updated.
@@ -199,14 +195,14 @@ gapRolesParamUpdateCB_t PeripheralParamUpdate_t = NULL;
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void Peripheral_Init()
+void Peripheral_Init(void)
 {
     Peripheral_TaskID = TMOS_ProcessEventRegister(Peripheral_ProcessEvent);
 
@@ -368,8 +364,13 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
     switch(newState & GAPROLE_STATE_ADV_MASK)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             PRINT("Advertising..\n");
@@ -420,12 +421,7 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
 /*********************************************************************
  * @fn      performPeriodicTask
  *
- * @brief   Perform a periodic application task. This function gets
- *          called every five seconds as a result of the SBP_PERIODIC_EVT
- *          TMOS event. In this example, the value of the third
- *          characteristic in the SimpleGATTProfile service is retrieved
- *          from the profile, and then copied into the value of the
- *          the fourth characteristic.
+ * @brief   Perform a periodic OTA application task (currently empty).
  *
  * @param   none
  *
@@ -491,9 +487,6 @@ void OTA_IAP_CMDErrDeal(void)
  */
 void SwitchImageFlag(uint8_t new_flag)
 {
-    uint16_t i;
-    uint32_t ver_flag;
-
     /* 读取第一块 */
     EEPROM_READ(OTA_DATAFLASH_ADD, (uint32_t *)&block_buf[0], 4);
 
@@ -541,6 +534,13 @@ void Rec_OTA_IAP_DataDeal(void)
             OpAdd |= ((uint32_t)(iap_rec_data.program.addr[1]) << 8);
             OpAdd = OpAdd * 16;
 
+            /* 与ERASE命令相同的区间断言，禁止写任意Flash地址 */
+            if(OpAdd < IMAGE_A_START_ADD || (OpAdd + OpParaDataLen) > IMAGE_B_START_ADD)
+            {
+                OTA_IAP_SendCMDDealSta(0xFF);
+                break;
+            }
+
             PRINT("IAP_PROM: %08x len:%d \r\n", (int)OpAdd, (int)OpParaDataLen);
 
             /* 当前是ImageA，直接编程 */
@@ -565,7 +565,7 @@ void Rec_OTA_IAP_DataDeal(void)
 
             PRINT("IAP_ERASE start:%08x num:%d\r\n", (int)OpAdd, (int)EraseBlockNum);
 
-            if(EraseAdd < IMAGE_A_START_ADD || (EraseAdd + (EraseBlockNum - 1) * FLASH_BLOCK_SIZE) > IMAGE_B_START_ADD)
+            if(EraseBlockNum < 1 || EraseAdd < IMAGE_A_START_ADD || (EraseAdd + (EraseBlockNum - 1) * FLASH_BLOCK_SIZE) >= IMAGE_B_START_ADD)
             {
                 OTA_IAP_SendCMDDealSta(0xFF);
             }
@@ -591,6 +591,13 @@ void Rec_OTA_IAP_DataDeal(void)
             OpAdd |= ((uint32_t)(iap_rec_data.verify.addr[1]) << 8);
             OpAdd = OpAdd * 16;
 
+            /* 与ERASE命令相同的区间断言，禁止读任意Flash地址 */
+            if(OpAdd < IMAGE_A_START_ADD || (OpAdd + OpParaDataLen) > IMAGE_B_START_ADD)
+            {
+                OTA_IAP_SendCMDDealSta(0xFF);
+                break;
+            }
+
             PRINT("IAP_VERIFY: %08x len:%d \r\n", (int)OpAdd, (int)OpParaDataLen);
 
             status = FLASH_ROM_VERIFY(OpAdd, iap_rec_data.verify.buf, OpParaDataLen);
@@ -609,7 +616,7 @@ void Rec_OTA_IAP_DataDeal(void)
             /* 修改DataFlash，切换至ImageA */
             SwitchImageFlag(IMAGE_A_FLAG);
 
-            /* 等待打印完成 ，跳转ImageB*/
+            /* 等待打印完成 ，跳转ImageA*/
             mDelaymS(10);
             jumpApp();
 
@@ -623,6 +630,7 @@ void Rec_OTA_IAP_DataDeal(void)
             uint8_t send_buf[20];
 
             PRINT("IAP_INFO \r\n");
+            tmos_memset(send_buf, 0, sizeof(send_buf));
 
             /* IMAGE FLAG */
             send_buf[0] = IMAGE_B_FLAG;
@@ -687,7 +695,8 @@ void OTA_IAPWriteData(unsigned char index, unsigned char *p_data, unsigned char 
 
     rec_len = w_len;
     rec_data = p_data;
-    tmos_memcpy((unsigned char *)&iap_rec_data, rec_data, rec_len);
+    /* 限制拷贝长度，防止异常长度写越界 */
+    tmos_memcpy((unsigned char *)&iap_rec_data, rec_data, MIN(rec_len, sizeof(iap_rec_data)));
     Rec_OTA_IAP_DataDeal();
 }
 

@@ -27,17 +27,17 @@
 		<link>
 			<name>Ld</name>
 			<type>2</type>
-			<locationURI>PARENT-4-PROJECT_LOC/SRC/Ld</locationURI>
+			<location>PARENT-4-PROJECT_LOC/SRC/Ld</location>
 		</link>
 		<link>
 			<name>RVMSIS</name>
 			<type>2</type>
-			<locationURI>PARENT-4-PROJECT_LOC/SRC/RVMSIS</locationURI>
+			<location>PARENT-4-PROJECT_LOC/SRC/RVMSIS</location>
 		</link>
 		<link>
 			<name>StdPeriphDriver</name>
 			<type>2</type>
-			<locationURI>PARENT-4-PROJECT_LOC/SRC/StdPeriphDriver</locationURI>
+			<location>PARENT-4-PROJECT_LOC/SRC/StdPeriphDriver</location>
 		</link>
 	</linkedResources>
 	<filteredResources>

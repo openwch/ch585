@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : rsp_peripheral.C
+ * File Name          : rsp_peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -185,7 +185,7 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
@@ -447,8 +447,8 @@ static void Peripheral_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
             pMsgEvent = (gattMsgEvent_t *)pMsg;
             if(pMsgEvent->method == ATT_MTU_UPDATED_EVENT)
             {
-                peripheralMTU = pMsgEvent->msg.exchangeMTUReq.clientRxMTU;
-                PRINT("mtu exchange: %d\n", pMsgEvent->msg.exchangeMTUReq.clientRxMTU);
+                peripheralMTU = pMsgEvent->msg.mtuEvt.MTU;
+                PRINT("mtu exchange: %d\n", pMsgEvent->msg.mtuEvt.MTU);
             }
             break;
         }
@@ -662,12 +662,7 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
 /*********************************************************************
  * @fn      performPeriodicTask
  *
- * @brief   Perform a periodic application task. This function gets
- *          called every five seconds as a result of the SBP_PERIODIC_EVT
- *          TMOS event. In this example, the value of the third
- *          characteristic in the SimpleGATTProfile service is retrieved
- *          from the profile, and then copied into the value of the
- *          the fourth characteristic.
+ * @brief   Perform a periodic task: send Characteristic 4 notification.
  *
  * @param   none
  *

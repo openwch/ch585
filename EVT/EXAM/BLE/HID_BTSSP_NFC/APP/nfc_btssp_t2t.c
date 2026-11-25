@@ -177,10 +177,21 @@ uint16_t nfc_btssp_t2t_ProcessEvent(uint8_t task_id, uint16_t events)
         return (events ^ NFC_BTSSP_T2T_SLEEP_CHECK_EVT);
     }
 
-    if(NFC_BTSSP_T2T_START_CHECK_EVT)
+    if(events & NFC_BTSSP_T2T_START_CHECK_EVT)
     {
-        tmos_start_reload_task(nfc_btssp_t2t_sleep_taskid, NFC_BTSSP_T2T_SLEEP_CHECK_EVT, MS1_TO_SYSTEM_TIME(NFC_BTSSP_T2T_SLEEP_CHECK_PERIOD_MS));
         nfca_picc_ant_calibration();
+
+        if(gs_adc_base_value > 1000)
+        {
+            /** 启动校准成功，开始轮询检测 */
+            tmos_start_reload_task(nfc_btssp_t2t_sleep_taskid, NFC_BTSSP_T2T_SLEEP_CHECK_EVT, MS1_TO_SYSTEM_TIME(NFC_BTSSP_T2T_SLEEP_CHECK_PERIOD_MS));
+        }
+        else
+        {
+            /** 启动校准失败，重新校准 */
+            tmos_start_task(nfc_btssp_t2t_sleep_taskid, NFC_BTSSP_T2T_START_CHECK_EVT, MS1_TO_SYSTEM_TIME(10));
+        }
+
         // return unprocessed events
         return (events ^ NFC_BTSSP_T2T_START_CHECK_EVT);
     }

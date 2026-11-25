@@ -1,15 +1,15 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
+ * File Name          : peripheral_main.c
  * Author             : WCH
  * Version            : V1.1
  * Date               : 2024/02/27
- * Description        : ´¥Ãş°´¼ü½áºÏÀ¶ÑÀÍâÉèÀı³Ì
+ * Description        : è§¦æ‘¸æŒ‰é”®ç»“åˆè“ç‰™å¤–è®¾ä¾‹ç¨‹
  * Copyright (c) 2024 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 
 /******************************************************************************/
-/* Í·ÎÄ¼ş°üº¬ */
+/* å¤´æ–‡ä»¶åŒ…å« */
 #include "CONFIG.h"
 #include "HAL.h"
 #include "gattprofile.h"
@@ -29,7 +29,7 @@ const uint8_t MacAddr[6] = {0x84, 0xC2, 0xE4, 0x03, 0x02, 0x02};
 /*********************************************************************
  * @fn      Main_Circulation
  *
- * @brief   Ö÷Ñ­»·
+ * @brief   ä¸»å¾ªç¯
  *
  * @return  none
  */
@@ -46,12 +46,12 @@ void Main_Circulation()
 /*********************************************************************
  * @fn      DebugInit
  *
- * @brief   ´®¿Ú´òÓ¡³õÊ¼»¯
+ * @brief   ä¸²å£æ‰“å°åˆå§‹åŒ–
  *
  * @return  none
  *
- * @note	Uart1µÄÄ¬ÈÏÓ³ÉäÒı½Å¿ÉÄÜÓë´¥ÃşÍ¨µÀ³åÍ»£¬
- * 			ÔÚ´¥ÃşÓ¦ÓÃÖĞÓ¦Ñ¡ÓÃÆäËûUART»ò½«Òı½ÅÖØÓ³Éä
+ * @note	Uart1çš„é»˜è®¤æ˜ å°„å¼•è„šå¯èƒ½ä¸è§¦æ‘¸é€šé“å†²çªï¼Œ
+ * 			åœ¨è§¦æ‘¸åº”ç”¨ä¸­åº”é€‰ç”¨å…¶ä»–UARTæˆ–å°†å¼•è„šé‡æ˜ å°„
  */
 void DebugInit(void)
 {
@@ -82,7 +82,7 @@ void DebugInit(void)
 /*********************************************************************
  * @fn      main
  *
- * @brief   Ö÷º¯Êı
+ * @brief   ä¸»å‡½æ•°
  *
  * @return  none
  */
@@ -94,12 +94,12 @@ int main(void)
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);
 #if(defined(HAL_SLEEP)) && (HAL_SLEEP == TRUE)
-	GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-	GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
+	GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
+	GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PD);
 #endif
 
 	DebugInit();
-	PRINT("Touch Utility with BLE\n");
+	PRINT("Touch EX001 with BLE\n");
 	PRINT("%s\n", VER_LIB);
 
 	CH58x_BLEInit();

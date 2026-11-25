@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT ******************************
  * File Name         : wchrf.h
  * Author            : WCH
- * Version           : V1.40
- * Date              : 2024/9/27
+ * Version           : V1.50
+ * Date              : 2025/11/25
  * Description       : head file(CH585/CH584)
  *
  * Copyright (c) 2023 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -381,7 +381,7 @@ bStatus_t RFRole_SetDevTimeing( rfDevsTimeing_t *pList );
  *
  * note:  If sending is currently in progress, wait until the previous data packets have been sent before sending.
  *
- * @param   pList -
+ * @param   void
  *
  * @return  0-success.
  */
@@ -498,6 +498,28 @@ bStatus_t RFRole_SwitchMode( uint8_t mode );
  * @return  0-success.
  */
 bStatus_t RFRole_MapCheck( int8_t rssi,uint8_t id );
+
+/**
+ * @brief  Set the frequency hopping spectrum for the device's communication.
+ *
+ * note:   If the settings on both ends are inconsistent, communication will be disconnected.
+ *
+ * @param   map
+ *
+ * @return  0-success.
+ */
+bStatus_t RFRole_MapSet( uint32_t map );
+
+/**
+ * @brief   The channel set for this device will only take effect if the frequency hopping function is disabled.
+ *
+ * note:    If the settings on both ends are inconsistent, communication will be disconnected.
+ *
+ * @param   ch - data channel
+ *
+ * @return  0-success.
+ */
+bStatus_t RFRole_ChannelSet( uint8_t ch );
 
 /**
  * @brief   Set a lower power consumption mode.

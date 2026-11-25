@@ -3,7 +3,7 @@
  * Author             : WCH
  * Version            : V1.6
  * Date               : 2021/12/1
- * Description        : ´¥Ãş°´¼üÀı³Ì
+ * Description        : è§¦æ‘¸æŒ‰é”®ä¾‹ç¨‹
  *******************************************************************************/
 
 /*********************************************************************
@@ -14,42 +14,43 @@
 /*********************
  *      DEFINES
  *********************/
-#define WAKEUPTIME  50     //Sleep Time = 250 * SLEEP_TRIGGER_TIME(100ms) = 25s
+#define WAKEUPTIME        50                             // Sleep Time = 50 * SLEEP_TRIGGER_TIME(100ms) = 5s
 
 /**********************
  *      VARIABLES
  **********************/
-__attribute__ ((aligned (4))) uint32_t TKY_MEMBUF[ (TKY_MEMHEAP_SIZE - 1) / 4 + 1 ] = {0};
-static uint16_t keyData = 0; //´¥Ãş°´¼ü×ª»»½á¹û
-static uint16_t WheelData = TOUCH_OFF_VALUE; //´¥Ãş»¬ÂÖ×ª»»½á¹û
-static uint16_t SilderData = TOUCH_OFF_VALUE; //´¥Ãş»¬Ìõ×ª»»½á¹û
+__attribute__( ( aligned( 4 ) ) ) uint32_t TKY_MEMBUF[ ( TKY_MEMHEAP_SIZE - 1 ) / 4 + 1 ] = { 0 };
 
-static touch_cfg_t *p_touch_cfg = NULL;
+static uint16_t       keyData       = 0;                // è§¦æ‘¸æŒ‰é”®è½¬æ¢ç»“æœ
+static uint16_t       WheelData     = TOUCH_OFF_VALUE;  // è§¦æ‘¸æ»‘è½®è½¬æ¢ç»“æœ
+static uint16_t       SilderData    = TOUCH_OFF_VALUE;  // è§¦æ‘¸æ»‘æ¡è½¬æ¢ç»“æœ
+static touch_cfg_t*   p_touch_cfg   = NULL;
+uint8_t               wakeUpCount   = 0;
+uint8_t               wakeupflag    = 0;
+uint16_t              tkyQueueAll   = 0;
+uint16_t              tkyChAll      = 0;
+static uint32_t touch_pin_a = 0;
 
-uint8_t wakeUpCount = 0, wakeupflag = 0;
-
-uint16_t tkyQueueAll = 0;
-static const TKY_ChannelInitTypeDef my_tky_ch_init[TKY_QUEUE_END] = {TKY_CHS_INIT};
-
-static const uint32_t TKY_Pin[ 14 ] = {
-    GPIO_Pin_4, GPIO_Pin_5, GPIO_Pin_12, GPIO_Pin_13,GPIO_Pin_14, GPIO_Pin_15, GPIO_Pin_3,
-    GPIO_Pin_2, GPIO_Pin_1, GPIO_Pin_0,GPIO_Pin_6, GPIO_Pin_7, GPIO_Pin_8, GPIO_Pin_9
-};
+const uint32_t TKY_Pin[ 14 ] = {
+    GPIO_Pin_4, GPIO_Pin_5, GPIO_Pin_12, GPIO_Pin_13, GPIO_Pin_14, GPIO_Pin_15, GPIO_Pin_3,
+    GPIO_Pin_2, GPIO_Pin_1, GPIO_Pin_0, GPIO_Pin_6, GPIO_Pin_7, GPIO_Pin_8, GPIO_Pin_9 };
+static const TKY_ChannelInitTypeDef my_tky_ch_init[ TKY_QUEUE_END ] = { TKY_CHS_INIT };
 
 /**********************
  *  STATIC PROTOTYPES
  **********************/
 
-static KEY_FIFO_T s_tKey;       /* °´¼üFIFO±äÁ¿,½á¹¹Ìå */
-static void touch_InitHard(void);
-static void touch_InitVar(touch_cfg_t *p);
-static void touch_PutKey(uint8_t _KeyCode);
-static void touch_DetectKey(touch_button_cfg_t * p);
-static void touch_Regcfg (void);
-static void touch_Baseinit(void);
-static void touch_Channelinit(void);
-static uint16_t touch_DetecLineSlider(touch_slider_cfg_t * p_slider);
-static uint16_t touch_DetectWheelSlider (touch_wheel_cfg_t * p_wheel);
+static KEY_FIFO_T s_tKey; /* æŒ‰é”®FIFOå˜é‡,ç»“æ„ä½“ */
+static void       touch_InitHard( void );
+static void       touch_InitVar( touch_cfg_t* p );
+static void       touch_PutKey( uint8_t _KeyCode );
+static void       touch_DetectKey( touch_button_cfg_t* p );
+static void       touch_Regcfg( void );
+static void       touch_Baseinit( void );
+static void       touch_Channelinit( void );
+static uint16_t   touch_DetecLineSlider( touch_slider_cfg_t* p_slider );
+static uint16_t   touch_DetectWheelSlider( touch_wheel_cfg_t* p_wheel );
+void              touch_ResetBaseline( void );
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -57,28 +58,28 @@ static uint16_t touch_DetectWheelSlider (touch_wheel_cfg_t * p_wheel);
 
 /********************************************************************************************************
  * @fn      touch_Init
- * 
- * @brief   ³õÊ¼»¯°´¼ü. ¸Ãº¯Êı±» TKY_Init() µ÷ÓÃ¡£
+ *
+ * @brief   åˆå§‹åŒ–æŒ‰é”®. è¯¥å‡½æ•°è¢« TKY_Init() è°ƒç”¨ã€‚
  *
  * @return  none
  */
-void touch_Init(touch_cfg_t *p)
+void touch_Init( touch_cfg_t* p )
 {
-    touch_InitHard();             /* ³õÊ¼»¯TouchÓ²¼şºÍ¿â»ù±¾²ÎÊı */
-    touch_InitVar(p);           /* ³õÊ¼»¯°´¼ü±äÁ¿ */
+    touch_InitHard();   /* åˆå§‹åŒ–Touchç¡¬ä»¶å’Œåº“åŸºæœ¬å‚æ•° */
+    touch_InitVar( p ); /* åˆå§‹åŒ–æŒ‰é”®å˜é‡ */
 }
 
 /********************************************************************************************************
  * @fn      touch_PutKey
- * @brief   ½«1¸ö¼üÖµÑ¹Èë°´¼üFIFO»º³åÇø¡£¿ÉÓÃÓÚÄ£ÄâÒ»¸ö°´¼ü¡£
- * @param   _KeyCode - °´¼ü´úÂë
+ * @brief   å°†1ä¸ªé”®å€¼å‹å…¥æŒ‰é”®FIFOç¼“å†²åŒºã€‚å¯ç”¨äºæ¨¡æ‹Ÿä¸€ä¸ªæŒ‰é”®ã€‚
+ * @param   _KeyCode - æŒ‰é”®ä»£ç 
  * @return  none
  */
-static void touch_PutKey(uint8_t _KeyCode)
+static void touch_PutKey( uint8_t _KeyCode )
 {
-    s_tKey.Buf[s_tKey.Write] = _KeyCode;
+    s_tKey.Buf[ s_tKey.Write ] = _KeyCode;
 
-    if (++s_tKey.Write  >= KEY_FIFO_SIZE)
+    if ( ++s_tKey.Write >= KEY_FIFO_SIZE )
     {
         s_tKey.Write = 0;
     }
@@ -86,23 +87,23 @@ static void touch_PutKey(uint8_t _KeyCode)
 
 /********************************************************************************************************
  * @fn      touch_GetKey
- * @brief   ´Ó°´¼üFIFO»º³åÇø¶ÁÈ¡Ò»¸ö¼üÖµ¡£
- * @param   ÎŞ
- * @return  °´¼ü´úÂë
+ * @brief   ä»æŒ‰é”®FIFOç¼“å†²åŒºè¯»å–ä¸€ä¸ªé”®å€¼ã€‚
+ * @param   æ— 
+ * @return  æŒ‰é”®ä»£ç 
  */
-uint8_t touch_GetKey(void)
+uint8_t touch_GetKey( void )
 {
     uint8_t ret;
 
-    if (s_tKey.Read == s_tKey.Write)
+    if ( s_tKey.Read == s_tKey.Write )
     {
         return KEY_NONE;
     }
     else
     {
-        ret = s_tKey.Buf[s_tKey.Read];
+        ret = s_tKey.Buf[ s_tKey.Read ];
 
-        if (++s_tKey.Read >= KEY_FIFO_SIZE)
+        if ( ++s_tKey.Read >= KEY_FIFO_SIZE )
         {
             s_tKey.Read = 0;
         }
@@ -112,297 +113,358 @@ uint8_t touch_GetKey(void)
 
 /********************************************************************************************************
  * @fn      touch_GetKeyState
- * @brief   ¶ÁÈ¡°´¼üµÄ×´Ì¬
- * @param   _ucKeyID - °´¼üID£¬´Ó0¿ªÊ¼
- * @return  1 - °´ÏÂ
- *          0 - Î´°´ÏÂ
-*********************************************************************************************************
-*/
-uint8_t touch_GetKeyState(KEY_ID_E _ucKeyID)
+ * @brief   è¯»å–æŒ‰é”®çš„çŠ¶æ€
+ * @param   _ucKeyID - æŒ‰é”®IDï¼Œä»0å¼€å§‹
+ * @return  1 - æŒ‰ä¸‹
+ *          0 - æœªæŒ‰ä¸‹
+ *********************************************************************************************************
+ */
+uint8_t touch_GetKeyState( KEY_ID_E _ucKeyID )
 {
-    return p_touch_cfg->touch_button_cfg->p_stbtn[_ucKeyID].State;
+    return p_touch_cfg->touch_button_cfg->p_stbtn[ _ucKeyID ].State;
 }
 
 /********************************************************************************************************
  * @fn      touch_SetKeyParam
- * @brief   ÉèÖÃ°´¼ü²ÎÊı
- * @param   _ucKeyID     - °´¼üID£¬´Ó0¿ªÊ¼
- *          _LongTime    - ³¤°´ÊÂ¼şÊ±¼ä
- *          _RepeatSpeed - Á¬·¢ËÙ¶È
+ * @brief   è®¾ç½®æŒ‰é”®å‚æ•°
+ * @param   _ucKeyID     - æŒ‰é”®IDï¼Œä»0å¼€å§‹
+ *          _LongTime    - é•¿æŒ‰äº‹ä»¶æ—¶é—´
+ *          _RepeatSpeed - è¿å‘é€Ÿåº¦
  * @return  none
  */
-void touch_SetKeyParam(uint8_t _ucKeyID, uint16_t _LongTime, uint8_t  _RepeatSpeed)
+void touch_SetKeyParam( uint8_t _ucKeyID, uint16_t _LongTime, uint8_t _RepeatSpeed )
 {
-    p_touch_cfg->touch_button_cfg->p_stbtn[_ucKeyID].LongTime = _LongTime;          /* ³¤°´Ê±¼ä 0 ±íÊ¾²»¼ì²â³¤°´¼üÊÂ¼ş */
-    p_touch_cfg->touch_button_cfg->p_stbtn[_ucKeyID].RepeatSpeed = _RepeatSpeed;            /* °´¼üÁ¬·¢µÄËÙ¶È£¬0±íÊ¾²»Ö§³ÖÁ¬·¢ */
-    p_touch_cfg->touch_button_cfg->p_stbtn[_ucKeyID].RepeatCount = 0;                       /* Á¬·¢¼ÆÊıÆ÷ */
+    p_touch_cfg->touch_button_cfg->p_stbtn[ _ucKeyID ].LongTime    = _LongTime;    /* é•¿æŒ‰æ—¶é—´ 0 è¡¨ç¤ºä¸æ£€æµ‹é•¿æŒ‰é”®äº‹ä»¶ */
+    p_touch_cfg->touch_button_cfg->p_stbtn[ _ucKeyID ].RepeatSpeed = _RepeatSpeed; /* æŒ‰é”®è¿å‘çš„é€Ÿåº¦ï¼Œ0è¡¨ç¤ºä¸æ”¯æŒè¿å‘ */
+    p_touch_cfg->touch_button_cfg->p_stbtn[ _ucKeyID ].RepeatCount = 0;            /* è¿å‘è®¡æ•°å™¨ */
 }
 
 /********************************************************************************************************
  * @fn      touch_ClearKey
- * @brief   Çå¿Õ°´¼üFIFO»º³åÇø
- * @param   ÎŞ
- * @return  °´¼ü´úÂë
+ * @brief   æ¸…ç©ºæŒ‰é”®FIFOç¼“å†²åŒº
+ * @param   æ— 
+ * @return  æŒ‰é”®ä»£ç 
  */
-void touch_ClearKey(void)
+void touch_ClearKey( void )
 {
     s_tKey.Read = s_tKey.Write;
 }
 
 /********************************************************************************************************
  * @fn      touch_ScanWakeUp
- * @brief   ´¥ÃşÉ¨Ãè»½ĞÑº¯Êı
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   è§¦æ‘¸æ‰«æå”¤é†’å‡½æ•°
+ * @param   æ— 
+ * @return  æ— 
  */
-void touch_ScanWakeUp(void)
+void touch_ScanWakeUp( void )
 {
-    wakeUpCount = WAKEUPTIME; //---»½ĞÑÊ±¼ä---
-    wakeupflag = 1;           //ÖÃ³É»½ĞÑ×´Ì¬
+    wakeUpCount = WAKEUPTIME;  //---å”¤é†’æ—¶é—´---
+    wakeupflag  = 1;           // ç½®æˆå”¤é†’çŠ¶æ€
+    touch_ResetBaseline();  // å”¤é†’åé‡ç½®æ‰«æåŸºçº¿
+    dg_log( "wake up for a while\n" );
 
-    dg_log("wake up for a while\n");
-    for (uint8_t i=0; i< TKY_MAX_QUEUE_NUM ;i++ ) {
-        touch_GPIOModeCfg (GPIO_ModeOut_PP_5mA,my_tky_ch_init[i].channelNum); //---ÍÆÍì½ÓµØ·Åµç---
-    }
-    
 }
 
 /********************************************************************************************************
  * @fn      touch_ScanEnterSleep
- * @brief   ´¥ÃşÉ¨ÃèĞİÃßº¯Êı
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   è§¦æ‘¸æ‰«æä¼‘çœ å‡½æ•°
+ * @param   æ— 
+ * @return  æ— 
  */
-void touch_ScanEnterSleep(void)
+void touch_ScanEnterSleep( void )
 {
-    for (uint8_t i=0; i< TKY_MAX_QUEUE_NUM ;i++ ) {
-        touch_GPIOModeCfg (GPIO_ModeOut_PP_5mA,my_tky_ch_init[i].channelNum); //---ÍÆÍì½ÓµØ·Åµç---
-    }
-    wakeupflag = 0;       //ÖÃ³ÉË¯Ãß×´Ì¬:0,»½ĞÑÌ¬:1
-    dg_log("Ready to sleep\n");
+    wakeupflag = 0;              // ç½®æˆç¡çœ çŠ¶æ€:0,å”¤é†’æ€:1
+    touch_ResetBaseline();  // è¿›å…¥ç¡çœ å‰é‡ç½®ç¡çœ åŸºçº¿
+    dg_log( "Ready to sleep\n" );
 }
 
+#define TOUCH_MAX_KEY_NUM 3
+
+// #define TOUCH_MIN_THR 20
 /********************************************************************************************************
  * @fn      touch_Scan
- * @brief   É¨ÃèËùÓĞ°´¼ü¡£·Ç×èÈû£¬±»systickÖĞ¶ÏÖÜÆÚĞÔµÄµ÷ÓÃ
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   æ‰«ææ‰€æœ‰æŒ‰é”®ã€‚éé˜»å¡ï¼Œè¢«systickä¸­æ–­å‘¨æœŸæ€§çš„è°ƒç”¨
+ * @param   æ— 
+ * @return  æ— 
  */
-void touch_Scan(void)
+void touch_Scan( void )
 {
-    uint8_t i;
+    uint8_t         i;
 
-    TKY_LoadAndRun();           //---ÔØÈëĞİÃßÇ°±£´æµÄ²¿·ÖÉèÖÃ---
+    TKY_LoadAndRun();   //---è½½å…¥ä¼‘çœ å‰ä¿å­˜çš„éƒ¨åˆ†è®¾ç½®---
     keyData = TKY_PollForFilter();
-    TKY_SaveAndStop();          //---¶ÔÏà¹Ø¼Ä´æÆ÷½øĞĞ±£´æ---
+    TKY_SaveAndStop();  //---å¯¹ç›¸å…³å¯„å­˜å™¨è¿›è¡Œä¿å­˜---
+    // // TODO:    
+    // static uint16_t keyData_reg = 0;
+    // uint16_t tky_thr1 = 0, tky_thr2 = 0, key_num = 0, key_num1 = 0, key_num2 = 0;
+    // uint16_t diffval = 0, baseline = 0, realval = 0;
+    // for ( uint8_t j = 0; j < TKY_MAX_QUEUE_NUM; j++ )
+    // {
+    //     TKY_GetCurQueueThreshold( j, &tky_thr1, &tky_thr2 );
+    //     baseline = TKY_GetCurQueueBaseLine( j );
+    //     realval  = TKY_GetCurQueueFilterVal( j );
+    //     if ( baseline > realval )
+    //     {
+    //         diffval = baseline - realval;
+    //         if ( ( tky_thr1 >> 1 ) < diffval )  //- TOUCH_MIN_THR
+    //         {
+    //             key_num++;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         diffval = realval - baseline;
+    //         if ( ( tky_thr1 ) < diffval )
+    //         {
+    //             key_num2++;
+    //         }
+    //     }
+    // }
+
+    // if ( ( ( key_num >= TOUCH_MAX_KEY_NUM ) && keyData == 0 ) || key_num2 )
+    // {
+    //     // printf("*****************************************\r\n");
+    //     for ( uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    //     {
+    //         TKY_SetCurQueueBaseLine( i, TKY_GetCurQueueFilterVal( i ) );
+    //     }
+    //     keyData = 0;
+    //     TKY_ClearHistoryData( TKY_FILTER_MODE );
+    // }
+
 #if TKY_SLEEP_EN
-    if (keyData)
+    if ( keyData )
     {
-        wakeUpCount = WAKEUPTIME; //---»½ĞÑÊ±¼ä---
+        wakeUpCount = WAKEUPTIME;  //---å”¤é†’æ—¶é—´---
     }
 #endif
 
-    touch_DetectKey(p_touch_cfg->touch_button_cfg);
+    touch_DetectKey( p_touch_cfg->touch_button_cfg );
 
-    WheelData = touch_DetectWheelSlider(p_touch_cfg->touch_wheel_cfg);
+    WheelData  = touch_DetectWheelSlider( p_touch_cfg->touch_wheel_cfg );
 
-    SilderData = touch_DetecLineSlider(p_touch_cfg->touch_slider_cfg);
+    SilderData = touch_DetecLineSlider( p_touch_cfg->touch_slider_cfg );
 }
 
 /********************************************************************************************************
- * @fn      touch_GPIOModeCfg
- * @brief   ´¥Ãş°´¼üÄ£Ê½ÅäÖÃ
- * @param   ÎŞ
- * @return  ÎŞ
+ * @fn      touch_IOSleep
+ * @brief   è§¦æ‘¸æŒ‰é”®IOæ¨¡å¼é…ç½®
+ * @param   æ— 
+ * @return  æ— 
  */
-// void touch_GPIOModeCfg(GPIOModeTypeDef mode)
-// {
-//     uint32_t pin = tkyPinAll;
-//     switch(mode)
-//     {
-//         case GPIO_ModeIN_Floating:
-//             R32_PA_PD_DRV &= ~pin;
-//             R32_PA_PU &= ~pin;
-//             R32_PA_DIR &= ~pin;
-//             break;
-
-//         case GPIO_ModeOut_PP_5mA://ÍÆÍì½ÓµØ·Åµç·Åµç
-//             R32_PA_PU &= ~pin;
-//             R32_PA_PD_DRV &= ~pin;
-//             R32_PA_DIR |= pin;
-//             R32_PA_CLR |= pin;
-//             break;
-//         default:
-//             break;
-//     }
-// }
-void touch_GPIOModeCfg (GPIOModeTypeDef mode, uint32_t channel)
+void touch_IOSleep(void)
 {
-    switch(mode)
-    {
-        case GPIO_ModeIN_Floating:
-            R32_PA_PD_DRV &= ~TKY_Pin[ channel ];
-            R32_PA_PU &= ~TKY_Pin[ channel ];
-            R32_PA_DIR &= ~TKY_Pin[ channel ];
-            break;
-
-        case GPIO_ModeOut_PP_5mA://ÍÆÍì½ÓµØ·Åµç·Åµç
-            R32_PA_PU &= ~TKY_Pin[ channel ];
-            R32_PA_PD_DRV &= ~TKY_Pin[ channel ];
-            R32_PA_DIR |= TKY_Pin[ channel ];
-            R32_PA_CLR |= TKY_Pin[ channel ];
-            break;
-        default:
-            break;
-    }
+    R32_PA_PU &= ~touch_pin_a;
+    R32_PA_PD_DRV &= ~touch_pin_a;
+    R32_PA_DIR |= touch_pin_a;
+    R32_PA_CLR |= touch_pin_a;
 }
-
-/**********************
- *   STATIC FUNCTIONS
- **********************/
-
+/********************************************************************************************************
+ * @fn      touch_IOWork
+ * @brief   è§¦æ‘¸æŒ‰é”®IOæ¨¡å¼é…ç½®
+ * @param   æ— 
+ * @return  æ— 
+ */
+void touch_IOWork(void)
+{
+    R32_PA_PD_DRV &= ~touch_pin_a;
+    R32_PA_PU &= ~touch_pin_a;
+    R32_PA_DIR &= ~touch_pin_a;
+}
 /********************************************************************************************************
  * @fn      touch_InitHard
- * @brief   ³õÊ¼»¯´¥Ãş°´¼ü
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   åˆå§‹åŒ–è§¦æ‘¸æŒ‰é”®
+ * @param   æ— 
+ * @return  æ— 
  */
-static void touch_InitHard (void)
+static void touch_InitHard( void )
 {
-    touch_Regcfg();
     touch_Baseinit();
-    touch_Channelinit();
+    touch_Regcfg();
+    touch_Channelinit();    
+    
 }
 
 /********************************************************************************************************
  * @fn      touch_InitVar
- * @brief   ³õÊ¼»¯´¥Ãş°´¼ü±äÁ¿
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   åˆå§‹åŒ–è§¦æ‘¸æŒ‰é”®å˜é‡
+ * @param   æ— 
+ * @return  æ— 
  */
-static void touch_InitVar(touch_cfg_t *p)
+static void touch_InitVar( touch_cfg_t* p )
 {
     uint8_t i;
 
-    p_touch_cfg = p;
+    p_touch_cfg  = p;
 
-    /* ¶Ô°´¼üFIFO¶ÁĞ´Ö¸ÕëÇåÁã */
-    s_tKey.Read = 0;
+    /* å¯¹æŒ‰é”®FIFOè¯»å†™æŒ‡é’ˆæ¸…é›¶ */
+    s_tKey.Read  = 0;
     s_tKey.Write = 0;
 
-    /* ¸øÃ¿¸ö°´¼ü½á¹¹Ìå³ÉÔ±±äÁ¿¸³Ò»×éÈ±Ê¡Öµ */
-    for (i = 0; i < p_touch_cfg->touch_button_cfg->num_elements; i++)
+    /* ç»™æ¯ä¸ªæŒ‰é”®ç»“æ„ä½“æˆå‘˜å˜é‡èµ‹ä¸€ç»„ç¼ºçœå€¼ */
+    for ( i = 0; i < p_touch_cfg->touch_button_cfg->num_elements; i++ )
     {
-        p_touch_cfg->touch_button_cfg->p_stbtn[i].LongTime = KEY_LONG_TIME;             /* ³¤°´Ê±¼ä 0 ±íÊ¾²»¼ì²â³¤°´¼üÊÂ¼ş */
-        p_touch_cfg->touch_button_cfg->p_stbtn[i].Count = KEY_FILTER_TIME / 2;          /* ¼ÆÊıÆ÷ÉèÖÃÎªÂË²¨Ê±¼äµÄÒ»°ë */
-        p_touch_cfg->touch_button_cfg->p_stbtn[i].State = 0;                            /* °´¼üÈ±Ê¡×´Ì¬£¬0ÎªÎ´°´ÏÂ */
-        p_touch_cfg->touch_button_cfg->p_stbtn[i].RepeatSpeed = KEY_REPEAT_TIME;                      /* °´¼üÁ¬·¢µÄËÙ¶È£¬0±íÊ¾²»Ö§³ÖÁ¬·¢ */
-        p_touch_cfg->touch_button_cfg->p_stbtn[i].RepeatCount = 0;                      /* Á¬·¢¼ÆÊıÆ÷ */
+        p_touch_cfg->touch_button_cfg->p_stbtn[ i ].LongTime    = KEY_LONG_TIME;       /* é•¿æŒ‰æ—¶é—´ 0 è¡¨ç¤ºä¸æ£€æµ‹é•¿æŒ‰é”®äº‹ä»¶ */
+        p_touch_cfg->touch_button_cfg->p_stbtn[ i ].Count       = KEY_FILTER_TIME / 2; /* è®¡æ•°å™¨è®¾ç½®ä¸ºæ»¤æ³¢æ—¶é—´çš„ä¸€åŠ */
+        p_touch_cfg->touch_button_cfg->p_stbtn[ i ].State       = 0;                   /* æŒ‰é”®ç¼ºçœçŠ¶æ€ï¼Œ0ä¸ºæœªæŒ‰ä¸‹ */
+        p_touch_cfg->touch_button_cfg->p_stbtn[ i ].RepeatSpeed = KEY_REPEAT_TIME;     /* æŒ‰é”®è¿å‘çš„é€Ÿåº¦ï¼Œ0è¡¨ç¤ºä¸æ”¯æŒè¿å‘ */
+        p_touch_cfg->touch_button_cfg->p_stbtn[ i ].RepeatCount = 0;                   /* è¿å‘è®¡æ•°å™¨ */
     }
 
-    /* Èç¹ûĞèÒªµ¥¶À¸ü¸ÄÄ³¸ö°´¼üµÄ²ÎÊı£¬¿ÉÒÔÔÚ´Ëµ¥¶ÀÖØĞÂ¸³Öµ */
-    /* ±ÈÈç£¬ÎÒÃÇÏ£Íû°´¼ü1°´ÏÂ³¬¹ı1Ãëºó£¬×Ô¶¯ÖØ·¢ÏàÍ¬¼üÖµ */
-//    s_tBtn[KID_K1].LongTime = 100;
-//    s_tBtn[KID_K1].RepeatSpeed = 5; /* Ã¿¸ô50ms×Ô¶¯·¢ËÍ¼üÖµ */
+    /* å¦‚æœéœ€è¦å•ç‹¬æ›´æ”¹æŸä¸ªæŒ‰é”®çš„å‚æ•°ï¼Œå¯ä»¥åœ¨æ­¤å•ç‹¬é‡æ–°èµ‹å€¼ */
+    /* æ¯”å¦‚ï¼Œæˆ‘ä»¬å¸Œæœ›æŒ‰é”®1æŒ‰ä¸‹è¶…è¿‡1ç§’åï¼Œè‡ªåŠ¨é‡å‘ç›¸åŒé”®å€¼ */
+    //  s_tBtn[KID_K1].LongTime = 100;
+    //  s_tBtn[KID_K1].RepeatSpeed = 5; /* æ¯éš”50msè‡ªåŠ¨å‘é€é”®å€¼ */
 }
-
 
 /********************************************************************************************************
  * @fn      touch_InfoDebug
- * @brief   ´¥ÃşÊı¾İ´òÓ¡º¯Êı
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   è§¦æ‘¸æ•°æ®æ‰“å°å‡½æ•°
+ * @param   æ— 
+ * @return  æ— 
  */
-void touch_InfoDebug(void)
+void touch_InfoDebug( void )
 {
     uint8_t i;
-    int16_t data_dispNum[ TKY_MAX_QUEUE_NUM ]={0};
+    uint16_t data_dispNum[ TKY_MAX_QUEUE_NUM ] = { 0 };
 
-    for (i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
-        data_dispNum[ i ] = TKY_GetCurQueueValue( i );
+        TKY_GetCurQueueValue( i, &data_dispNum[ i ] );
+    }
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    {
+        dg_log( "%04d,", data_dispNum[ i ] );
+    }
+    dg_log( "\n" );
+
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    {
+        TKY_GetCurQueueBaseLine( i, &data_dispNum[ i ] );
+    }
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    {
+        dg_log( "%04d,", data_dispNum[ i ] );
+    }
+    dg_log( "\n" );
+
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    {
+        TKY_GetCurQueueFilterVal( i, &data_dispNum[ i ] );
+    }
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    {
+        dg_log( "%04d,", data_dispNum[ i ] );
+    }
+    dg_log( "\n" );
+
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    {
+        TKY_GetCurQueueRealVal( i , &data_dispNum[ i ] );
     }
 
-    for (i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
-        dg_log("%04d,", data_dispNum[i]);
-    } dg_log("\n");
+        dg_log( "%04d,", data_dispNum[ i ] );
+    }
+    dg_log( "\n" );
 
-    for (i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
-        data_dispNum[ i ] = TKY_GetCurQueueBaseLine( i );
+        TKY_GetCurQueueThreshold( i, &data_dispNum[ i ], NULL );
     }
 
-    for (i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
-        dg_log("%04d,", data_dispNum[i]);
-    } dg_log("\n");
+        dg_log( "%04d ", data_dispNum[ i ] );
+    }
+    dg_log( "\n" );
 
-    for (i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
-        dg_log("%04d,", TKY_GetCurQueueRealVal( i ));
-    }dg_log("\r\n");
-    dg_log("\r\n");
+        TKY_GetCurQueueThreshold( i, NULL, &data_dispNum[ i ] );
+    }
+
+    for ( i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
+    {
+        dg_log( "%04d,", data_dispNum[ i ] );
+    }
+    dg_log( "\r\n" );
+    dg_log( "\r\n" );
 
 }
 
 /********************************************************************************************************
  * @fn      touch_DetectKey
- * @brief   ¼ì²âÒ»¸ö°´¼ü¡£·Ç×èÈû×´Ì¬£¬±ØĞë±»ÖÜÆÚĞÔµÄµ÷ÓÃ¡£
- * @param   i - °´¼ü½á¹¹±äÁ¿Ö¸Õë
- * @return  ÎŞ
+ * @brief   æ£€æµ‹ä¸€ä¸ªæŒ‰é”®ã€‚éé˜»å¡çŠ¶æ€ï¼Œå¿…é¡»è¢«å‘¨æœŸæ€§çš„è°ƒç”¨ã€‚
+ * @param   i - æŒ‰é”®ç»“æ„å˜é‡æŒ‡é’ˆ
+ * @return  æ— 
  */
-static void touch_DetectKey(touch_button_cfg_t * p)
+static void touch_DetectKey( touch_button_cfg_t* p )
 {
-    KEY_T *pBtn;
+    KEY_T* pBtn;
 
-    if (p == NULL)
+    if ( p == NULL )
     {
-        return ;
+        return;
     }
 
-    for (uint8_t i = 0; i < p->num_elements; i++)
+    for ( uint8_t i = 0; i < p->num_elements; i++ )
     {
-        /*°´¼ü°´ÏÂ*/
+        /*æŒ‰é”®æŒ‰ä¸‹*/
         pBtn = NULL;
         pBtn = &p_touch_cfg->touch_button_cfg->p_stbtn[ i ];
-        if (keyData & (1 << p->p_elem_index[i] ))          // pBtn->IsKeyDownFunc()==1
+        if ( keyData & ( 1 << p->p_elem_index[ i ] ) )  // pBtn->IsKeyDownFunc()==1
         {
-            if (pBtn->State == 0)
-            {
-                pBtn->State = 1;
+            /*çŸ­æŒ‰é”®ï¼Œè½¯ä»¶å¤„ç†æ¶ˆæŠ–*/
+            if(pBtn->Count < KEY_FILTER_TIME){
+                pBtn->Count = KEY_FILTER_TIME;
+            }
+            else if(pBtn->Count < 2 * KEY_FILTER_TIME){
+                pBtn->Count++;
+            }
+            else{
+                if ( pBtn->State == 0 )
+                {
+                    pBtn->State = 1;
 #if !KEY_MODE
-                /* ·¢ËÍ°´Å¥°´ÏÂµÄÏûÏ¢ */
-                touch_PutKey ((uint8_t) (3 * i + 1));
+                    /* å‘é€æŒ‰é’®æŒ‰ä¸‹çš„æ¶ˆæ¯ */
+                    touch_PutKey( (uint8_t)( 3 * i + 1 ) );
 #endif
+                }
             }
 
-            /*´¦Àí³¤°´¼ü*/
-            if (pBtn->LongTime > 0)
+            /*å¤„ç†é•¿æŒ‰é”®*/
+            if ( pBtn->LongTime > 0 )
             {
-                if (pBtn->LongCount < pBtn->LongTime)
+                if ( pBtn->LongCount < pBtn->LongTime )
                 {
-                    /* ·¢ËÍ°´Å¥³¤°´ÏÂµÄÏûÏ¢ */
-                    if (++pBtn->LongCount == pBtn->LongTime)
+                    /* å‘é€æŒ‰é’®é•¿æŒ‰ä¸‹çš„æ¶ˆæ¯ */
+                    if ( ++pBtn->LongCount == pBtn->LongTime )
                     {
 #if !KEY_MODE
                         pBtn->State = 2;
 
-                        /* ¼üÖµ·ÅÈë°´¼üFIFO */
-                        touch_PutKey ((uint8_t) (3 * i + 3));
+#ifdef KEY_PRESS_TIMEOUT_ENABLE
+                        /* é•¿æŒ‰æ— æ•ˆæŒ‰é”®å¼‚å¸¸ï¼Œé‡ç½®åŸºçº¿ */
+                        touch_ResetBaseline();
+#else
+                        /* é”®å€¼æ”¾å…¥æŒ‰é”®FIFO */
+                         touch_PutKey ((uint8_t)(3 * i + 3));
+#endif
 #endif
                     }
                 }
                 else
                 {
-                    if (pBtn->RepeatSpeed > 0)
+                    if ( pBtn->RepeatSpeed > 0 )
                     {
-                        if (++pBtn->RepeatCount >= pBtn->RepeatSpeed)
+                        if ( ++pBtn->RepeatCount >= pBtn->RepeatSpeed )
                         {
                             pBtn->RepeatCount = 0;
 #if !KEY_MODE
-                            /* ³¤°´¼üºó£¬Ã¿¸ôpBtn->RepeatSpeed*10ms·¢ËÍ1¸ö°´¼ü */
-                            touch_PutKey ((uint8_t) (3 * i + 1));
+                            /* é•¿æŒ‰é”®åï¼Œæ¯éš”pBtn->RepeatSpeed*10mså‘é€1ä¸ªæŒ‰é”® */
+                            touch_PutKey( (uint8_t)( 3 * i + 1 ) );
 #endif
                         }
                     }
@@ -411,323 +473,513 @@ static void touch_DetectKey(touch_button_cfg_t * p)
         }
         else
         {
-            if (pBtn->State)
+            if(pBtn->Count > KEY_FILTER_TIME)
             {
+                pBtn->Count = KEY_FILTER_TIME;
+            }
+            else if(pBtn->Count != 0)
+            {
+                pBtn->Count--;
+            }
+            else{
+                if ( pBtn->State )
+                {
 #if KEY_MODE
-                if (pBtn->State == 1)
-                    /* ·¢ËÍ°´Å¥°´ÏÂµÄÏûÏ¢ */
-                    touch_PutKey ((uint8_t) (3 * i + 1));
+                    if ( pBtn->State == 1 )
+                        /* å‘é€æŒ‰é’®æŒ‰ä¸‹çš„æ¶ˆæ¯ */
+                        touch_PutKey( (uint8_t)( 3 * i + 1 ) );
 #endif
-                pBtn->State = 0;
+                    pBtn->State = 0;
 
 #if !KEY_MODE
-                /* ËÉ¿ª°´¼üKEY_FILTER_TIMEºó ·¢ËÍ°´Å¥µ¯ÆğµÄÏûÏ¢ */
-                touch_PutKey ((uint8_t) (3 * i + 2));
+                    /* æ¾å¼€æŒ‰é”®KEY_FILTER_TIMEå å‘é€æŒ‰é’®å¼¹èµ·çš„æ¶ˆæ¯ */
+                    touch_PutKey( (uint8_t)( 3 * i + 2 ) );
 #endif
+                }
             }
 
-            pBtn->LongCount = 0;
+            pBtn->LongCount   = 0;
             pBtn->RepeatCount = 0;
         }
     }
 }
 
-static void touch_Regcfg (void)
+static void touch_Regcfg( void )
 {
-    R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (ADC_PGA_0 << 4) | (SampleFreq_8 << 6);
-    R8_ADC_CONVERT &= ~(RB_ADC_PGA_GAIN2 | RB_ADC_SAMPLE_TIME);
+    ADC_SignalPGATypeDef ga = ADC_PGA_0;
+    R8_ADC_CFG      = RB_ADC_POWER_ON | RB_ADC_BUF_EN | ( (ga&0xF) << 4 ) | ( SampleFreq_8 << 6 );
+    if( ga & ADC_PGA_2_ )
+    {
+        R8_ADC_CONVERT |= RB_ADC_PGA_GAIN2;
+    }
+    else
+    {
+        R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
+    }
+    R8_ADC_CONVERT &= ~( RB_ADC_SAMPLE_TIME );
     R8_ADC_CONVERT |= RB_ADC_SAMPLE_TIME;
-    R8_TKEY_CFG = RB_TKEY_PWR_ON | RB_TKEY_CURRENT;
-
+    R8_TKEY_CFG     = RB_TKEY_PWR_ON | RB_TKEY_CURRENT;  //
+    R32_PIN_IN_DIS |= touch_pin_a;//å…³é—­æ•°å­—è¾“å…¥åŠŸèƒ½ï¼Œé™ä½åŠŸè€—
+    touch_IOWork();
 #if TKY_SHIELD_EN
-    R8_TKEY_CFG |= RB_TKEY_DRV_EN;
+    R8_TKEY_CFG  |= RB_TKEY_DRV_EN;
+    R32_TKEY_SEL |= ( tkyChAll << 18 );
 #endif
     TKY_SaveCfgReg();
 }
+
 /********************************************************************************************************
  * @fn      touch_Baseinit
- * @brief   ´¥Ãş»ù´¡¿â³õÊ¼»¯
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   è§¦æ‘¸åŸºç¡€åº“åˆå§‹åŒ–
+ * @param   æ— 
+ * @return  æ— 
  */
-static void touch_Baseinit(void)
+static void touch_Baseinit( void )
 {
-    uint8_t sta=0xff;
-    TKY_BaseInitTypeDef TKY_BaseInitStructure = {0};
-    for(uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)  //³õÊ¼»¯tkyQueueAll±äÁ¿
-    {
-        tkyQueueAll |= 1<<i;
-    }
-    dg_log("tQ : %04x\n",tkyQueueAll);
+    uint8_t sta = 0xff;    
+    TKY_BaseInitTypeDef TKY_BaseInitStructure = { 0 };
 
-    //----------´¥Ãş°´¼ü»ù´¡ÉèÖÃ³õÊ¼»¯--------
-    TKY_BaseInitStructure.filterMode = TKY_FILTER_MODE;
-    TKY_BaseInitStructure.shieldEn = TKY_SHIELD_EN;
-    TKY_BaseInitStructure.singlePressMod = TKY_SINGLE_PRESS_MODE;
-    TKY_BaseInitStructure.filterGrade = TKY_FILTER_GRADE;
-    TKY_BaseInitStructure.maxQueueNum = TKY_MAX_QUEUE_NUM;
-    TKY_BaseInitStructure.baseRefreshOnPress = TKY_BASE_REFRESH_ON_PRESS;
-    //---»ùÏß¸üĞÂËÙ¶È£¬baseRefreshSampleNumºÍfilterGrade£¬Óë»ùÏß¸üĞÂËÙ¶È³É·´±È£¬»ùÏß¸üĞÂËÙ¶È»¹Óë´úÂë½á¹¹Ïà¹Ø£¬¿ÉÍ¨¹ıº¯ÊıGetCurQueueBaseLineÀ´¹Û²ì---
+    for (uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)  // åˆå§‹åŒ–tkyQueueAllå˜é‡
+    {
+        tkyQueueAll |= 1 << i;
+        tkyChAll |= (1 << my_tky_ch_init[i].channelNum);
+        touch_pin_a |= TKY_Pin[my_tky_ch_init[i].channelNum];
+    }
+    dg_log( "tQ : %04x\n", tkyQueueAll );
+
+    //----------è§¦æ‘¸æŒ‰é”®åŸºç¡€è®¾ç½®åˆå§‹åŒ–--------
+    TKY_BaseInitStructure.filterMode           = TKY_FILTER_MODE;
+    TKY_BaseInitStructure.shieldEn             = TKY_SHIELD_EN;
+    TKY_BaseInitStructure.singlePressMod       = TKY_SINGLE_PRESS_MODE;
+    TKY_BaseInitStructure.filterGrade          = TKY_FILTER_GRADE;
+    TKY_BaseInitStructure.maxQueueNum          = TKY_MAX_QUEUE_NUM;
+    TKY_BaseInitStructure.baseRefreshOnPress   = TKY_BASE_REFRESH_ON_PRESS;
+    //---åŸºçº¿æ›´æ–°é€Ÿåº¦ï¼ŒbaseRefreshSampleNumå’ŒfilterGradeï¼Œä¸åŸºçº¿æ›´æ–°é€Ÿåº¦æˆåæ¯”ï¼ŒåŸºçº¿æ›´æ–°é€Ÿåº¦è¿˜ä¸ä»£ç ç»“æ„ç›¸å…³ï¼Œå¯é€šè¿‡å‡½æ•°GetCurQueueBaseLineæ¥è§‚å¯Ÿ---
     TKY_BaseInitStructure.baseRefreshSampleNum = TKY_BASE_REFRESH_SAMPLE_NUM;
-    TKY_BaseInitStructure.baseUpRefreshDouble = TKY_BASE_UP_REFRESH_DOUBLE;
-    TKY_BaseInitStructure.baseDownRefreshSlow = TKY_BASE_DOWN_REFRESH_SLOW;
-    TKY_BaseInitStructure.tkyBufP = TKY_MEMBUF;
-    sta = TKY_BaseInit( TKY_BaseInitStructure );
-    dg_log("TKY_BaseInit:%02X\r\n",sta);
+    TKY_BaseInitStructure.baseUpRefreshDouble  = TKY_BASE_UP_REFRESH_DOUBLE;
+    TKY_BaseInitStructure.baseDownRefreshSlow  = TKY_BASE_DOWN_REFRESH_SLOW;
+    TKY_BaseInitStructure.tkyBufP              = TKY_MEMBUF;
+    sta                                        = TKY_BaseInit( TKY_BaseInitStructure );
+    dg_log( "TKY_BaseInit:%02X\r\n", sta );
 }
 
-#define TKY_MAX_VOLTAGE     2100
-#define TKY_DST_VOLTAGE     2100
+#define TKY_MAX_VOLTAGE 2100
+#define TKY_DST_VOLTAGE 2100
 
-#define TKY_MAX_FACTOR   90
-#define TKY_MIN_FACTOR   75
+#define TKY_MAX_FACTOR  90
+#define TKY_MIN_FACTOR  75
 
-static uint32_t maxCDParams = (TKY_MAX_FACTOR * TKY_DST_VOLTAGE*4096)/(TKY_MAX_VOLTAGE*100);
-static uint32_t minCDParams = (TKY_MIN_FACTOR * TKY_DST_VOLTAGE*4096)/(TKY_MAX_VOLTAGE*100);
+static uint32_t maxCDParams = ( TKY_MAX_FACTOR * TKY_DST_VOLTAGE * 4096 ) / ( TKY_MAX_VOLTAGE * 100 );
+static uint32_t minCDParams = ( TKY_MIN_FACTOR * TKY_DST_VOLTAGE * 4096 ) / ( TKY_MAX_VOLTAGE * 100 );
 
 /********************************************************************************************************
  * @fn      touch_Channelinit
- * @brief   ´¥ÃşÍ¨µÀ³õÊ¼»¯
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   è§¦æ‘¸é€šé“åˆå§‹åŒ–
+ * @param   æ— 
+ * @return  æ— 
  */
-static void touch_Channelinit(void)
+static void     touch_Channelinit( void )
 {
-    uint8_t error_flag = 0;
-    uint16_t chx_mean = 0,chx_mean_last = 0;
-    for(uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+#define SAMPLENUM 128
+    uint8_t  error_flag = 0;
+    uint16_t chx_mean = 0, chx_mean_last = 0;
+    uint16_t noise      = 0;
+    uint16_t val[ 100 ] = { 0 };
+    for ( uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
-        TKY_CHInit(my_tky_ch_init[i]);
+        TKY_CHInit( my_tky_ch_init[ i ] );
     }
 
-    dg_log("minCDParams : %d, maxCDParams : %d\n",minCDParams, maxCDParams);
+    dg_log( "minCDParams : %d, maxCDParams : %d\n", minCDParams, maxCDParams );
 
-    for(uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+    for ( uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
+        TKY_GetCurChannelData( my_tky_ch_init[ i ].channelNum, my_tky_ch_init[ i ].chargeTime,
+                               my_tky_ch_init[ i ].disChargeTime, val, 100 );
+        TKY_NoiseAndMeanEstimate( val, 100, &noise, &chx_mean );
 
-        chx_mean = TKY_GetCurChannelMean(my_tky_ch_init[i].channelNum, my_tky_ch_init[i].chargeTime,
-                                         my_tky_ch_init[i].disChargeTime, 1000);
-
-        if(chx_mean < minCDParams || chx_mean > maxCDParams)
+        if ( chx_mean < minCDParams || chx_mean > maxCDParams )
         {
             error_flag = 1;
         }
         else
         {
-            TKY_SetCurQueueBaseLine(i, chx_mean);
+            TKY_SetCurQueueBaseLine( i, chx_mean );
         }
     }
-    //³ä·Åµç»ùÏßÖµÒì³££¬ÖØĞÂĞ£×¼»ùÏßÖµ
-    if(error_flag != 0)
+    // å……æ”¾ç”µåŸºçº¿å€¼å¼‚å¸¸ï¼Œé‡æ–°æ ¡å‡†åŸºçº¿å€¼
+    if ( error_flag != 0 )
     {
-        dg_log("\n\nCharging parameters error, preparing for recalibration ...\n\n");
+        dg_log( "\n\nCharging parameters error, preparing for recalibration ...\n\n" );
         uint16_t charge_time;
-        for (uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+        for ( uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
         {
-          charge_time = 0,chx_mean = 0;
-          while (1)
-          {
-              chx_mean = TKY_GetCurChannelMean(my_tky_ch_init[i].channelNum, charge_time,3, 1000);
+            charge_time = 0, chx_mean = 0;
+            while ( 1 )
+            {
+                TKY_GetCurChannelData( my_tky_ch_init[ i ].channelNum, charge_time,
+                                       my_tky_ch_init[ i ].disChargeTime, val, 100 );
+                TKY_NoiseAndMeanEstimate( val, 100, &noise, &chx_mean );
 
-//              dg_log("testing .... chg : %d, baseline : %d\n",charge_time,chx_mean);//´òÓ¡»ùÏßÖµ
+                dg_log("testing .... chg : %d, baseline : %d\n",charge_time,chx_mean);//æ‰“å°åŸºçº¿å€¼
 
-              if ((charge_time == 0) && ((chx_mean > maxCDParams))) {//µÍÓÚ×îĞ¡³äµç²ÎÊı
-                  dg_log("Error, %u KEY%u Too small Cap,Please check the hardware !\r\n",chx_mean,i);
-                  break;
-              }
-              else {
-                  if ((chx_mean > minCDParams) &&(chx_mean < maxCDParams)) {//³äµç²ÎÊıÕı³£
-                      TKY_SetCurQueueBaseLine(i, chx_mean);
-                      TKY_SetCurQueueChargeTime(i,charge_time,3);
-                      dg_log("channel:%u, chargetime:%u,BaseLine:%u\r\n",
-                            i, charge_time, chx_mean);
-                      break;
-                  }
-                  else if(chx_mean >= maxCDParams)
-                  {
-                      TKY_SetCurQueueBaseLine (i, chx_mean_last);
-                      TKY_SetCurQueueChargeTime(i,charge_time-1,3);
-                      dg_log("Warning,channel:%u Too large Current, chargetime:%u,BaseLine:%u\r\n",
-                                                  i, charge_time, chx_mean);
-                      break;
-                  }
-                  charge_time++;
-                  chx_mean_last = chx_mean;
-                  if (charge_time > 0x1f) {    //³¬³ö×î´ó³äµç²ÎÊı
-                      dg_log("Error, Chargetime Max,KEY%u Too large Cap,Please check the hardware !\r\n",i);
-                      break;
-                  }
-              }
-          }
+                if ( ( charge_time == 0 ) && ( ( chx_mean > maxCDParams ) ) )
+                {  // ä½äºæœ€å°å……ç”µå‚æ•°
+                    dg_log( "Error, %u KEY%u Too small Cap,Please check the hardware !\r\n", chx_mean, i );
+                    break;
+                }
+                else
+                {
+                    if ( ( chx_mean > minCDParams ) && ( chx_mean < maxCDParams ) )
+                    {  // å……ç”µå‚æ•°æ­£å¸¸
+                        TKY_SetCurQueueBaseLine( i, chx_mean );
+                        TKY_SetCurQueueChargeTime( i, charge_time, 3 );
+                        dg_log( "channel:%u, chargetime:%u,BaseLine:%u\r\n",
+                                i, charge_time, chx_mean );
+                        break;
+                    }
+                    else if ( chx_mean >= maxCDParams )
+                    {
+                        TKY_SetCurQueueBaseLine( i, chx_mean_last );
+                        TKY_SetCurQueueChargeTime( i, charge_time - 1, 3 );
+                        dg_log( "Warning,channel:%u Too large Current, chargetime:%u,BaseLine:%u\r\n",
+                                i, charge_time, chx_mean );
+                        break;
+                    }
+                    charge_time++;
+                    chx_mean_last = chx_mean;
+                    if ( charge_time > 0x1f )
+                    {  // è¶…å‡ºæœ€å¤§å……ç”µå‚æ•°
+                        dg_log( "Error, Chargetime Max,KEY%u Too large Cap,Please check the hardware !\r\n", i );
+                        break;
+                    }
+                }
+            }
         }
     }
     TKY_SaveAndStop();
 }
 
-
-
 /********************************************************************************************************
  * @fn      touch_Recalibrate
- * @brief   ´¥Ãş²ÎÊıÖØĞÂĞ£×¼
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   è§¦æ‘¸å‚æ•°é‡æ–°æ ¡å‡†
+ * @param   æ— 
+ * @return  æ— 
  */
-void touch_Recalibrate(void)
+// void touch_Recalibrate(void)
+// {
+//     uint16_t chx_mean = 0,chx_mean_last = 0;
+//     uint8_t recal_flag = 0;
+
+
+//  uint8_t j;
+//  for ( j = 0; j < TKY_MAX_QUEUE_NUM; j++)
+//  {
+//      uint16_t realval = TKY_GetCurQueueRealVal( j );
+// //        dg_log("realval %d %d %d\n",j,realval,maxCDParams);
+//      if(realval > maxCDParams)
+//      {
+//          recal_flag = 1;
+//      }
+//  }
+
+//  if((1 == recal_flag) )
+//  {
+//      TKY_ClearHistoryData(TKY_FILTER_MODE);
+
+//  TKY_LoadAndRun();
+//  dg_log("\n\nCharging parameters error, preparing for recalibration ...\n\n");
+//      uint16_t charge_time;
+//      for (uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+//      {
+//        charge_time = 0,chx_mean = 0;
+//        while (1)
+//        {
+//            chx_mean = TKY_GetCurChannelMean(my_tky_ch_init[i].channelNum, charge_time,3, 1000);
+
+// //                      dg_log("testing .... chg : %d, baseline : %d\n",charge_time,chx_mean);//æ‰“å°åŸºçº¿å€¼
+
+//  if ((charge_time == 0) && ((chx_mean > minCDParams))) {//ä½äºæœ€å°å……ç”µå‚æ•°
+//      dg_log("Error, %u KEY%u Too small Cap,Please check the hardware !\r\n",chx_mean,i);
+//      break;
+//  }
+//  else {
+//      if ((chx_mean > minCDParams) &&(chx_mean < maxCDParams)) {//å……ç”µå‚æ•°æ­£å¸¸
+//          TKY_SetCurQueueBaseLine(i, chx_mean);
+//          TKY_SetCurQueueChargeTime(i,charge_time,3);
+//          dg_log("channel:%u, chargetime:%u,BaseLine:%u\r\n",
+//                i, charge_time, chx_mean);
+//          break;
+//      }else if(chx_mean >= maxCDParams)
+//      {
+//          TKY_SetCurQueueBaseLine (i, chx_mean_last);
+//          TKY_SetCurQueueChargeTime(i,charge_time-1,3);
+//          dg_log("Warning,channel:%u Too large Current, chargetime:%u,BaseLine:%u\r\n",
+//                                      i, charge_time, chx_mean);
+//          break;
+//      }
+//      charge_time++;
+//      chx_mean_last = chx_mean;
+//      if (charge_time > 0x1f) {    //è¶…å‡ºæœ€å¤§å……ç”µå‚æ•°
+//          dg_log("Error, Chargetime Max,KEY%u Too large Cap,Please check the hardware !\r\n",i);
+//          break;
+//      }
+//  }
+// }
+// }
+// TKY_SaveAndStop();
+// }
+// }
+
+#define SAMPLENUM 128
+static uint16_t tky_baseval[ TKY_MAX_QUEUE_NUM ] = { 0 };
+static uint16_t tky_th1[ TKY_MAX_QUEUE_NUM ]     = { 0 };
+static uint16_t tky_th2[ TKY_MAX_QUEUE_NUM ]     = { 0 };
+static uint16_t tky_realval[ TKY_MAX_QUEUE_NUM ] = { 0 };
+
+/********************************************************************************************************
+ * @fn      touch_Recalibrate_WakeUp
+ * @brief   è§¦æ‘¸å‚æ•°é‡æ–°æ ¡å‡†
+ * @param   æ— 
+ * @return  æ— 
+ */
+// void touch_Recalibrate_Wakeup( void )
+// {
+//     uint16_t chx_mean = 0, chx_mean_last = 0;
+//     uint8_t  recal_flag1 = 0, recal_flag2 = 0;
+//     uint16_t sampleData[ SAMPLENUM ] = { 0 };
+//     uint16_t CTransN = 1;
+//     uint16_t testbit = 0;
+//     uint8_t  calflag = 0;
+//     uint16_t noise[ TKY_MAX_QUEUE_NUM ] = { 0 };
+//     {
+//         uint8_t j;
+
+//  //    for ( j = 0; j < TKY_MAX_QUEUE_NUM; j++)
+//  //    {
+//  //        dg_log("realval %d %d %d - %d %d\n",j,tky_baseval[j],tky_realval[j],tky_th1[j],tky_th2[j]);
+//  //    }
+
+//  for ( j = 0; j < TKY_MAX_QUEUE_NUM; j++)
+//  {
+//      tky_realval[j] = TKY_GetCurQueueRealVal( j);
+//      TKY_GetCurQueueThreshold( j, &tky_th1[j], &tky_th2[j]);
+//      tky_baseval[j] = TKY_GetCurQueueBaseLine( j);
+//      if(tky_realval[j] > tky_baseval[j])
+//      {
+//          if(tky_realval[j] - tky_baseval[j] > tky_th1[j])
+//          {
+//              tky_baseval[j] = 0;
+//              recal_flag1 = 1;
+//          }
+//      }
+//      else if(tky_baseval[j] - tky_realval[j] > (tky_th1[j] >> 1))
+//      {
+//          recal_flag2++;
+// //            tky_baseval[j] = 0;
+//      }
+//  }
+// }
+// // PRINT("***************%u,%u***************\r\n",recal_flag1,recal_flag2);
+// if(( (1 == recal_flag1) || (recal_flag2 > (TKY_MAX_QUEUE_NUM>>1)) ) && (keyData == 0))
+// {
+//  PRINT("***************%u,%u***************\r\n",recal_flag1,recal_flag2);
+//  touch_ResetBaseline();
+// }
+// }
+
+/********************************************************************************************************
+ * @fn      touch_Recalibrate_Sleep
+ * @brief   è§¦æ‘¸å‚æ•°é‡æ–°æ ¡å‡†
+ * @param   æ— 
+ * @return  æ— 
+ */
+// void touch_Recalibrate_Sleep( void )
+// {
+//     uint16_t chx_mean = 0, chx_mean_last = 0;
+//     uint8_t  recal_flag1 = 0, recal_flag2 = 0;
+//     uint16_t sampleData[ SAMPLENUM ] = { 0 };
+//     uint16_t CTransN = 1;
+//     uint16_t testbit = 0;
+//     uint8_t  calflag = 0;
+//     uint16_t noise[ TKY_MAX_QUEUE_NUM ] = { 0 };
+
+//  {
+//      uint8_t j;
+
+//  //    for ( j = 0; j < TKY_MAX_QUEUE_NUM; j++)
+//  //    {
+//  //        dg_log("realval %d %d %d - %d %d\n",j,tky_baseval[j],tky_realval[j],tky_th1[j],tky_th2[j]);
+//  //    }
+
+//  for ( j = TKY_SLEEP_QUEUE_NUM; j < TKY_MAX_QUEUE_NUM; j++)
+//  {
+//      TKY_GetCurQueueRealVal( j, &tky_realval[j]);
+//      TKY_GetCurQueueThreshold( j, &tky_th1[j], &tky_th2[j]);
+//      TKY_GetCurQueueBaseLine( j, &tky_baseval[j]);
+//      if(tky_realval[j] < tky_baseval[j])
+//      {
+//          if(tky_baseval[j] -  tky_realval[j]> tky_th1[j])
+//          {
+//              tky_baseval[j] = 0;
+//              recal_flag1 = 1;
+
+//  PRINT("err channel : %d, %04x\n",j ,my_tky_ch_init[j].channelNum);
+//  for(uint8_t k = 0; k < TKY_TOUCH_QUEUE_NUM; k++)
+//  {
+//      if(my_tky_ch_init[j].channelNum & (1 << my_tky_ch_init[k].channelNum))
+//      {
+//          tky_baseval[k] = 0;
+//          PRINT("sub channel : %d, %04x\n",k, 1 << my_tky_ch_init[k].channelNum);
+//      }
+//  }
+
+//  }
+// }
+// else if(tky_baseval[j] - tky_realval[j] > (tky_th1[j] >> 1))
+// {
+//  recal_flag2++;
+// //            tky_baseval[j] = 0;
+// }
+// }
+// }
+
+//  PRINT("***recal_flag1 : %d, recal_flag2 : %d\n",recal_flag1, recal_flag2);
+
+//  if((1 == recal_flag1) || (recal_flag2 > (TKY_SLEEP_QUEUE_NUM >> 1)))
+//  {
+//      touch_ResetBaselineSleep();
+//  }
+// }
+
+// void touch_ResetBaseline (void) {
+//     uint16_t var = 0;
+//     TKY_LoadAndRun();
+//     TKY_PollForFilter();
+//     TKY_SaveAndStop();
+//     for (uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++) {
+//      var = TKY_GetCurQueueRealVal (i);
+//         TKY_SetCurQueueBaseLine (i,var);
+//     }
+//     TKY_ClearHistoryData(TKY_FILTER_MODE);
+// }
+
+// void touch_ResetBaselineSleep (void) {
+//     uint16_t var = 0;
+//     TKY_LoadAndRun();
+//     TKY_ScanForWakeUp();
+//     TKY_SaveAndStop();
+//     for (uint8_t i = TKY_MAX_QUEUE_NUM; i < TKY_MAX_QUEUE_NUM; i++) {
+//         TKY_GetCurQueueFilterVal (i, &var);
+//         TKY_SetCurQueueBaseLine (i, var);
+//     }
+//     TKY_ClearHistoryData(TKY_FILTER_MODE);
+// }
+
+void touch_ResetBaseline( void )
 {
-    uint16_t chx_mean = 0,chx_mean_last = 0;
-    uint8_t recal_flag = 0;
-
-
-    uint8_t j;
-    for ( j = 0; j < TKY_MAX_QUEUE_NUM; j++)
+    uint16_t var = 0;
+    TKY_LoadAndRun();
+    TKY_PollForFilter();
+    TKY_SaveAndStop();
+    for ( uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++ )
     {
-        uint16_t realval = TKY_GetCurQueueRealVal( j );
-//        dg_log("realval %d %d %d\n",j,realval,maxCDParams);
-        if(realval > maxCDParams)
-        {
-            recal_flag = 1;
-        }
+        TKY_GetCurQueueFilterVal( i , &var );
+        TKY_SetCurQueueBaseLine( i, var );
     }
-
-    if((1 == recal_flag) )
-    {
-        TKY_ClearHistoryData(TKY_FILTER_MODE);
-
-        TKY_LoadAndRun();
-        dg_log("\n\nCharging parameters error, preparing for recalibration ...\n\n");
-            uint16_t charge_time;
-            for (uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
-            {
-              charge_time = 0,chx_mean = 0;
-              while (1)
-              {
-                  chx_mean = TKY_GetCurChannelMean(my_tky_ch_init[i].channelNum, charge_time,3, 1000);
-
-//                      dg_log("testing .... chg : %d, baseline : %d\n",charge_time,chx_mean);//´òÓ¡»ùÏßÖµ
-
-                  if ((charge_time == 0) && ((chx_mean > minCDParams))) {//µÍÓÚ×îĞ¡³äµç²ÎÊı
-                      dg_log("Error, %u KEY%u Too small Cap,Please check the hardware !\r\n",chx_mean,i);
-                      break;
-                  }
-                  else {
-                      if ((chx_mean > minCDParams) &&(chx_mean < maxCDParams)) {//³äµç²ÎÊıÕı³£
-                          TKY_SetCurQueueBaseLine(i, chx_mean);
-                          TKY_SetCurQueueChargeTime(i,charge_time,3);
-                          dg_log("channel:%u, chargetime:%u,BaseLine:%u\r\n",
-                                i, charge_time, chx_mean);
-                          break;
-                      }else if(chx_mean >= maxCDParams)
-                      {
-                          TKY_SetCurQueueBaseLine (i, chx_mean_last);
-                          TKY_SetCurQueueChargeTime(i,charge_time-1,3);
-                          dg_log("Warning,channel:%u Too large Current, chargetime:%u,BaseLine:%u\r\n",
-                                                      i, charge_time, chx_mean);
-                          break;
-                      }
-                      charge_time++;
-                      chx_mean_last = chx_mean;
-                      if (charge_time > 0x1f) {    //³¬³ö×î´ó³äµç²ÎÊı
-                          dg_log("Error, Chargetime Max,KEY%u Too large Cap,Please check the hardware !\r\n",i);
-                          break;
-                      }
-                  }
-              }
-            }
-            TKY_SaveAndStop();
-    }
+    TKY_ClearHistoryData( TKY_FILTER_MODE );
 }
-
 
 /********************************************************************************************************
  * @fn      touch_DetectWheelSlider
- * @brief   ´¥Ãş»¬ÂÖÊı¾İ´¦Àí
- * @param   ÎŞ
- * @return  ÎŞ
+ * @brief   è§¦æ‘¸æ»‘è½®æ•°æ®å¤„ç†
+ * @param   æ— 
+ * @return  æ— 
  */
-static  uint16_t touch_DetectWheelSlider (touch_wheel_cfg_t * p_wheel)
+static uint16_t touch_DetectWheelSlider( touch_wheel_cfg_t* p_wheel )
 {
-    uint8_t loop;
-    uint8_t max_data_idx;
-    uint16_t d1;
-    uint16_t d2;
-    uint16_t d3;
-    uint16_t wheel_rpos;
-    uint16_t dsum;
-    uint16_t unit;
-    uint8_t num_elements;
-    uint16_t p_threshold;
-    uint16_t * wheel_data;
+    uint8_t   loop;
+    uint8_t   max_data_idx;
+    uint16_t  d1;
+    uint16_t  d2;
+    uint16_t  d3;
+    uint16_t  wheel_rpos;
+    uint16_t  dsum;
+    uint16_t  unit;
+    uint8_t   num_elements;
+    uint16_t  p_threshold;
+    uint16_t* wheel_data;
 
-    if (p_wheel == NULL)
+    if ( p_wheel == NULL )
     {
         return TOUCH_OFF_VALUE;
     }
 
     num_elements = p_wheel->num_elements;
-    p_threshold = p_wheel->threshold;
-    wheel_data = p_wheel->pdata;
+    p_threshold  = p_wheel->threshold;
+    wheel_data   = p_wheel->pdata;
 
-    if (num_elements < 3)
+    if ( num_elements < 3 )
     {
         return TOUCH_OFF_VALUE;
     }
 
-    for (loop = 0; loop < p_wheel->num_elements; loop++)
+    for ( loop = 0; loop < p_wheel->num_elements; loop++ )
     {
-        wheel_data[ loop ] = TKY_GetCurQueueValue (p_wheel->p_elem_index[ loop ]);
+        TKY_GetCurQueueValue( p_wheel->p_elem_index[ loop ] ,&wheel_data[ loop ]);
     }
 
     /* Search max data in slider */
     max_data_idx = 0;
-    for (loop = 0; loop < (num_elements - 1); loop++)
+    for ( loop = 0; loop < ( num_elements - 1 ); loop++ )
     {
-        if (wheel_data[ max_data_idx ] < wheel_data[ loop + 1 ])
+        if ( wheel_data[ max_data_idx ] < wheel_data[ loop + 1 ] )
         {
-            max_data_idx = (uint8_t) (loop + 1);
+            max_data_idx = (uint8_t)( loop + 1 );
         }
     }
     /* Array making for wheel operation          */
     /*    Maximum change CH_No -----> Array"0"    */
     /*    Maximum change CH_No + 1 -> Array"2"    */
     /*    Maximum change CH_No - 1 -> Array"1"    */
-    if (0 == max_data_idx)
+    if ( 0 == max_data_idx )
     {
-        d1 = (uint16_t) (wheel_data[ 0 ] - wheel_data[ num_elements - 1 ]);
-        d2 = (uint16_t) (wheel_data[ 0 ] - wheel_data[ 1 ]);
-        dsum = (uint16_t) (wheel_data[ 0 ] + wheel_data[ 1 ] + wheel_data[ num_elements - 1 ]);
+        d1   = (uint16_t)( wheel_data[ 0 ] - wheel_data[ num_elements - 1 ] );
+        d2   = (uint16_t)( wheel_data[ 0 ] - wheel_data[ 1 ] );
+        dsum = (uint16_t)( wheel_data[ 0 ] + wheel_data[ 1 ] + wheel_data[ num_elements - 1 ] );
     }
-    else if ((num_elements - 1) == max_data_idx)
+    else if ( ( num_elements - 1 ) == max_data_idx )
     {
-        d1 = (uint16_t) (wheel_data[ num_elements - 1 ] - wheel_data[ num_elements - 2 ]);
-        d2 = (uint16_t) (wheel_data[ num_elements - 1 ] - wheel_data[ 0 ]);
-        dsum = (uint16_t) (wheel_data[ 0 ] + wheel_data[ num_elements - 2 ] + wheel_data[ num_elements - 1 ]);
+        d1   = (uint16_t)( wheel_data[ num_elements - 1 ] - wheel_data[ num_elements - 2 ] );
+        d2   = (uint16_t)( wheel_data[ num_elements - 1 ] - wheel_data[ 0 ] );
+        dsum = (uint16_t)( wheel_data[ 0 ] + wheel_data[ num_elements - 2 ] + wheel_data[ num_elements - 1 ] );
     }
     else
     {
-        d1 = (uint16_t) (wheel_data[ max_data_idx ] - wheel_data[ max_data_idx - 1 ]);
-        d2 = (uint16_t) (wheel_data[ max_data_idx ] - wheel_data[ max_data_idx + 1 ]);
-        dsum = (uint16_t) (wheel_data[ max_data_idx + 1 ] + wheel_data[ max_data_idx ] + wheel_data[ max_data_idx - 1 ]);
+        d1   = (uint16_t)( wheel_data[ max_data_idx ] - wheel_data[ max_data_idx - 1 ] );
+        d2   = (uint16_t)( wheel_data[ max_data_idx ] - wheel_data[ max_data_idx + 1 ] );
+        dsum = (uint16_t)( wheel_data[ max_data_idx + 1 ] + wheel_data[ max_data_idx ] + wheel_data[ max_data_idx - 1 ] );
     }
 
-    if (0 == d1)
+    if ( 0 == d1 )
     {
         d1 = 1;
     }
     /* Constant decision for operation of angle of wheel */
-    if (dsum > p_threshold)
+    if ( dsum > p_threshold )
     {
-        d3 = (uint16_t) (p_wheel->decimal_point_percision + ((d2 * p_wheel->decimal_point_percision) / d1));
+        d3         = (uint16_t)( p_wheel->decimal_point_percision + ( ( d2 * p_wheel->decimal_point_percision ) / d1 ) );
 
-        unit = (uint16_t) (p_wheel->wheel_resolution / num_elements);
-        wheel_rpos = (uint16_t) (((unit * p_wheel->decimal_point_percision) / d3) + (unit * max_data_idx));
+        unit       = (uint16_t)( p_wheel->wheel_resolution / num_elements );
+        wheel_rpos = (uint16_t)( ( ( unit * p_wheel->decimal_point_percision ) / d3 ) + ( unit * max_data_idx ) );
 
         /* Angle division output */
         /* diff_angle_ch = 0 -> 359 ------ diff_angle_ch output 1 to 360 */
-        if (0 == wheel_rpos)
+        if ( 0 == wheel_rpos )
         {
-            wheel_rpos = p_wheel->wheel_resolution ;
+            wheel_rpos = p_wheel->wheel_resolution;
         }
-        else if ((p_wheel->wheel_resolution + 1) < wheel_rpos)
+        else if ( ( p_wheel->wheel_resolution + 1 ) < wheel_rpos )
         {
             wheel_rpos = 1;
         }
@@ -746,57 +998,57 @@ static  uint16_t touch_DetectWheelSlider (touch_wheel_cfg_t * p_wheel)
 
 /********************************************************************************************************
  * @fn      touch_DetectWheelSlider
- * @brief   ´¥Ãş»¬ÌõÊı¾İ´¦Àí
- * @param   ÎŞ
- * @return  »¬Ìõ×ø±ê
+ * @brief   è§¦æ‘¸æ»‘æ¡æ•°æ®å¤„ç†
+ * @param   æ— 
+ * @return  æ»‘æ¡åæ ‡
  */
-static uint16_t touch_DetecLineSlider(touch_slider_cfg_t * p_slider)
+static uint16_t touch_DetecLineSlider( touch_slider_cfg_t* p_slider )
 {
 
-    uint8_t loop;
-    uint8_t max_data_idx;
-    uint16_t d1;
-    uint16_t d2;
-    uint16_t d3;
-    uint16_t slider_rpos;
-    uint16_t resol_plus;
-    uint16_t dsum;
-    uint8_t num_elements = 0;
-    uint16_t p_threshold = 0;
-    uint16_t * slider_data = 0;
+    uint8_t   loop;
+    uint8_t   max_data_idx;
+    uint16_t  d1;
+    uint16_t  d2;
+    uint16_t  d3;
+    uint16_t  slider_rpos;
+    uint16_t  resol_plus;
+    uint16_t  dsum;
+    uint8_t   num_elements = 0;
+    uint16_t  p_threshold  = 0;
+    uint16_t* slider_data  = 0;
 
-    if (p_slider == NULL)
+    if ( p_slider == NULL )
     {
         return TOUCH_OFF_VALUE;
     }
 
     num_elements = p_slider->num_elements;
-    p_threshold = p_slider->threshold;
-    slider_data = p_slider->pdata;
+    p_threshold  = p_slider->threshold;
+    slider_data  = p_slider->pdata;
 
-    if (num_elements < 3)
+    if ( num_elements < 3 )
     {
         return TOUCH_OFF_VALUE;
     }
 
-    for (uint8_t loop = 0; loop < num_elements; loop++)
+    for ( uint8_t loop = 0; loop < num_elements; loop++ )
     {
-        slider_data[ loop ] = TKY_GetCurQueueValue (p_slider->p_elem_index[ loop ]);
+        TKY_GetCurQueueValue( p_slider->p_elem_index[ loop ] , &slider_data[ loop ] );
     }
     /* Search max data in slider */
     max_data_idx = 0;
-    for (loop = 0; loop < (num_elements - 1); loop++)
+    for ( loop = 0; loop < ( num_elements - 1 ); loop++ )
     {
-        if (slider_data[max_data_idx] < slider_data[loop + 1])
+        if ( slider_data[ max_data_idx ] < slider_data[ loop + 1 ] )
         {
-            max_data_idx = (uint8_t)(loop + 1);
+            max_data_idx = (uint8_t)( loop + 1 );
         }
     }
 
     /* Array making for slider operation-------------*/
     /*     |    Maximum change CH_No -----> Array"0"    */
     /*     |    Maximum change CH_No + 1 -> Array"2"    */
-    /*     |    Maximum change CH_No - 1 -> Array"1"    */    
+    /*     |    Maximum change CH_No - 1 -> Array"1"    */
 #if 0
     if (0 == max_data_idx)
     {
@@ -877,48 +1129,48 @@ static uint16_t touch_DetecLineSlider(touch_slider_cfg_t * p_slider)
         slider_rpos = TOUCH_OFF_VALUE;
     }
 
-    #else
+#else
     // int16_t dval;
     uint16_t unit;
 
-    if (0 == max_data_idx)
+    if ( 0 == max_data_idx )
     {
-        d1 = (uint16_t) (slider_data[ 0 ] - slider_data[ num_elements - 1 ]);
-        d2 = (uint16_t) (slider_data[ 0 ] - slider_data[ 1 ]);
-        dsum = (uint16_t) (slider_data[ 0 ] + slider_data[ 1 ] + slider_data[ num_elements - 1 ]);
+        d1   = (uint16_t)( slider_data[ 0 ] - slider_data[ num_elements - 1 ] );
+        d2   = (uint16_t)( slider_data[ 0 ] - slider_data[ 1 ] );
+        dsum = (uint16_t)( slider_data[ 0 ] + slider_data[ 1 ] + slider_data[ num_elements - 1 ] );
     }
-    else if ((num_elements - 1) == max_data_idx)
+    else if ( ( num_elements - 1 ) == max_data_idx )
     {
-        d1 = (uint16_t) (slider_data[ num_elements - 1 ] - slider_data[ num_elements - 2 ]);
-        d2 = (uint16_t) (slider_data[ num_elements - 1 ] - slider_data[ 0 ]);
-        dsum = (uint16_t) (slider_data[ 0 ] + slider_data[ num_elements - 2 ] + slider_data[ num_elements - 1 ]);
+        d1   = (uint16_t)( slider_data[ num_elements - 1 ] - slider_data[ num_elements - 2 ] );
+        d2   = (uint16_t)( slider_data[ num_elements - 1 ] - slider_data[ 0 ] );
+        dsum = (uint16_t)( slider_data[ 0 ] + slider_data[ num_elements - 2 ] + slider_data[ num_elements - 1 ] );
     }
     else
     {
-        d1 = (uint16_t) (slider_data[ max_data_idx ] - slider_data[ max_data_idx - 1 ]);
-        d2 = (uint16_t) (slider_data[ max_data_idx ] - slider_data[ max_data_idx + 1 ]);
-        dsum = (uint16_t) (slider_data[ max_data_idx + 1 ] + slider_data[ max_data_idx ] + slider_data[ max_data_idx - 1 ]);
+        d1   = (uint16_t)( slider_data[ max_data_idx ] - slider_data[ max_data_idx - 1 ] );
+        d2   = (uint16_t)( slider_data[ max_data_idx ] - slider_data[ max_data_idx + 1 ] );
+        dsum = (uint16_t)( slider_data[ max_data_idx + 1 ] + slider_data[ max_data_idx ] + slider_data[ max_data_idx - 1 ] );
     }
 
-    if (0 == d1)
+    if ( 0 == d1 )
     {
         d1 = 1;
     }
     /* Constant decision for operation of angle of wheel    */
-    if (dsum > p_threshold)
+    if ( dsum > p_threshold )
     {
-        d3 = (uint16_t) (p_slider->decimal_point_percision + ((d2 * p_slider->decimal_point_percision) / d1));
+        d3          = (uint16_t)( p_slider->decimal_point_percision + ( ( d2 * p_slider->decimal_point_percision ) / d1 ) );
 
-        unit = (uint16_t) (p_slider->slider_resolution / num_elements);
-        slider_rpos = (uint16_t) (((unit * p_slider->decimal_point_percision) / d3) + (unit * max_data_idx));
+        unit        = (uint16_t)( p_slider->slider_resolution / num_elements );
+        slider_rpos = (uint16_t)( ( ( unit * p_slider->decimal_point_percision ) / d3 ) + ( unit * max_data_idx ) );
 
         /* Angle division output */
         /* diff_angle_ch = 0 -> 359 ------ diff_angle_ch output 1 to 360 */
-        if (0 == slider_rpos)
+        if ( 0 == slider_rpos )
         {
             slider_rpos = p_slider->slider_resolution;
         }
-        else if ((p_slider->slider_resolution + 1) < slider_rpos)
+        else if ( ( p_slider->slider_resolution + 1 ) < slider_rpos )
         {
             slider_rpos = 1;
         }
@@ -935,12 +1187,12 @@ static uint16_t touch_DetecLineSlider(touch_slider_cfg_t * p_slider)
     return slider_rpos;
 }
 
-uint16_t touch_GetLineSliderData(void)
+uint16_t touch_GetLineSliderData( void )
 {
     return SilderData;
 }
 
-uint16_t touch_GetWheelSliderData(void)
+uint16_t touch_GetWheelSliderData( void )
 {
     return WheelData;
 }

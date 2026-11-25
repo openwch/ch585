@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: wcscat_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -79,7 +78,7 @@ SECUREC_INLINE errno_t SecDoCatW(wchar_t *strDest, size_t destMax, const wchar_t
  *    EOK                   Success
  *    EINVAL                strDest is  NULL and destMax != 0 and destMax <= SECUREC_WCHAR_STRING_MAX_LEN
  *    EINVAL_AND_RESET      (strDest unterminated and all other parameters are valid) or
- *                          (strDest != NULL and strSrc is NULLL and destMax != 0
+ *                          (strDest != NULL and strSrc is NULL and destMax != 0
  *                           and destMax <= SECUREC_WCHAR_STRING_MAX_LEN)
  *    ERANGE                destMax > SECUREC_WCHAR_STRING_MAX_LEN or destMax is 0
  *    ERANGE_AND_RESET      strDest have not enough space  and all other parameters are valid  and not overlap

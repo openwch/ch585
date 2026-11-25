@@ -1,5 +1,5 @@
 
-南京沁恒微电子股份有限公司 2025.05
+南京沁恒微电子股份有限公司 2026.10
 最新资料请到我们的网站上查询
 http://wch.cn
 
@@ -14,77 +14,112 @@ http://wch.cn
   |      |      |      |      |-- RVMSIS：内核系统头文件
   |      |      |      |      |-- Startup：CH58x系列启动文件
   |      |      |      |      |-- StdPeriphDriver：基本外设驱动源文件及头文件
-  |      |      |      |-- ADC：adc采样例程，包括温度检测、单通道检测、差分通道检测、TouchKey检测、中断方式采样
-  |      |      |      |-- FLASH：片上flash例程：包括Code区，DataFlash区的擦/读/写
-  |      |      |      |-- FreeRTOS：FreeRTOS移植例程
-  |      |      |      |-- HarmonyOS：HarmonyOS移植例程
-  |      |      |      |-- RT-Thread：RT-Thread移植例程
-  |      |      |      |-- I2C：I2C例程，Master/Slave 模式数据收发，详细说明参考根目录<I2C接口使用指南.PDF>文档
-  |      |      |      |-- LCD：LCD例程，包括LCD显示与LCD睡眠
-  |      |      |      |-- LED：LED例程，LED屏控制卡接口演示
+  |      |      |      |-- ADC
+  |      |      |      |      |-- ADC_DMA：ADC单通道DMA采样例程，PA4(AIN0)自动连续采样40点
+  |      |      |      |      |-- ADC_Differential：ADC差分通道采样例程，PA4(AIN0)-PA12(AIN2)差分输入
+  |      |      |      |      |-- ADC_Interrupt：ADC单通道中断方式采样例程，PA5(AIN1)采20点
+  |      |      |      |      |-- ADC_Scan：ADC扫描模式例程，14通道自动扫描+DMA（扫描模式下打印脚为PB7）
+  |      |      |      |      |-- ADC_SingleChannel：ADC单通道采样例程，PA4(AIN0)带粗调校准
+  |      |      |      |      |-- ADC_Temperature：ADC温度检测例程，内部温度传感器采样并换算温度
+  |      |      |      |      |-- ADC_TouchKey：ADC TouchKey采样例程，选择ADC通道2，对应PA12
+  |      |      |      |-- CC：CrossConnect例程，附平台资料说明，CrossConnect为面向物联网开发者的一站式开发平台，详见https://iot.wch.cn/ach/resources/overview/
+  |      |      |      |-- FLASH：片上flash例程：Flash-ROM与Data-Flash(EEPROM)的擦/读/写及校验（带合法地址范围检查）
+  |      |      |      |-- FreeRTOS：FreeRTOS-Kernel V11.3.0移植例程，默认使用硬件压栈，中断嵌套可选，多任务演示
+  |      |      |      |-- HarmonyOS：kernel_liteos_m(OpenHarmony-6.1-LTS)移植例程，默认使用硬件压栈，中断嵌套可选，多任务演示
+  |      |      |      |-- RT-Thread：RT-Thread Nano V4.1.1移植例程，默认使用硬件压栈，中断嵌套可选，多线程演示
+  |      |      |      |-- I2C：I2C例程，宏切换主机/从机模式数据收发，详细说明参考例程目录内<I2C接口使用指南.PDF>文档
+  |      |      |      |-- LCD：LCD例程，配置占空比/偏压并写入显示数据，演示LCD显示与LCD睡眠（睡眠驱动在RAM中运行）
+  |      |      |      |-- LED：LED例程，LED屏控制卡接口演示，串行驱动LED屏，支持DMA发送、数据位序与输出极性配置
   |      |      |      |-- NFCA
   |      |      |      |      |-- NFCA_LIB：NFCA代码库文件和ISO14443-3A协议文件
-  |      |      |      |      |-- PCD：
+  |      |      |      |      |-- PCD：NFC-A PCD读卡器例程（硬件解码）
   |      |      |      |      |      |-- PCD_COMMON：NFC-A PCD读卡器通用代码文件
-  |      |      |      |      |      |-- MifareClassic：PCD读卡器对MifareClassic卡片操作示例工程 
-  |      |      |      |      |-- PCD_SOFT：
+  |      |      |      |      |      |-- MifareClassic：PCD读卡器对MifareClassic卡片操作示例工程
+  |      |      |      |      |      |-- NTAG21x：PCD读卡器对 NTAG21x卡片操作示例工程
+  |      |      |      |      |-- PCD_SOFT：NFC-A PCD读卡器例程（软件解码）
   |      |      |      |      |      |-- PCD_SOFT_COMMON：NFC-A PCD软件解码读卡器通用代码文件
-  |      |      |      |      |      |-- SoftPCDMifareClassic：PCD软件解码读卡器对MifareClassic卡片操作示例工程 
-  |      |      |      |      |-- PICC：
+  |      |      |      |      |      |-- SoftPCDMifareClassic：PCD软件解码读卡器对MifareClassic卡片操作示例工程
+  |      |      |      |      |      |-- SoftPCDNTAG21x：PCD软件解码读卡器对 NTAG21x卡片操作示例工程
+  |      |      |      |      |-- PICC：NFC卡模式例程
   |      |      |      |      |      |-- PICC_COMMON：NFC 模式卡模式通用代码文件
-  |      |      |      |      |      |-- PICC_M1：NFC卡模式模拟M1卡示例工程 
-  |      |      |      |      |      |-- PICC_T2T：NFC卡模式模拟NFC Forum Type2卡示例工程 
+  |      |      |      |      |      |-- PICC_M1：NFC卡模式模拟M1卡示例工程
+  |      |      |      |      |      |-- PICC_T2T：NFC卡模式模拟NFC Forum Type2卡示例工程
   |      |      |      |      |-- CH585 NFC读卡器应用指南.pdf 
+  |      |      |      |      |-- NFC-Reader 天线调谐工具.xlsx
   |      |      |      |-- IAP
-  |      |      |      |      |-- APP：和IAP配套使用的APP程序例程
-  |      |      |      |      |-- USB_IAP：通过USB更新片上程序的例程
-  |      |      |      |      |-- USBHS_IAP：通过高速USB更新片上程序的例程
-  |      |      |      |      |-- UART_IAP：通过串口更新片上程序的例程
+  |      |      |      |      |-- APP：和IAP配套使用的APP程序例程，通过DataFlash标志位切换IAP/APP，并演示跳转到IAP
+  |      |      |      |      |-- USB_IAP：通过USB接收固件并更新片上程序的IAP例程
+  |      |      |      |      |-- USBHS_IAP：通过高速USB接收固件并更新片上程序的IAP例程
+  |      |      |      |      |-- UART_IAP：通过串口接收固件并更新片上程序的IAP例程
   |      |      |      |      |-- WCHMcuIAP_WinAPP：IAP上位机工具及源码
-  |      |      |      |-- PM：系统睡眠模式并唤醒例程：GPIOA_5作为唤醒源，共4种功耗等级
-  |      |      |      |-- PWMX：PWM4-11输出功能例程
-  |      |      |      |-- SPI：SPI例程，Master/Slave 模式数据收发 
-  |      |      |      |-- TMR：定时器功能例程  
+  |      |      |      |-- PM：系统睡眠模式并唤醒例程：GPIOA_5作为唤醒源，依次演示IDLE/Halt/Sleep/Shutdown四种睡眠等级（对应4种功耗等级）
+  |      |      |      |-- WWDG：系统看门狗例程，演示周期喂狗与停止喂狗触发系统复位，并打印上次复位原因
+  |      |      |      |-- IWDG：独立看门狗例程，由内部专用低速时钟驱动，演示周期喂狗与停止喂狗触发系统复位
+  |      |      |      |-- PWMX
+  |      |      |      |      |-- PWMX_8Bit：PWM4-PWM10 8位数据宽度输出例程
+  |      |      |      |      |-- PWMX_16Bit：PWM4-PWM9 16位数据宽度输出例程
+  |      |      |      |-- SPI
+  |      |      |      |      |-- SPI0_8Bit：SPI0例程：普通模式(8bit)数据收发，单字节/FIFO多字节/DMA方式，宏切换主机/从机
+  |      |      |      |      |-- SPI1_8Bit：SPI1例程：主机模式(8bit)数据收发，单字节/FIFO多字节（仅CH585支持SPI1）
+  |      |      |      |-- TMR
+  |      |      |      |      |-- TMR0_TimerInterrupt：TMR0定时中断例程，100ms定时翻转PB15 LED
+  |      |      |      |      |-- TMR1_Capture：TMR1捕捉例程，PA10边沿捕捉+DMA存储（PA10为LSE晶振引脚需关闭LSE）
+  |      |      |      |      |-- TMR2_DMAPWM：TMR2 DMA PWM例程，PB11重映射输出，DMA循环渐变占空比
+  |      |      |      |      |-- TMR2_ExternalCount：TMR2外部脉冲计数例程，PB11重映射输入，计数满1000中断
+  |      |      |      |      |-- TMR3_PWM：TMR3 PWM输出例程，PB22输出100us周期50%占空比
   |      |      |      |-- TOUCH
   |      |      |      |      |-- TKYLIB：触摸库文件及其头文件
   |      |      |      |      |-- Touch_EX001：触摸应用的综合演示，包括触摸滑条、触摸滑环、触摸按键和隔空感应四种触摸应用，配合EVB使用。
   |      |      |      |      |-- Touch_EX001_ble：触摸应用搭配蓝牙通信功能的综合演示，包括触摸滑条、触摸滑环、触摸按键和隔空感应四种触摸应用，配合EVB使用，可通过蓝牙连接调试设备上报触摸键值，触摸滑环位置值和触摸滑条位置值。
   |      |      |      |      |-- Touch_EX002：触摸应用的8通道触摸按键演示，配合EVB使用。
-  |      |      |      |      |-- Touch_EX002_ble：触摸应用的8通道触摸按键搭配蓝牙通信功能演示，配合EVB使用，可通信蓝牙连接调试设备上报触摸按键值。
-  |      |      |      |      |-- WCH触摸库使用说明.PDF
-  |      |      |      |-- UART1：串口1收发例程
+  |      |      |      |      |-- Touch_EX002_ble：触摸应用的8通道触摸按键搭配蓝牙通信功能演示，配合EVB使用，可通过蓝牙连接调试设备上报触摸按键值。
+  |      |      |      |      |-- Touch_EX002_ble_CS10：触摸应用的8通道触摸按键搭配蓝牙通信功能演示（CS10方案），配合EVB使用，可通过蓝牙连接调试设备上报触摸按键值。
+  |      |      |      |      |-- WCH触摸库使用说明.pdf
+  |      |      |      |-- TOUCH_CT
+  |      |      |      |      |-- TKYLIB：电荷迁移触摸库文件及其头文件
+  |      |      |      |      |-- Touch_EX001_CT：电荷迁移触摸应用的综合演示，包括触摸滑条、触摸滑环、触摸按键和隔空感应四种触摸应用，配合EVB使用。
+  |      |      |      |      |-- Touch_EX001_ble_CT：电荷迁移触摸应用搭配蓝牙通信功能的综合演示，包括触摸滑条、触摸滑环、触摸按键和隔空感应四种触摸应用，配合EVB使用，可通过蓝牙连接调试设备上报触摸键值，触摸滑环位置值和触摸滑条位置值。
+  |      |      |      |      |-- Touch_EX002_CT：电荷迁移触摸应用的8通道触摸按键演示，配合EVB使用。
+  |      |      |      |      |-- Touch_EX002_ble_CT：电荷迁移触摸应用的8通道触摸按键搭配蓝牙通信功能演示，配合EVB使用，可通过蓝牙连接调试设备上报触摸按键值。
+  |      |      |      |      |-- Touch_Example：演示电荷迁移触摸库最底层的通道数据采样，不使用封装层（Touch.c），直接调用底层 API。
+  |      |      |      |      |-- WCH_touch_V3库使用说明.pdf
+  |      |      |      |-- UART1：串口1收发例程，轮询发送字符串，中断方式接收并回传数据
+  |      |      |      |-- SDI_Printf：SDI调试打印例程，通过SDI接口输出printf打印信息，配合MounRiver仿真调试器在IDE内查看打印，不占用串口
   |      |      |      |-- USB
   |      |      |      |      |-- Device
-  |      |      |      |      |      |-- COM：USB模拟CDC设备例程
+  |      |      |      |      |      |-- COM：USB模拟CDC设备例程，枚举为虚拟串口进行双向数据收发，宏可切换为自定义CH372设备模式
   |      |      |      |      |      |-- VendorDefinedDev：模拟自定义USB设备（CH372设备）例程，提供8个非0通道(上传+下传)，实现数据先下传，然后数据内容取反上传
-  |      |      |      |      |      |-- CompoundDev：USB模拟键鼠例程，支持增加数据上传；USB唤醒功能，USB HID类命令。 
-  |      |      |      |      |      |-- CompoundU2Dev：USB2模拟键鼠例程，支持增加数据上传；USB唤醒功能，USB HID类命令。 
-  |      |      |      |      |      |-- HID_CompliantDev：USB模拟HID兼容设备例程
+  |      |      |      |      |      |-- CompoundDev：USB模拟键鼠复合设备例程，键盘+鼠标报表上传，支持USB远程唤醒与HID类命令
+  |      |      |      |      |      |-- HID_CompliantDev：USB模拟HID兼容设备例程，自定义HID报表，64字节中断端点上传/下传
+  |      |      |      |      |      |-- MSC_U-Disk_FS：USB全速设备U盘例程，支持片内Flash、SPI0外挂SPI-Flash、两种存储介质（SW_UDISK.h中STORAGE_MEDIUM宏选择）
   |      |      |      |      |-- Host
-  |      |      |      |      |      |-- HostEnum：USB常见设备hid键鼠，hub的枚举数据上下传演示等
-  |      |      |      |      |      |-- HostAOA：USB主机应用例子,支持连接安卓设备与APP进行通讯。
+  |      |      |      |      |      |-- HostEnum：USB主机枚举例程，枚举ROOT-HUB及外部HUB二级端口的HID键盘/鼠标等设备，并轮询中断端点收发数据
+  |      |      |      |      |      |-- HostAOA：USB主机例程，连接安卓设备并发起AOA配件模式，与APP进行数据通讯
   |      |      |      |      |      |-- U_DISK：U盘文件系统示例
   |      |      |      |      |      |      |-- EXAM1.C:C示例源程序,以字节为单位读写文件，包括文件创建、删除、修改文件属性,修改文件名  
   |      |      |      |      |      |      |-- EXAM10.C:C示例源程序,包括文件创建、删除、修改文件属性,修改文件名  
-  |      |      |      |      |      |      |-- EXAM11.C:C示例源程序,枚举根目录或者指定目下的文件  
+  |      |      |      |      |      |      |-- EXAM11.C:C示例源程序,枚举根目录或者指定目录下的文件  
   |      |      |      |      |      |      |-- EXAM13.C:C示例源程序,创建长文件名文件  
   |      |      |      |      |      |-- USB_LIB：U盘文件系统库文件
-  |      |      |      |      |-- USBHS 
+  |      |      |      |      |-- USBHS
   |      |      |      |      |      |-- DEVICE
-  |      |      |      |      |      |      |-- CH372：模拟自定义USB设备（CH372设备），端点1，3下传，2，4上传，端点1下传的数据从端点3上传，不取反，端点2下传的数据从端点4上传，取反。
-  |      |      |      |      |      |      |-- Compatibility_HID：模拟HID设备，数据通过串口上下传。
+  |      |      |      |      |      |      |-- CH372Device：模拟自定义USB设备（CH372设备），端点1，3下传，2，4上传，端点1下传的数据从端点3上传，不取反，端点2下传的数据从端点4上传，取反。
+  |      |      |      |      |      |      |-- CompatibilityHID：模拟HID设备，数据通过串口上下传。
   |      |      |      |      |      |      |-- CompositeKM：模拟键盘和鼠标，使用IO模拟按键，同时模拟数据可以通过串口2上传。
   |      |      |      |      |      |      |-- MSC_U-Disk: 模拟简单U盘，可选使用片内Flash或外部SPI-Flash
   |      |      |      |      |      |      |-- MSC_CD-ROM: 模拟CDROM，需要外挂SPI-Flash
   |      |      |      |      |      |      |-- SimulateCDC：模拟一个CDC串口，使用串口2收发。
-  |      |      |      |      |      |      |-- SimulateCDC-HID：模拟一个CDC串口，使用串口2收发,HID中断端点下发数据取反上传。  
+  |      |      |      |      |      |      |-- SimulateCDC-HID：模拟一个CDC串口，使用串口2收发,HID中断端点下发数据取反上传。
   |      |      |      |      |      |-- HOST_IAP
-  |      |      |      |      |      |      |-- APP: 与HOST_IAP配套使用的APP，工程修改了程序起始位置，编译后需自行将文件转化为bin文件并重命名为APP.bin
-  |      |      |      |      |      |      |-- HOST_IAP:  基于U盘读取文件例程整理的主机U盘IAP例程，从U盘内读取名称位APP.bin的文件，写入内部flash，校验后自动跳转。
+  |      |      |      |      |      |      |-- HOST_APP: 与HOST_IAP配套使用的APP，工程修改了程序起始位置，编译后需自行将文件转化为bin文件并重命名为APP.bin
+  |      |      |      |      |      |      |-- HOST_IAP: 基于U盘读取文件例程整理的主机U盘IAP例程，从U盘内读取名称为APP.bin的文件，写入内部flash，校验后自动跳转。
   |      |      |      |      |      |-- HOST_KM: 主机操作键鼠，获取键鼠上传的端点的数据并打印，支持U口下1级hub
-  |      |      |      |      |      |-- HOST_MTP_FileSystem：枚举过程的USB主机到一个支持MTP和PTP协议的设备，支持MTP和PTP协议，并读取其文件
-  |      |      |      |      |      |-- Host_Udisk：USB主机操作U盘例程
-  |      |      |      |      |      |-- Udisk_Lib：U盘文件系统库文件 
+  |      |      |      |      |      |-- HOST_MTP_FileSystem：USB主机枚举支持MTP和PTP协议的设备，并读取其文件
+  |      |      |      |      |      |-- Host_UDisk_Exams：USB主机操作U盘例程
+  |      |      |      |      |      |-- Udisk_Lib：U盘文件系统库文件
+  |      |      |      |-- GUI
+  |      |      |      |      |-- WCH-GUI-FLASH：GUI库（FLASH资源页版本），配套上位机生成静态资源页面，可部署于片外Flash 中（GUI_ExternalFlash），也可部署于片内Flash（GUI_Onflash），CPU占用率低，刷图为主
+  |      |      |      |      |-- WCH-GUI-LIVE：轻量级实时绘制GUI库，控件外观在MCU运行期实时绘制，节省存储资源，绘图为主
   |      |      |      |-- BLE
   |      |      |      |      |-- Broadcaster：广播者角色例程，处于广播态一直广播
   |      |      |      |      |-- CyclingSensor：骑行传感器例程，连接主机后定时上传速度和踏频
@@ -92,21 +127,25 @@ http://wch.cn
   |      |      |      |      |-- Central：主机例程，主动扫描周围设备，连接至给定的从机设备地址，寻找自定义服务及特征，执行读写命令，需与从机例程配合使用,并将从机设备地址修改为该例程目标地址，默认为(84:C2:E4:03:02:02)
   |      |      |      |      |-- HeartRate：心率计例程，连接主机后定时上传心率
   |      |      |      |      |-- Peripheral：外设从机角色例程，自定义包含五种不同属性的服务，包含可读、可写、通知、可读可写、安全可读
-  |      |      |      |      |-- peripheral_ancs_client：外设从机角色例程，包含苹果通知中心服务
+  |      |      |      |      |-- Peripheral_ancs_client：外设从机角色例程，包含苹果通知中心服务(ANCS)
   |      |      |      |      |-- RunningSensor：跑步传感器例程，连接主机后定时上传速度
   |      |      |      |      |-- HID_Keyboard：蓝牙键盘例程，模拟键盘设备，连接主机后定时上传键值
   |      |      |      |      |-- HID_Mouse：蓝牙鼠标例程，模拟鼠标设备，连接主机后定时上传键值
   |      |      |      |      |-- HID_Consumer：蓝牙拍照器例程，模拟用户控制设备，连接主机后定时上传音量键下键
   |      |      |      |      |-- HID_Touch：蓝牙触摸例程，模拟触摸笔设备，连接主机后定时上传触摸值
-  |      |      |      |      |-- HID_BTSSP_NFC：NFC刷卡进行安全连接蓝牙HID例程 
+  |      |      |      |      |-- HID_BTSSP_NFC：NFC刷卡进行安全连接蓝牙HID例程，模拟NFC Forum Type2卡存储蓝牙信息，支持设备刷卡即连
+  |      |      |      |      |-- HID_CompositeKMCS：蓝牙复合HID遥控器例程，键盘、鼠标、消费设备、系统控制四类HID报表复合同一设备
+  |      |      |      |      |-- HID_MobileController：蓝牙HID遥控器例程，手机连接后按键映射为Android触屏滑动/点击与音量键操作，可用于刷视频、拍照，拍照触点位可校准并保存至DataFlash
   |      |      |      |      |-- MultiCentPeri：多主机多从机例程，支持同时连接三个主机三个从机
   |      |      |      |      |-- MultiCentral：主机多连接例程，主动扫描周围设备，连接至给定的三个从机设备地址，寻找自定义服务及特征，执行读写命令，需与从机例程配合使用,并将从机设备地址修改为该例程目标地址，三个从机设备地址默认为 (84:C2:E4:03:02:02)、(84:C2:E4:03:02:03)、(84:C2:E4:03:02:04)
   |      |      |      |      |-- Observer：观察者角色例程，定时扫描，如果扫描结果不为空，则打印扫描到的广播地址
-  |      |      |      |      |-- Direct_Test_Mode：DTM测试例程序，结合RF测试工具使用
-  |      |      |      |      |-- RF_Basic：2.4G库基本模式收发例程
-  |      |      |      |      |-- RF_PHY：非标准无线收发例程
-  |      |      |      |      |-- RF_PHY_Hop：非标准无线跳频收发例程
-  |      |      |      |      |-- IoCHub_Net：BLE+IoChub简单灯控开关例程
+  |      |      |      |      |-- Direct_Test_Mode：DTM测试例程，结合RF测试工具使用
+  |      |      |      |      |-- RF_Basic_Rx：2.4G库基本模式接收测试例程（RX角色）
+  |      |      |      |      |-- RF_Basic_Tx：2.4G库基本模式发送测试例程（TX角色）
+  |      |      |      |      |-- RF_PHY_Rx：非标准无线接收例程（RX角色），与RF_PHY_Tx配套使用
+  |      |      |      |      |-- RF_PHY_Tx：非标准无线发送例程（TX角色），与RF_PHY_Rx配套使用
+  |      |      |      |      |-- IoCHub_NET：BLE+IoChub简单灯控开关例程，手机通过IoChub网关连接开发板控制灯亮灭，物理按键开关状态切换上报
+  |      |      |      |      |-- LWNS：LWNS轻量级无线组网协议栈例程，支持CSMA/蓝牙Mesh/无MAC多种MAC层适配，提供广播、单播、组播、可控泛洪、Mesh组网等组网方式示例
   |      |      |      |      |-- MESH
   |      |      |      |      |      |-- adv_ali_light：天猫精灵灯例程，可通过天猫精灵找队友配网设备，控制开关状态。默认只有开关属性，如需添加其余属性（亮度，电量，温度等），需要自行根据阿里云产品配置的属性描述添加对应处理函数以及状态上报函数。
   |      |      |      |      |      |-- adv_ali_light_add_lightness：MESH通用属性添加例程。天猫精灵灯例程的基础上，添加了亮度属性，用于对照原天猫精灵灯例程，快速熟悉添加其他MESH通用属性的方法。
@@ -134,20 +173,25 @@ http://wch.cn
   |      |      |      |      |-- OnlyUpdateApp_Peripheral：固定库无线升级用户例程，外设从机例程基础上添加跳转IAP程序进行后续升级的功能
   |      |      |      |      |-- PAwR_ADV：带响应的周期性广播，广播端例程
   |      |      |      |      |-- PAwR_RSP：带响应的周期性广播，响应端例程
-  |      |      |      |      |-- BLE_UART：蓝牙串口透传例程，详细说明参考根目录<说明.txt>文档
+  |      |      |      |      |-- BLE_UART：蓝牙串口透传例程，两个128bit UUID分别以写无响应和notify方式对应串口收发，自适应MTU(20-247)，详细说明参考例程目录内<说明.txt>文档
   |      |      |      |      |-- BLE_USB：蓝牙与USB合用例程，USB模拟340设备转发蓝牙数据
   |      |      |      |      |-- SpeedTest_Peripheral：蓝牙测速从机例程
   |      |      |      |      |-- SpeedTest_Central：蓝牙测速主机例程
+  |      |      |      |      |-- SpeedTest_RF_Basic_Rx：2.4G basic模式测速接收例程（RX角色），与SpeedTest_RF_Basic_Tx配套使用
+  |      |      |      |      |-- SpeedTest_RF_Basic_Tx：2.4G basic模式测速发送例程（TX角色），与SpeedTest_RF_Basic_Rx配套使用
   |      |      |      |      |-- SYNC_ADV：周期同步广播例程
   |      |      |      |      |-- SYNC_SCAN：周期同步扫描例程
   |      |      |      |      |-- HAL：例程共用的硬件相关文件
   |      |      |      |      |-- LIB：BLE协议栈库文件及其头文件
   |      |      |      |      |-- WCH蓝牙空中升级（BLE OTA）.PDF
-  |      |      |      |      |-- 沁恒低功耗蓝牙软件开发参考手册.pdf
+  |      |      |      |      |-- 沁恒低功耗蓝牙软件开发参考手册.PDF
+  |      |      |      |      |-- WCH_2.4G使用说明.PDF
+  |      |      |      |      |-- WCH开发工具下载.txt：集中提供开发工具下载与管理，覆盖编译开发、烧录编程、调试验证、分析排查、基础驱动及辅助工具。支持全平台导航——除 Windows 外，还汇集 macOS、Android 平台工具下载链接
   |      |      |      |      |-- BLE认证证书：产品：WCH CH58x  QDID：179771
   |      |      |-- PUB
-  |      |      |      |-- SCHPCB: 参考原理图及PCB文件
+  |      |      |      |-- SCHPCB: 评估版与应用参考原理图及PCB文件
   |      |      |      |-- CH585评估版原理图 (CH585SCH.pdf)
   |      |      |      |-- CH585评估板说明书.pdf
   |      |      |      |-- 蓝牙芯片的电路及PCB设计的重要注意事项.pdf
+  |      |      |      |-- 触摸按键PCB Layout设计的重要注意事项.pdf
   |

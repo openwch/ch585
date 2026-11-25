@@ -67,10 +67,7 @@
 #define ___NARGS(a, b, c, d, e, f, g, h, n, ...)    n
 #define __NARGS(...) ___NARGS(__VA_ARGS__)
 #define _NARGS(...) __NARGS(x, __VA_ARGS__##_ZERO_ARGS, 7, 6, 5, 4, 3, 2, 1, 0)
-
-#ifndef __CONCAT
-#define __CONCAT(a, b) a##b
-#endif
+//#define __CONCAT(a, b) a##b
 #define _CONCAT(a, b) __CONCAT(a, b)
 
 #define PARAM_TO_ARGS(...) _CONCAT(PARAM_TO_ARGS, _NARGS(__VA_ARGS__))(__VA_ARGS__)

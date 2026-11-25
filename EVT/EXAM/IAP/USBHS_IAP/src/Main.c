@@ -24,7 +24,7 @@
  * @return  none
  */
 __HIGH_CODE
-void mySetSysClock()
+void mySetSysClock(void)
 {
     R32_SAFE_MODE_CTRL |= RB_XROM_312M_SEL;
     R8_SAFE_MODE_CTRL &= ~RB_SAFE_AUTO_EN;
@@ -55,20 +55,15 @@ void mySetSysClock()
  * @return  None.
  */
 __HIGH_CODE
-void Main_Circulation()
+void Main_Circulation(void)
 {
     uint16_t j = 0;
     while (1)
     {
-        j++;
-        if (j > 5)//100us处理一次数据
-        {
-            j = 0;
-            USB_DevTransProcess();//采用查询方式进行usb操作，不使用中断。
-        }
-        DelayUs(20);
+        USB_DevTransProcess();//采用查询方式进行usb操作，不使用中断。
+        DelayUs(1);
         g_tcnt++;
-        if (g_tcnt > 3000000)
+        if (g_tcnt > 3000000*20)
         {
             //1分钟没有操作，进入app
             R8_USB2_CTRL = USBHS_UD_RST_SIE;
@@ -87,7 +82,7 @@ IAPDataFlashInfo_t p_image_flash;
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint16_t i;
     uint8_t  s;

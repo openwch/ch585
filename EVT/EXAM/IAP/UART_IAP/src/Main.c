@@ -3,7 +3,7 @@
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2020/08/06
- * Description        : FALSH¶ÁÐ´Àý³Ì
+ * Description        : UART IAPÀý³Ì
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * Attention: This software (modified or not) and binary are used for 
@@ -25,7 +25,7 @@ IAPDataFlashInfo_t p_image_flash;
  * @return  none
  */
 __HIGH_CODE
-void mySetSysClock()
+void mySetSysClock(void)
 {
     R32_SAFE_MODE_CTRL |= RB_XROM_312M_SEL;
     R8_SAFE_MODE_CTRL &= ~RB_SAFE_AUTO_EN;
@@ -54,7 +54,7 @@ void mySetSysClock()
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint16_t i;
     uint8_t  s;

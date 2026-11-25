@@ -27,8 +27,8 @@ extern "C" {
 /**@{*/
 
 /**
- * rt_container_of - return the member address of ptr, if the type of ptr is the
- * struct type.
+ * rt_container_of - return the start address of struct type, while ptr is the
+ * member of struct type.
  */
 #define rt_container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
@@ -70,7 +70,6 @@ rt_inline void rt_list_insert_after(rt_list_t *l, rt_list_t *n)
  * @param n new node to be inserted
  * @param l list to insert it
  */
-__attribute__((section(".highcode")))
 rt_inline void rt_list_insert_before(rt_list_t *l, rt_list_t *n)
 {
     l->prev->next = n;
@@ -84,7 +83,6 @@ rt_inline void rt_list_insert_before(rt_list_t *l, rt_list_t *n)
  * @brief remove node from list.
  * @param n the node to remove from the list.
  */
-__attribute__((section(".highcode")))
 rt_inline void rt_list_remove(rt_list_t *n)
 {
     n->next->prev = n->prev;
@@ -97,7 +95,6 @@ rt_inline void rt_list_remove(rt_list_t *n)
  * @brief tests whether a list is empty
  * @param l the list to test.
  */
-__attribute__((section(".highcode")))
 rt_inline int rt_list_isempty(const rt_list_t *l)
 {
     return l->next == l;

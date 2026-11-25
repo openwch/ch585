@@ -310,7 +310,7 @@ static bStatus_t ble_uart_WriteAttrCB(uint16_t connHandle, gattAttribute_t *pAtt
             if(ble_uart_AppCBs)
             {
                 ble_uart_evt_t evt;
-                evt.type = BLE_UART_EVT_BLE_DATA_RECIEVED;
+                evt.type = BLE_UART_EVT_BLE_DATA_RECEIVED;
                 evt.data.length = (uint16_t)len;
                 evt.data.p_data = pValue;
                 ble_uart_AppCBs(connHandle, &evt);

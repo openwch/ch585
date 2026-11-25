@@ -1,10 +1,10 @@
-本工程为 kernel_liteos_m(Ver:OpenHarmony-3.2.3-Release)在Qingke V4C RISC-V内核的CH585/4上的移植。
+本工程为 kernel_liteos_m(Ver:OpenHarmony-6.1-LTS)在Qingke V3C RISC-V内核的CH585/4上的移植。
 
 需要注意以下几点：
 
 	1.配置文件路径为工程目录下Kernel/LiteOS/target_config.h
 	
-	2.本移植例程默认使用了硬件压栈（不可关闭），未使用中断嵌套，用户使用的外部中断函数最好使用__attribute__((section(".highcode")))修饰，保证运行速度。
+	2.本移植例程默认使用了硬件压栈（不可关闭），中断嵌套可选，用户使用的外部中断函数最好使用__attribute__((section(".highcode")))修饰，保证运行速度。
 	
 	3.使能中断嵌套会导致每个中断执行会多约10个指令周期，中断嵌套使能通过工程右键 -> properties -> c/c++ Build -> settings -> tool settings -> GNU RISC-V Cross Assembler -> Preprocessor 右边输入框Defined symbols中的 ENABLE_INTERRUPT_NEST=0 修改为 ENABLE_INTERRUPT_NEST=1 即可。
 	
@@ -24,7 +24,7 @@
 		
 	11.统一入口的中断函数无需调用ArchIntEnter和ArchIntExit，在用户统一入口unified_interrupt_entry中已经调用。
 
-	12.CH585的蓝牙会采用类似于RTOS操作，在中断中切换到另一个运行环境等待蓝牙事件完成，所以如果使用蓝牙，则必须在ble_task_scheduler.S中，添加调用其他函数用来停止FreeRTOS操作系统，防止在蓝牙内部任务中被切换。
+	12.CH585的蓝牙会采用类似于RTOS操作，在中断中切换到另一个运行环境等待蓝牙事件完成，所以如果使用蓝牙，则必须在ble_task_scheduler.S中，添加调用其他函数用来停止liteos操作系统，防止在蓝牙内部任务中被切换。
 
-	13.CH585不可以使用原core_riscv.h中的 __enable_irq 和 __disable_irq 函数，使用rt-thread中提供的 rt_hw_interrupt_disable 和 rt_hw_interrupt_enable。
+    13.CH585不可以使用原core_riscv.h中的 __enable_irq 和 __disable_irq 函数，使用liteos中提供的 LOS_IntLock 和 LOS_IntRestore。
 	

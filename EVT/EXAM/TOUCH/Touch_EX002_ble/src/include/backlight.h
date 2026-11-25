@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : LED.h
+ * File Name          : backlight.h
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2016/04/12
@@ -39,19 +39,19 @@ extern "C" {
 #define LED_COM2_PORT   GPIOB
 
 
-#define LED_SEG1_ON()   (R32_PB_SET = LED_SEG1_PIN)                         // ÉèÖÃÊ±ÖÓÏßÎª¸ßµçÆ½
-#define LED_SEG1_OFF()  (R32_PB_CLR  = LED_SEG1_PIN)                        // ÉèÖÃÊ±ÖÓÏßÎªµÍµçÆ½
-#define LED_SEG2_ON()   (R32_PB_SET = LED_SEG2_PIN)                         // ÉèÖÃÊ±ÖÓÏßÎª¸ßµçÆ½
-#define LED_SEG2_OFF()  (R32_PB_CLR  = LED_SEG2_PIN)                        // ÉèÖÃÊ±ÖÓÏßÎªµÍµçÆ½
-#define LED_SEG3_ON()   (R32_PB_SET = LED_SEG3_PIN)                         // ÉèÖÃÊ±ÖÓÏßÎª¸ßµçÆ½
-#define LED_SEG3_OFF()  (R32_PB_CLR  = LED_SEG3_PIN)                        // ÉèÖÃÊ±ÖÓÏßÎªµÍµçÆ½
-#define LED_SEG4_ON()   (R32_PB_SET = LED_SEG4_PIN)                         // ÉèÖÃÊ±ÖÓÏßÎª¸ßµçÆ½
-#define LED_SEG4_OFF()  (R32_PB_CLR  = LED_SEG4_PIN)                        // ÉèÖÃÊ±ÖÓÏßÎªµÍµçÆ½
+#define LED_SEG1_ON()   (R32_PB_SET = LED_SEG1_PIN)                         // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºé«˜ç”µå¹³
+#define LED_SEG1_OFF()  (R32_PB_CLR  = LED_SEG1_PIN)                        // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºä½ç”µå¹³
+#define LED_SEG2_ON()   (R32_PB_SET = LED_SEG2_PIN)                         // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºé«˜ç”µå¹³
+#define LED_SEG2_OFF()  (R32_PB_CLR  = LED_SEG2_PIN)                        // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºä½ç”µå¹³
+#define LED_SEG3_ON()   (R32_PB_SET = LED_SEG3_PIN)                         // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºé«˜ç”µå¹³
+#define LED_SEG3_OFF()  (R32_PB_CLR  = LED_SEG3_PIN)                        // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºä½ç”µå¹³
+#define LED_SEG4_ON()   (R32_PB_SET = LED_SEG4_PIN)                         // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºé«˜ç”µå¹³
+#define LED_SEG4_OFF()  (R32_PB_CLR  = LED_SEG4_PIN)                        // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºä½ç”µå¹³
 
-#define LED_COM1_OFF()  (R32_PB_SET = LED_COM1_PIN)                         // ÉèÖÃÊ±ÖÓÏßÎª¸ßµçÆ½
-#define LED_COM1_ON()   (R32_PB_CLR  = LED_COM1_PIN)                        // ÉèÖÃÊ±ÖÓÏßÎªµÍµçÆ½
-#define LED_COM2_OFF()  (R32_PB_SET = LED_COM2_PIN)                         // ÉèÖÃÊ±ÖÓÏßÎª¸ßµçÆ½
-#define LED_COM2_ON()   (R32_PB_CLR  = LED_COM2_PIN)                        // ÉèÖÃÊ±ÖÓÏßÎªµÍµçÆ½
+#define LED_COM1_OFF()  (R32_PB_SET = LED_COM1_PIN)                         // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºé«˜ç”µå¹³
+#define LED_COM1_ON()   (R32_PB_CLR  = LED_COM1_PIN)                        // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºä½ç”µå¹³
+#define LED_COM2_OFF()  (R32_PB_SET = LED_COM2_PIN)                         // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºé«˜ç”µå¹³
+#define LED_COM2_ON()   (R32_PB_CLR  = LED_COM2_PIN)                        // è®¾ç½®æ—¶é’Ÿçº¿ä¸ºä½ç”µå¹³
 
 typedef enum
 {
@@ -78,22 +78,22 @@ typedef enum
 typedef struct
 {
     uint16_t TKY_BacklightOnTime;
-    uint8_t BacklightStates;
+    volatile uint8_t BacklightStates;
     uint8_t RFU;
 } TKY_Backlight_S;
 /*********************************************************************
 *********************************************************************/
-// ³õÊ¼»¯±³¹âºÍ·äÃùÆ÷
+// åˆå§‹åŒ–èƒŒå…‰
+extern volatile uint8_t led_scanflag;
+
 extern void TKY_BacklightInit(void);
-extern void TKY_BeepInit(void);
 extern void TKY_BacklightTaskStart(void);
 extern void TKY_BacklightTaskStop(void);
 extern void TKY_BacklightOn (void);
 extern void TKY_BacklightOff (void);
 extern void TKY_KeyBacklightOut(uint8_t key, FunctionalState s);
-extern void TKY_Beepout(FunctionalState s);
 extern void TKY_BacklightProcess (void);
-extern uint8_t getBacklightState(uint8_t key);
+extern uint8_t TKY_GetBacklightState(uint8_t key);
 
 #ifdef __cplusplus
 }

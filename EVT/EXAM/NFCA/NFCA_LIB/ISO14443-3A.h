@@ -12,9 +12,9 @@
 
 #include "CH58x_NFCA_LIB.h"
 
-/* NFC PICC ISO14443A快速防冲突，有些情况下，计算速度可能来不及给读卡器回复，使能IS014443A_FAST_CL可以通过提前计算数据的api来加速处理，也可以自行使用函数处理 */
-#ifndef IS014443A_FAST_CL                           /* 公用文件，请在工程配置中添加该宏定义进行修改 */
-#define IS014443A_FAST_CL                           0
+/* NFC PICC ISO14443A快速防冲突，有些情况下，计算速度可能来不及给读卡器回复，使能ISO14443A_FAST_CL可以通过提前计算数据的api来加速处理，也可以自行使用函数处理 */
+#ifndef ISO14443A_FAST_CL                           /* 公用文件，请在工程配置中添加该宏定义进行修改 */
+#define ISO14443A_FAST_CL                           0
 #endif
 
 #define ISO14443A_CMD_REQA                          0x26

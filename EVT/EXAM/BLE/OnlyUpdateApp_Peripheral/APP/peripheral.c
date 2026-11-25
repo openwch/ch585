@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -190,14 +190,14 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void Peripheral_Init()
+void Peripheral_Init(void)
 {
     Peripheral_TaskID = TMOS_ProcessEventRegister(Peripheral_ProcessEvent);
 
@@ -555,8 +555,13 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
     switch(newState & GAPROLE_STATE_ADV_MASK)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)
@@ -618,12 +623,7 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
 /*********************************************************************
  * @fn      performPeriodicTask
  *
- * @brief   Perform a periodic application task. This function gets
- *          called every five seconds as a result of the SBP_PERIODIC_EVT
- *          TMOS event. In this example, the value of the third
- *          characteristic in the SimpleGATTProfile service is retrieved
- *          from the profile, and then copied into the value of the
- *          the fourth characteristic.
+ * @brief   Perform a periodic task: send Characteristic 4 notification.
  *
  * @param   none
  *
@@ -641,7 +641,7 @@ static void performPeriodicTask(void)
  * @brief   Prepare and send simpleProfileChar4 notification
  *
  * @param   pValue - data to notify
- *          len - length of data
+ * @param   len - length of data
  *
  * @return  none
  */
@@ -650,6 +650,11 @@ static void peripheralChar4Notify(uint8_t *pValue, uint16_t len)
     attHandleValueNoti_t noti;
     noti.len = len;
     noti.pValue = GATT_bm_alloc(peripheralConnList.connHandle, ATT_HANDLE_VALUE_NOTI, noti.len, NULL, 0);
+    if(noti.pValue == NULL)
+    {
+        // 分配失败禁止解引用
+        return;
+    }
     tmos_memcpy(noti.pValue, pValue, noti.len);
     if(simpleProfile_Notify(peripheralConnList.connHandle, &noti) != SUCCESS)
     {
@@ -701,7 +706,7 @@ static void simpleProfileChangeCB(uint8_t paramID, uint8_t *pValue, uint16_t len
 #define IMAGE_OTA_FLAG       0x03
 
 /* 存放在DataFlash地址，不能占用蓝牙的位置 */
-#define OTA_DATAFLASH_ADD    0x00077000 - FLASH_ROM_MAX_SIZE
+#define OTA_DATAFLASH_ADD    (0x00076000 - FLASH_ROM_MAX_SIZE)
 
 /* flash的数据临时存储 */
 __attribute__((aligned(8))) uint8_t block_buf[16];
@@ -717,6 +722,10 @@ void Jump_OTA(void)
 {
     uint16_t i;
     uint32_t ver_flag;
+
+    /* 升级标志的flash操作必须先关闭所有中断再执行，
+     * 防止操作过程被中断打断而失败（同peripheral_main.c注意事项） */
+    SYS_DisableAllIrq(NULL);
 
     /* 读取第一块 */
     EEPROM_READ(OTA_DATAFLASH_ADD, (uint32_t *)&block_buf[0], 4);

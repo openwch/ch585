@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : gattprofile.C
+ * File Name          : gattprofile.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -22,7 +22,7 @@
  * CONSTANTS
  */
 
-// Position of simpleProfilechar4 value in attribute array
+// Position of simpleProfileChar2 value in attribute array
 #define SIMPLEPROFILE_CHAR4_VALUE_POS 11
 
 #define SIMPLEPROFILE_CHAR2_VALUE_POS 5
@@ -192,7 +192,7 @@ static gattAttribute_t simpleProfileAttrTbl[] =
             0,
             (uint8_t *)simpleProfileChar2Config},
 
-        // Characteristic 2 User Description
+        // Characteristic 4 User Description
         {
             {ATT_BT_UUID_SIZE, charUserDescUUID},
             GATT_PERMIT_READ,

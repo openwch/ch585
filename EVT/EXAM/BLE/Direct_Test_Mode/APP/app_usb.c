@@ -27,7 +27,7 @@
 /*********************************************************************
  * CONSTANTS
  */
-uint8_t DevConfig, Ready;
+uint8_t DevConfig;
 uint8_t SetupReqCode;
 UINT16 SetupReqLen;
 const uint8_t *pDescr;
@@ -48,7 +48,7 @@ const uint8_t MyLangDescr[] = { 0x04, 0x03, 0x09, 0x04 };
 // 厂家信息
 const uint8_t MyManuInfo[] = { 0x0E, 0x03, 'w', 0, 'c', 0, 'h', 0, '.', 0, 'c', 0, 'n', 0 };
 // 产品信息
-const uint8_t MyProdInfo[] = { 0x0C, 0x03, 'C', 0, 'H', 0, '5', 0, '9', 0, 'x', 0 };
+const uint8_t MyProdInfo[] = { 0x0C, 0x03, 'C', 0, 'H', 0, '5', 0, '8', 0, 'x', 0 };
 /*产品描述符*/
 const uint8_t StrDesc[28] =
 {
@@ -84,7 +84,7 @@ __attribute__((aligned(4)))  uint8_t EP3_Databuf[64 + 64];    //ep3_out(64)+ep3_
  * @return  none
  */
 __HIGH_CODE
-void app_usb_init()
+void app_usb_init(void)
 {
     pEP0_RAM_Addr = EP0_Databuf;
     pEP1_RAM_Addr = EP1_Databuf;
@@ -100,26 +100,20 @@ void app_usb_init()
  *
  * @brief   发送数据给主机
  *
- * @return  none
+ * @return  Success or Failure
  */
 __HIGH_CODE
 uint8_t USBSendData(uint8_t *buf, uint16_t len)
 {
     uint8_t i;
 
-    if(R8_UEP2_CTRL & UEP_T_RES_NAK == UEP_T_RES_NAK)
+    for(i = 0; i < len; i++)
     {
-        return FAILURE;
+        pEP2_IN_DataBuf[i] = *buf++;
     }
-    else
-    {
-        for(i = 0; i < len; i++)
-        {
-            pEP2_IN_DataBuf[i] = *buf++;
-        }
-        DevEP2_IN_Deal(len);
-    }
-    return 0;
+    DevEP2_IN_Deal(len);
+
+    return SUCCESS;
 }
 
 /*********************************************************************
@@ -145,7 +139,7 @@ void DevEP1_OUT_Deal( uint8_t l )
 __HIGH_CODE
 void DevEP2_OUT_Deal( uint8_t l )
 { /* 用户可自定义 */
-    uint8_t i;
+//    uint8_t i;
 
     if( RingMemWrite( &usbRingParm, pEP2_OUT_DataBuf, l) )
     {

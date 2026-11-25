@@ -2,7 +2,7 @@
  * File Name          : CH58x_lcd.h
  * Author             : WCH
  * Version            : V1.0
- * Date               : 2022/12/05
+ * Date               : 2025/02/20
  * Description        : head file(ch585/ch584)
  ********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.

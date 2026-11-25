@@ -15,6 +15,6 @@
 
 #define STORE                   sw
 #define LOAD                    lw
-#define REGBYTES                4
+#define REGBYTES                16  /* risc-v的一些gcc库要求栈16字节对齐 */
 
 #endif

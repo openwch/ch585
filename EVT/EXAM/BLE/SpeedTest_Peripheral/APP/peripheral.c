@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -146,6 +146,11 @@ static uint8_t speed_test_enable = FALSE;
 static uint8_t speed_test_buf[244] = {0};
 
 static uint32_t peripheralTxDataLen = 0;
+#if SPEED_TEST_DIR == 1
+static uint32_t peripheralRxDataLen = 0;
+#endif
+
+static volatile uint8_t tmr_speed_tick = 0;
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
@@ -196,14 +201,14 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void Peripheral_Init()
+void Peripheral_Init(void)
 {
     Peripheral_TaskID = TMOS_ProcessEventRegister(Peripheral_ProcessEvent);
 
@@ -337,22 +342,6 @@ uint16_t Peripheral_ProcessEvent(uint8_t task_id, uint16_t events)
         return (events ^ SBP_START_DEVICE_EVT);
     }
 
-    if(events & SBP_SPEED_TEST_EVT)
-    {
-        if( speed_test_enable )
-        {
-            PRINT("Tx: %dB/s\n",peripheralTxDataLen);
-            peripheralTxDataLen = 0;
-        }
-        else
-        {
-            // start speed test
-            PRINT("start speed test..\n");
-            speed_test_enable = TRUE;
-        }
-        tmos_start_task(Peripheral_TaskID, SBP_SPEED_TEST_EVT, 1600);
-        return (events ^ SBP_SPEED_TEST_EVT);
-    }
 
     if(events & SBP_PARAM_UPDATE_EVT)
     {
@@ -372,6 +361,23 @@ uint16_t Peripheral_ProcessEvent(uint8_t task_id, uint16_t events)
         GAPRole_ReadRssiCmd(peripheralConnList.connHandle);
         tmos_start_task(Peripheral_TaskID, SBP_READ_RSSI_EVT, SBP_READ_RSSI_EVT_PERIOD);
         return (events ^ SBP_READ_RSSI_EVT);
+    }
+
+    if(events & SBP_TEST_EVT)
+    {
+        while(1)
+        {
+            if( peripheralChar4Notify(speed_test_buf, peripheralMTU - 3) )
+            {
+                break;
+            }
+            else
+            {
+                peripheralTxDataLen += peripheralMTU - 3;
+            }
+        }
+
+        return (events ^ SBP_TEST_EVT);
     }
 
     // Discard unknown events
@@ -429,8 +435,8 @@ static void Peripheral_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
             pMsgEvent = (gattMsgEvent_t *)pMsg;
             if(pMsgEvent->method == ATT_MTU_UPDATED_EVENT)
             {
-                peripheralMTU = pMsgEvent->msg.exchangeMTUReq.clientRxMTU;
-                PRINT("mtu exchange: %d\n", pMsgEvent->msg.exchangeMTUReq.clientRxMTU);
+                peripheralMTU = pMsgEvent->msg.mtuEvt.MTU;
+                PRINT("mtu exchange: %d\n", pMsgEvent->msg.mtuEvt.MTU);
             }
             break;
         }
@@ -467,7 +473,10 @@ static void Peripheral_LinkEstablished(gapRoleEvent_t *pEvent)
         peripheralConnList.connTimeout = event->connTimeout;
 
         // Set timer for periodic event
-        tmos_start_task(Peripheral_TaskID, SBP_SPEED_TEST_EVT, SBP_SPEED_TEST_EVT_PERIOD);
+        tmr_speed_tick = 0;
+        TMR0_TimerInit(FREQ_SYS / 2);
+        TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
+        PFIC_EnableIRQ(TMR0_IRQn);
 
         // Set timer for param update event
 //        tmos_start_task(Peripheral_TaskID, SBP_PARAM_UPDATE_EVT, SBP_PARAM_UPDATE_DELAY);
@@ -498,7 +507,10 @@ static void Peripheral_LinkTerminated(gapRoleEvent_t *pEvent)
         peripheralConnList.connInterval = 0;
         peripheralConnList.connSlaveLatency = 0;
         peripheralConnList.connTimeout = 0;
-        tmos_stop_task(Peripheral_TaskID, SBP_SPEED_TEST_EVT);
+
+        TMR0_ITCfg(DISABLE, TMR0_3_IT_CYC_END);
+        PFIC_DisableIRQ(TMR0_IRQn);
+        tmr_speed_tick = 0;
         tmos_stop_task(Peripheral_TaskID, SBP_READ_RSSI_EVT);
 
         // Restart advertising
@@ -571,8 +583,13 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
     switch(newState)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)
@@ -691,9 +708,16 @@ static void simpleProfileChangeCB(uint8_t paramID, uint8_t *pValue, uint16_t len
     {
         case SIMPLEPROFILE_CHAR1:
         {
-            uint8_t newValue[SIMPLEPROFILE_CHAR1_LEN];
-            tmos_memcpy(newValue, pValue, len);
-            PRINT("profile ChangeCB CHAR1.. \n");
+            // uint8_t newValue[SIMPLEPROFILE_CHAR1_LEN];
+            // tmos_memcpy(newValue, pValue, len);
+#if SPEED_TEST_DIR == 1
+            if( speed_test_enable )
+            {
+                peripheralRxDataLen += len;
+            }
+#else
+            // PRINT("profile ChangeCB CHAR1.. \n");
+#endif
             break;
         }
 
@@ -722,19 +746,58 @@ static void simpleProfileChangeCB(uint8_t paramID, uint8_t *pValue, uint16_t len
  */
 static void peripheralConnectEventCB( uint32_t timeUs )
 {
+#if SPEED_TEST_DIR == 1
+#else
     if( speed_test_enable )
     {
-        while(1)
-        {
-            if( peripheralChar4Notify(speed_test_buf, peripheralMTU - 3) )
-            {
-                break;
-            }
-            else
-            {
-                peripheralTxDataLen += peripheralMTU - 3;
-            }
+        tmos_set_event(Peripheral_TaskID, SBP_TEST_EVT);
+    }
+#endif
+}
 
+/*********************************************************************
+ * @fn      TMR0_IRQHandler
+ *
+ * @brief   500ms timer ISR: 2 ticks = 1s speed statistics period.
+ *          Sets SBP_SPEED_TEST_EVT every 1 second.
+ *
+ * @return  none
+ */
+__INTERRUPT
+__HIGH_CODE
+void TMR0_IRQHandler(void)
+{
+    if(TMR0_GetITFlag(TMR0_3_IT_CYC_END))
+    {
+        TMR0_ClearITFlag(TMR0_3_IT_CYC_END);
+        tmr_speed_tick++;
+        if(tmr_speed_tick >= 2)
+        {
+            tmr_speed_tick = 0;
+#if SPEED_TEST_DIR == 1
+        if( speed_test_enable )
+        {
+            PRINT("Rx: %dB/s\n",peripheralRxDataLen);
+            peripheralRxDataLen = 0;
+        }
+        else
+        {
+            PRINT("start speed test..\n");
+            speed_test_enable = TRUE;
+        }
+#else
+        if( speed_test_enable )
+        {
+            PRINT("Tx: %dB/s\n",peripheralTxDataLen);
+            peripheralTxDataLen = 0;
+        }
+        else
+        {
+            // start speed test
+            PRINT("start speed test..\n");
+            speed_test_enable = TRUE;
+        }
+#endif
         }
     }
 }

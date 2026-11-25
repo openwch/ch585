@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,7 +9,6 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: snprintf_s  function
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -57,7 +56,7 @@ int snprintf_s(char *strDest, size_t destMax, size_t count, const char *format, 
 
     return ret;
 }
-#if SECUREC_IN_KERNEL
+#if SECUREC_EXPORT_KERNEL_SYMBOL
 EXPORT_SYMBOL(snprintf_s);
 #endif
 #endif
@@ -103,7 +102,7 @@ int snprintf_truncated_s(char *strDest, size_t destMax, const char *format, ...)
 
     return ret;
 }
-#if SECUREC_IN_KERNEL
+#if SECUREC_EXPORT_KERNEL_SYMBOL
 EXPORT_SYMBOL(snprintf_truncated_s);
 #endif
 

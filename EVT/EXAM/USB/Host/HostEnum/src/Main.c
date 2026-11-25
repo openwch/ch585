@@ -22,7 +22,7 @@ __attribute__((aligned(4))) uint8_t TxBuffer[MAX_PACKET_SIZE]; // OUT, must even
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint8_t i, s, k, len, endp;
     uint16_t  loc;

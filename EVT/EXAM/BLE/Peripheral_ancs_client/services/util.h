@@ -11,14 +11,14 @@ extern "C" {
 
 
 
-static uint8_t value_bit_set(uint16_t *target, int bit, bool val)
+static inline uint8_t value_bit_set(uint16_t *target, int bit, bool val)
 {
     if(val)
     {
         *target |= (1<<bit);
     }
     else {
-        *target &= !(1<<bit);
+        *target &= ~(1<<bit);
     }
     return 0;
 

@@ -624,7 +624,7 @@ void DevWakeup(void)
 {
     R16_PIN_CONFIG &= ~(RB_UDP_PU_EN);
     R8_UDEV_CTRL |= RB_UD_LOW_SPEED;
-    mDelaymS(2);
+    mDelaymS(8);
     R8_UDEV_CTRL &= ~RB_UD_LOW_SPEED;
     R16_PIN_CONFIG |= RB_UDP_PU_EN;
 }
@@ -652,7 +652,7 @@ void DebugInit(void)
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);

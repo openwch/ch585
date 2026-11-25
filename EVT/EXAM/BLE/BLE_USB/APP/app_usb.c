@@ -29,7 +29,7 @@
 /*********************************************************************
  * CONSTANTS
  */
-uint8_t DevConfig, Ready;
+uint8_t DevConfig;
 uint8_t SetupReqCode;
 UINT16 SetupReqLen;
 const uint8_t *pDescr;
@@ -50,7 +50,7 @@ const uint8_t MyLangDescr[] = { 0x04, 0x03, 0x09, 0x04 };
 // 厂家信息
 const uint8_t MyManuInfo[] = { 0x0E, 0x03, 'w', 0, 'c', 0, 'h', 0, '.', 0, 'c', 0, 'n', 0 };
 // 产品信息
-const uint8_t MyProdInfo[] = { 0x0C, 0x03, 'C', 0, 'H', 0, '5', 0, '9', 0, 'x', 0 };
+const uint8_t MyProdInfo[] = { 0x0C, 0x03, 'C', 0, 'H', 0, '5', 0, '8', 0, 'x', 0 };
 /*产品描述符*/
 const uint8_t StrDesc[28] =
 {
@@ -85,7 +85,7 @@ __attribute__((aligned(4)))  uint8_t EP3_Databuf[64 + 64];    //ep3_out(64)+ep3_
  *
  * @return  none
  */
-void app_usb_init()
+void app_usb_init(void)
 {
     pEP0_RAM_Addr = EP0_Databuf;
     pEP1_RAM_Addr = EP1_Databuf;
@@ -145,7 +145,7 @@ void DevEP2_OUT_Deal( uint8_t l )
 { /* 用户可自定义 */
     if(RingMemWrite(&RingMemUSB, pEP2_OUT_DataBuf, l) != SUCCESS)
     {
-        PRINT("RingMemBLE ERR \n");
+        PRINT("RingMemUSB ERR \n");
     }
     tmos_start_task(Peripheral_TaskID, SBP_PROCESS_USBDATA_EVT, 32);
 

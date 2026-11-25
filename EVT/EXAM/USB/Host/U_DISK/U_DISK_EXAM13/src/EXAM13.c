@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : EXAM1.C
+ * File Name          : EXAM13.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2020/08/11
@@ -30,7 +30,7 @@ typedef struct __attribute__((packed)) _LONG_NAME
     uint8_t  LDIR_Chksum;       /*短文件名的校验和*/
     uint16_t LDIR_Name2[6];     /*长文件名的6-11个字符*/
     uint8_t  LDIR_FstClusLO[2]; /*为0*/
-    uint16_t LDIR_Name3[2];     /*长文件名的12-13各自。字符*/
+    uint16_t LDIR_Name3[2];     /*长文件名的12-13个字符*/
 
 } F_LONG_NAME; /*定义长文件名*/
 
@@ -242,7 +242,7 @@ uint8_t mChkName(unsigned char *pJ)
  *
  * @return  返回00表示成功，并且在短文件名空间返回真实的短文件名，其他为不成功状态
  */
-uint8_t CreatLongName()
+uint8_t CreatLongName(void)
 {
     uint8_t         ParData[MAX_PATH_LEN]; /**/
     uint16_t        tempSec;               /*扇区偏移*/
@@ -622,7 +622,7 @@ XBB:
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint8_t s, i;
 

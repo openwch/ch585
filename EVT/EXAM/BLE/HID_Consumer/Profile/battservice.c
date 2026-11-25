@@ -208,7 +208,7 @@ extern void Batt_Register(battServiceCB_t pfnServiceCB)
  * @brief   Set a Battery Service parameter.
  *
  * @param   param - Profile parameter ID
- * @param   len - length of data to right
+ * @param   len - length of data to write
  * @param   value - pointer to data to write.  This is dependent on
  *          the parameter ID and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to
@@ -454,7 +454,7 @@ static bStatus_t battWriteAttrCB(uint16_t connHandle, gattAttribute_t *pAttr,
  *
  * @brief       Send a notification of the level state characteristic.
  *
- * @param       connHandle - linkDB item
+ * @param       pLinkItem - linkDB item
  *
  * @return      None.
  */
@@ -542,7 +542,7 @@ static uint8_t battMeasure(void)
 }
 
 /*********************************************************************
- * @fn      battNotifyLevelState
+ * @fn      battNotifyLevel
  *
  * @brief   Send a notification of the battery level state
  *          characteristic if a connection is established.

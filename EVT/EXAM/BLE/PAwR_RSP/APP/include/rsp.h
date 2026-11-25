@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.h
+ * File Name          : rsp.h
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/11
@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 
-#ifndef PERIPHERAL_H
-#define PERIPHERAL_H
+#ifndef RSP_H
+#define RSP_H
 
 #ifdef __cplusplus
 extern "C" {

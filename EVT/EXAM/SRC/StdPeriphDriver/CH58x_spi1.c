@@ -2,7 +2,7 @@
  * File Name          : CH58x_SPI1.c
  * Author             : WCH
  * Version            : V1.0
- * Date               : 2018/12/15
+ * Date               : 2025/02/21
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.

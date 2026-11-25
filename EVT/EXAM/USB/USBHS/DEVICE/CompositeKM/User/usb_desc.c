@@ -183,7 +183,7 @@ const uint8_t  MyQuaDesc[ ] =
     0x00,                                                   // bDeviceSubClass
     0x00,                                                   // bDeviceProtocol
     0x40,                                                   // bMaxPacketSize0
-    0x00,                                                   // bNumConfigurations
+    0x01,                                                   // bNumConfigurations
     0x00                                                    // bReserved
 };
 

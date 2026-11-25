@@ -460,7 +460,7 @@ void USB_DevTransProcess(void)
     {
         R8_USB2_INT_FG = USBHS_UDIF_SUSPEND;
         /* usb suspend interrupt processing */
-        if ( R8_USB2_MIS_ST & RB_UMS_SUSPEND  )
+        if ( R8_USB2_MIS_ST & USBHS_UDMS_SUSPEND  )
         {
             USBHS_DevSleepStatus |= 0x02;
             if( USBHS_DevSleepStatus == 0x03 )
@@ -612,8 +612,8 @@ void myDevEP2_IN_Deal(uint8_t s)
     endp_en =  R16_U2EP_TX_EN;
     if( (USBHS_Endp_Busy[ DEF_UEP2 ] & DEF_UEP_BUSY) == 0x00 )
     {
-        USBHS_EP2_Tx_Buf[64] = s;
-        USBHS_EP2_Tx_Buf[65] = 0;
+        USBHS_EP2_Tx_Buf[0] = s;
+        USBHS_EP2_Tx_Buf[1] = 0;
         /* Set end-point busy */
         USBHS_Endp_Busy[ DEF_UEP2 ] |= DEF_UEP_BUSY;
         /* end-point n response tx ack */

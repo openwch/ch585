@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : heartrateservice.C
+ * File Name          : heartrateservice.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/11
@@ -223,7 +223,7 @@ extern void HeartRate_Register(heartRateServiceCB_t pfnServiceCB)
  * @brief   Set a Heart Rate parameter.
  *
  * @param   param - Profile parameter ID
- * @param   len - length of data to right
+ * @param   len - length of data to write
  * @param   value - pointer to data to write.  This is dependent on
  *          the parameter ID and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to

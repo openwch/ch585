@@ -4,7 +4,6 @@
 #define __RTTHREAD_CFG_H__
 
 #include <rtthread.h>
-#include "finsh_config.h"
 
 #if defined(__CC_ARM) || defined(__CLANG_ARM)
 #include "RTE_Components.h"
@@ -84,7 +83,7 @@
 
 
 
-#define RT_USING_DEVICE
+// #define RT_USING_DEVICE
 
 //#define RT_USING_PM
 
@@ -119,6 +118,12 @@
 // <c1>using small memory
 //  <i>using small memory
 #define RT_USING_SMALL_MEM
+
+//_MEM_MALLOC
+#define RT_USING_SMALL_MEM_AS_HEAP
+//#define RT_USING_MEMHEAP_AS_HEAP
+//#define RT_USING_SLAB_AS_HEAP
+
 // </c>
 // <c1>using tiny size of memory
 //  <i>using tiny size of memory

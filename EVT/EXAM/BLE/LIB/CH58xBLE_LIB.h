@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT ******************************
  * File Name         : CH58xBLE_LIB.H
  * Author            : WCH
- * Version           : v1.40
- * Date              : 2025/02/07
+ * Version           : v1.51
+ * Date              : 2025/11/25
  * Description       : head file(ch585/ch584)
  * Copyright (c) 2023 Nanjing Qinheng Microelectronics Co., Ltd.
  * Attention: This software (modified or not) and binary are used for 
@@ -153,7 +153,7 @@ typedef struct
 /*********************************************************************
  * GLOBAL MACROS
  */
-#define VER_FILE  "CH585_BLE_LIB_V1.4"
+#define VER_FILE  "CH585_BLE_LIB_V1.5"
 extern const uint8_t VER_LIB[];  // LIB version
 #define SYSTEM_TIME_MICROSEN            625   // unit of process event timer is 625us
 #define MS1_TO_SYSTEM_TIME(x)  ((x)*1000/SYSTEM_TIME_MICROSEN)   // transform unit in ms to unit in 625us ( attentional bias )
@@ -2354,6 +2354,8 @@ typedef int (*pfnEcc_alg_f6_t)( uint8_t *w, uint8_t *n1, uint8_t *n2, uint8_t *r
 
 typedef void (*pfnSm_randkey_t)( uint8_t *randkey, uint8_t keylen );
 
+typedef void (*pfnSm_numericComparison_t)( uint16_t connHandle, uint32_t val );
+
 /**
  * Callback Registration Structure
  */
@@ -2366,6 +2368,7 @@ typedef struct
     pfnEcc_alg_f5_t alg_f5; //!< LE Secure Connect ions key generation function  f5
     pfnEcc_alg_f6_t alg_f6; //!< LE Secure  Connections check value generation function  f6
     pfnSm_randkey_t randkey;
+    pfnSm_numericComparison_t numericComparison;
 } gapEccCBs_t;
 
 /**
@@ -4255,6 +4258,14 @@ extern bStatus_t GAPBondMgr_OobRsp( uint16_t connHandle, uint8_t status, uint8_t
  * @return  null.
  */
 extern void GAPBondMgr_EccInit( gapEccCBs_t *pEcc );
+
+/**
+ * @brief   Respond to a jw or  request.
+ *
+ * @param   connHandle - connection handle
+ *
+ */
+extern bStatus_t GAPBondMgr_JwOrNcRsp( uint16_t connHandle, uint8_t status );
 
 /**
  * @brief   Send a security request

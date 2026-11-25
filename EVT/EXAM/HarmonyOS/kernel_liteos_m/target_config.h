@@ -48,7 +48,7 @@ extern "C" {
 /*=============================================================================
                                         System clock module configuration
 =============================================================================*/
-#define OS_SYS_CLOCK                                        (60000000)
+#define OS_SYS_CLOCK                                        (FREQ_SYS)
 #define LOSCFG_BASE_CORE_TICK_PER_SECOND                    (1000UL)
 #define LOSCFG_BASE_CORE_TICK_HW_TIME                       1
 #define LOSCFG_BASE_CORE_TICK_WTIMER                        0
@@ -62,6 +62,7 @@ extern "C" {
                                        Task module configuration
 =============================================================================*/
 #define LOSCFG_BASE_CORE_TSK_LIMIT                          12
+#define LOSCFG_STACK_POINT_ALIGN_SIZE                       16
 #define LOSCFG_BASE_CORE_TSK_IDLE_STACK_SIZE                (0x200U)
 #define LOSCFG_BASE_CORE_TSK_DEFAULT_STACK_SIZE             (0x2D0U)
 #define LOSCFG_BASE_CORE_TSK_MIN_STACK_SIZE                 (0x130U)

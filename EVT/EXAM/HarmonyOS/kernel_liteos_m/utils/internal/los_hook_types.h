@@ -69,7 +69,11 @@ typedef VOID *VOID_PTR;
     LOS_HOOK_TYPE_DEF(LOS_HOOK_TYPE_QUEUE_CREATE, (const LosQueueCB *queueCB))                              \
     LOS_HOOK_TYPE_DEF(LOS_HOOK_TYPE_QUEUE_READ, (const LosQueueCB *queueCB, UINT32 operateType,             \
                         UINT32 bufferSize, UINT32 timeout))                                                 \
+    LOS_HOOK_TYPE_DEF(LOS_HOOK_TYPE_QUEUE_READ_COPY, (const LosQueueCB *queueCB, UINT32 operateType,        \
+                        UINT32 bufferSize, UINT32 timeout))                                                 \
     LOS_HOOK_TYPE_DEF(LOS_HOOK_TYPE_QUEUE_WRITE, (const LosQueueCB *queueCB, UINT32 operateType,            \
+                        UINT32 bufferSize, UINT32 timeout))                                                 \
+    LOS_HOOK_TYPE_DEF(LOS_HOOK_TYPE_QUEUE_WRITE_COPY, (const LosQueueCB *queueCB, UINT32 operateType,       \
                         UINT32 bufferSize, UINT32 timeout))                                                 \
     LOS_HOOK_TYPE_DEF(LOS_HOOK_TYPE_QUEUE_DELETE, (const LosQueueCB *queueCB))                              \
     /* Hook types supported by semaphore modules */                                                          \

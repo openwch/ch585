@@ -2,7 +2,7 @@
  * File Name          : CH58x_common.h
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : head file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -94,7 +94,7 @@
 #define DelayMs(x)      mDelaymS(x)
 #define DelayUs(x)      mDelayuS(x)
 
-#define ROM_CFG_VERISON    0x7F010
+#define ROM_CFG_VERSION    0x7F010
 
 extern uint32_t chip_info;
 

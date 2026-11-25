@@ -79,7 +79,7 @@ void USBHS_Host_Init( FunctionalState sta )
     else
     {
         R8_USBHS_PLL_CTRL &= ~USBHS_PLL_EN;
-        R32_PIN_CONFIG &= ~RB_PIN_USB2_EN;
+        R16_PIN_CONFIG &= ~RB_PIN_USB2_EN;
 
         R8_U2H_CFG = USBHS_UD_RST_LINK | USBHS_UD_RST_SIE | USBHS_UD_CLR_ALL;
     }

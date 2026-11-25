@@ -90,7 +90,7 @@ CONST uint8_t devInfoPnpIdUUID[ATT_BT_UUID_SIZE] = {
 // Device Information Service attribute
 static CONST gattAttrType_t devInfoService = {ATT_BT_UUID_SIZE, devInfoServUUID};
 
-// System ID characteristic
+
 static uint8_t devInfoSystemIdProps = GATT_PROP_READ;
 static uint8_t devInfoSystemId[DEVINFO_SYSTEM_ID_LEN] = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -126,7 +126,7 @@ static const uint8_t devInfo11073Cert[] = {
                             // authoritative body data follows below:
     'e', 'x', 'p', 'e', 'r', 'i', 'm', 'e', 'n', 't', 'a', 'l'};
 
-// System ID characteristic
+// PnP ID characteristic
 static uint8_t devInfoPnpIdProps = GATT_PROP_READ;
 static uint8_t devInfoPnpId[DEVINFO_PNP_ID_LEN] = {
     1,                                    // Vendor ID source (1=Bluetooth SIG)
@@ -336,6 +336,7 @@ bStatus_t DevInfo_SetParameter(uint8_t param, uint8_t len, void *value)
     switch(param)
     {
         case DEVINFO_SYSTEM_ID:
+            if (len > sizeof(devInfoSystemId)) return bleInvalidRange;
             tmos_memcpy(devInfoSystemId, value, len);
             break;
 

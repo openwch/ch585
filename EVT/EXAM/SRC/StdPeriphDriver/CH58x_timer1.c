@@ -2,7 +2,7 @@
  * File Name          : CH58x_timer1.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -95,7 +95,7 @@ void TMR1_DMACfg(uint8_t s, uint32_t startAddr, uint32_t endAddr, DMAModeTypeDef
     else
     {
         R32_TMR1_DMA_BEG = startAddr & 0x1FFFF;
-        R32_TMR1_DMA_END = endAddr & 0x1FFFF;;
+        R32_TMR1_DMA_END = endAddr & 0x1FFFF;
         if(m)
             R8_TMR1_CTRL_DMA = RB_TMR_DMA_LOOP | RB_TMR_DMA_ENABLE;
         else

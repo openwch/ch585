@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,7 +10,6 @@
  * See the Mulan PSL v2 for more details.
  * Description: Define macro, data struct, and declare internal used function prototype,
  *              which is used by secure functions.
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -47,7 +46,7 @@
 #endif
 
 #if SECUREC_IN_KERNEL
-/* In kernel disbale functions */
+/* In kernel disable functions */
 #ifndef SECUREC_ENABLE_SCANF_FILE
 #define SECUREC_ENABLE_SCANF_FILE 0
 #endif
@@ -87,10 +86,6 @@
 #ifndef SECUREC_HAVE_WCHART
 #define SECUREC_HAVE_WCHART 1
 #endif
-#endif
-
-#ifndef SECUREC_USE_STD_UNGETC
-#define SECUREC_USE_STD_UNGETC 1
 #endif
 
 #ifndef SECUREC_ENABLE_INLINE
@@ -234,18 +229,38 @@
 
 #define SECUREC_MEMCPY_WARP_OPT(dest, src, count)    (void)SECUREC_MEMCPY_FUNC_OPT((dest), (src), (count))
 
+#ifndef SECUREC_MEMSET_BARRIER
+#if defined(__GNUC__)
+/* Can be turned off for scenarios that do not use memory barrier */
+#define SECUREC_MEMSET_BARRIER 1
+#else
+#define SECUREC_MEMSET_BARRIER 0
+#endif
+#endif
+
 #ifndef SECUREC_MEMSET_INDIRECT_USE
 /* Can be turned off for scenarios that do not allow pointer calls */
 #define SECUREC_MEMSET_INDIRECT_USE 1
 #endif
 
-#if SECUREC_MEMSET_INDIRECT_USE
-#define SECUREC_MEMSET_WARP_OPT(dest, value, count)  do { \
+#if SECUREC_MEMSET_BARRIER
+#define SECUREC_MEMORY_BARRIER(dest) __asm__ __volatile__("": : "r"(dest) : "memory")
+#else
+#define SECUREC_MEMORY_BARRIER(dest)
+#endif
+
+#if SECUREC_MEMSET_BARRIER
+#define SECUREC_MEMSET_PREVENT_DSE(dest, value, count)  do { \
+        (void)SECUREC_MEMSET_FUNC_OPT(dest, value, count); \
+        SECUREC_MEMORY_BARRIER(dest); \
+} SECUREC_WHILE_ZERO
+#elif SECUREC_MEMSET_INDIRECT_USE
+#define SECUREC_MEMSET_PREVENT_DSE(dest, value, count)  do { \
     void *(* const volatile fn_)(void *s_, int c_, size_t n_) = SECUREC_MEMSET_FUNC_OPT; \
     (void)(*fn_)((dest), (value), (count)); \
 } SECUREC_WHILE_ZERO
 #else
-#define SECUREC_MEMSET_WARP_OPT(dest, value, count)  (void)SECUREC_MEMSET_FUNC_OPT((dest), (value), (count))
+#define SECUREC_MEMSET_PREVENT_DSE(dest, value, count)  (void)SECUREC_MEMSET_FUNC_OPT((dest), (value), (count))
 #endif
 
 #ifdef SECUREC_FORMAT_OUTPUT_INPUT
@@ -544,12 +559,12 @@ extern "C" {
 
 /* Assembly language memory copy and memory set for X86 or MIPS ... */
 #ifdef SECUREC_USE_ASM
-    void *memcpy_opt(void *dest, const void *src, size_t n);
-    void *memset_opt(void *s, int c, size_t n);
+void *memcpy_opt(void *dest, const void *src, size_t n);
+void *memset_opt(void *s, int c, size_t n);
 #endif
 
 #if defined(SECUREC_ERROR_HANDLER_BY_FILE_LOG)
-    void LogSecureCRuntimeError(const char *errDetail);
+void LogSecureCRuntimeError(const char *errDetail);
 #endif
 
 #ifdef __cplusplus

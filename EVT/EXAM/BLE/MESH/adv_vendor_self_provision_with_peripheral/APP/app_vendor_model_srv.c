@@ -233,6 +233,10 @@ static void vendor_message_srv_trans(struct bt_mesh_model   *model,
     uint8_t                  *pData = buf->data;
     uint16_t                  len = buf->len;
 
+    if(!len)
+    {
+        return;
+    }
     if((pData[0] != vendor_model_srv->srv_tid.trans_tid) ||
        (ctx->addr != vendor_model_srv->srv_tid.trans_addr))
     {
@@ -272,6 +276,10 @@ static void vendor_message_srv_write(struct bt_mesh_model   *model,
     uint8_t                  *pData = buf->data;
     uint16_t                  len = buf->len;
 
+    if(!len)
+    {
+        return;
+    }
     if((pData[0] != vendor_model_srv->srv_tid.write_tid) ||
        (ctx->addr != vendor_model_srv->srv_tid.write_addr) )
     {

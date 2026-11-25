@@ -307,7 +307,7 @@ void KB_Scan_Handle( void )
                         }
                         else
                         {
-                            memcpy( &KB_Data_Pack[ j ], &KB_Data_Pack[ j + 1 ], ( 8 - j - 1 ) );
+                            memmove( &KB_Data_Pack[ j ], &KB_Data_Pack[ j + 1 ], ( 8 - j - 1 ) );
                             KB_Data_Pack[ 7 ] = 0;
                         }
                         key_cnt--;

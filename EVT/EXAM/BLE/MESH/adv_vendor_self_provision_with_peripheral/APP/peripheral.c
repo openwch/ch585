@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -183,14 +183,14 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void Peripheral_Init()
+void Peripheral_Init(void)
 {
     Peripheral_TaskID = TMOS_ProcessEventRegister(Peripheral_ProcessEvent);
 
@@ -601,6 +601,11 @@ void peripheralChar4Notify(uint8_t *pValue, uint16_t len)
     {
         noti.len = len;
         noti.pValue = GATT_bm_alloc(peripheralConnList.connHandle, ATT_HANDLE_VALUE_NOTI, noti.len, NULL, 0);
+        if(noti.pValue == NULL)
+        {
+            // 分配失败禁止解引用
+            return;
+        }
         tmos_memcpy(noti.pValue, pValue, noti.len);
         if(simpleProfile_Notify(peripheralConnList.connHandle, &noti) != SUCCESS)
         {
@@ -628,7 +633,7 @@ static void simpleProfileChangeCB(uint8_t paramID, uint8_t *pValue, uint16_t len
         case SIMPLEPROFILE_CHAR1:
         {
             PRINT("profile ChangeCB CHAR1.. \n");
-            App_peripheral_reveived(pValue, len);
+            App_peripheral_received(pValue, len);
             break;
         }
 
@@ -647,18 +652,18 @@ static void simpleProfileChangeCB(uint8_t paramID, uint8_t *pValue, uint16_t len
 }
 
 /*********************************************************************
- * @fn      Peripheral_AdvertData_Privisioned
+ * @fn      Peripheral_AdvertData_Provisioned
  *
  * @brief   修改广播数据内配网标志.
  *
- * @param   privisioned - 是否已配网
+ * @param   provisioned - 是否已配网
  *
  * @return  none
  */
-void Peripheral_AdvertData_Privisioned(uint8_t privisioned)
+void Peripheral_AdvertData_Provisioned(uint8_t provisioned)
 {
     uint8_t  advertising_enable;
-    if(privisioned)
+    if(provisioned)
     {
         advertData[11]=0x01;
         advertData[12]=0x00;

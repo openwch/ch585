@@ -25,7 +25,9 @@ extern "C" {
  * CONSTANTS
  */
 
-// Simple BLE Observer Task Events
+// Speed test direction: 0 = Peripheral->Central, 1 = Central->Peripheral
+#define SPEED_TEST_DIR                0
+// Simple BLE Central Task Events
 #define START_DEVICE_EVT              0x0001
 #define START_DISCOVERY_EVT           0x0002
 #define START_SCAN_EVT                0x0004
@@ -36,6 +38,7 @@ extern "C" {
 #define ESTABLISH_LINK_TIMEOUT_EVT    0x0100
 #define START_SPEED_TEST_EVT          0x0200
 #define START_PHY_UPDATE_EVT          0x0400
+#define START_WRITE_DATA_EVT          0x0800
 
 /*********************************************************************
  * MACROS

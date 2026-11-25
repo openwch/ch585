@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -10,7 +10,6 @@
  * See the Mulan PSL v2 for more details.
  * Description: Define macro, data struct, and declare function prototype,
  *              which is used by input.inl, secureinput_a.c and secureinput_w.c.
- * Author: lishunda
  * Create: 2014-02-25
  */
 
@@ -39,13 +38,13 @@
 #define SECUREC_UTF8_LEAD_1ST            0xe0U
 #define SECUREC_UTF8_LEAD_2ND            0x80U
 
-#define SECUREC_BEGIN_WITH_UCS_BOM(s, len) ((len) >= SECUREC_UCS_BOM_HEADER_SIZE && \
+#define SECUREC_BEGIN_WITH_UCS_BOM(s, len) ((len) == SECUREC_UCS_BOM_HEADER_SIZE && \
     (((unsigned char)((s)[0]) == SECUREC_UCS_BOM_HEADER_LE_1ST && \
     (unsigned char)((s)[1]) == SECUREC_UCS_BOM_HEADER_LE_2ST) || \
     ((unsigned char)((s)[0]) == SECUREC_UCS_BOM_HEADER_BE_1ST && \
     (unsigned char)((s)[1]) == SECUREC_UCS_BOM_HEADER_BE_2ST)))
 
-#define SECUREC_BEGIN_WITH_UTF8_BOM(s, len) ((len) >= SECUREC_UTF8_BOM_HEADER_SIZE && \
+#define SECUREC_BEGIN_WITH_UTF8_BOM(s, len) ((len) == SECUREC_UTF8_BOM_HEADER_SIZE && \
     (unsigned char)((s)[0]) == SECUREC_UTF8_BOM_HEADER_1ST && \
     (unsigned char)((s)[1]) == SECUREC_UTF8_BOM_HEADER_2ND && \
     (unsigned char)((s)[2]) == SECUREC_UTF8_BOM_HEADER_3RD)
@@ -67,22 +66,10 @@ typedef struct {
     FILE *pf;                   /* The file pointer */
     size_t fileRealRead;
     long oriFilePos;            /* The original position of file offset when fscanf is called */
-#if !SECUREC_USE_STD_UNGETC
-    unsigned int lastChar;      /* The char code of last input */
-    int fUnGet;                 /* The boolean flag of pushing a char back to read stream */
-#endif
 #endif
 } SecFileStream;
 
-#if SECUREC_ENABLE_SCANF_FILE && !SECUREC_USE_STD_UNGETC
-#define SECUREC_FILE_STREAM_INIT_FILE(stream, fp) do { \
-    (stream)->pf = (fp); \
-    (stream)->fileRealRead = 0; \
-    (stream)->oriFilePos = 0; \
-    (stream)->lastChar = 0; \
-    (stream)->fUnGet = 0; \
-} SECUREC_WHILE_ZERO
-#elif SECUREC_ENABLE_SCANF_FILE && SECUREC_USE_STD_UNGETC
+#if SECUREC_ENABLE_SCANF_FILE
 #define SECUREC_FILE_STREAM_INIT_FILE(stream, fp) do { \
     (stream)->pf = (fp); \
     (stream)->fileRealRead = 0; \
@@ -123,11 +110,11 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int SecInputS(SecFileStream *stream, const char *cFormat, va_list argList);
-    void SecClearDestBuf(const char *buffer, const char *format, va_list argList);
+int SecInputS(SecFileStream *stream, const char *cFormat, va_list argList);
+void SecClearDestBuf(const char *buffer, const char *format, va_list argList);
 #ifdef SECUREC_FOR_WCHAR
-    int SecInputSW(SecFileStream *stream, const wchar_t *cFormat, va_list argList);
-    void SecClearDestBufW(const wchar_t *buffer, const wchar_t *format, va_list argList);
+int SecInputSW(SecFileStream *stream, const wchar_t *cFormat, va_list argList);
+void SecClearDestBufW(const wchar_t *buffer, const wchar_t *format, va_list argList);
 #endif
 
 /* 20150105 For software and hardware decoupling,such as UMG */
@@ -135,7 +122,7 @@ extern "C" {
 #ifdef feof
 #undef feof
 #endif
-    extern int feof(FILE *stream);
+extern int feof(FILE *stream);
 #endif
 
 #if defined(SECUREC_SYSAPI4VXWORKS) || defined(SECUREC_CTYPE_MACRO_ADAPT)

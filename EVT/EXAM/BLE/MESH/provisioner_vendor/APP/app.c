@@ -23,8 +23,8 @@
  */
 #define ADV_TIMEOUT       K_MINUTES(10)
 
-#define SELENCE_ADV_ON    0x01
-#define SELENCE_ADV_OF    0x00
+#define SILENCE_ADV_ON    0x01
+#define SILENCE_ADV_OFF    0x00
 
 /*********************************************************************
  * GLOBAL TYPEDEFS
@@ -1087,7 +1087,7 @@ void blemesh_on_sync(void)
                                 self_prov_iv_index, self_prov_addr, self_prov_dev_key);
         if(err)
         {
-            APP_DBG("Self Privisioning (err %d)", err);
+            APP_DBG("Self Provisioning (err %d)", err);
             return;
         }
     }

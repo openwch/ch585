@@ -24,32 +24,32 @@
     <link>
       <name>Ld</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/Ld</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/Ld</location>
     </link>
     <link>
       <name>NFCA_LIB</name>
       <type>2</type>
-      <locationURI>PARENT-2-PROJECT_LOC/NFCA_LIB</locationURI>
+      <location>PARENT-2-PROJECT_LOC/NFCA_LIB</location>
     </link>
     <link>
       <name>PCD_SOFT_COMMON</name>
       <type>2</type>
-      <locationURI>PARENT-1-PROJECT_LOC/PCD_SOFT_COMMON</locationURI>
+      <location>PARENT-1-PROJECT_LOC/PCD_SOFT_COMMON</location>
     </link>
     <link>
       <name>RVMSIS</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/RVMSIS</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/RVMSIS</location>
     </link>
     <link>
       <name>Startup</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/Startup</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/Startup</location>
     </link>
     <link>
       <name>StdPeriphDriver</name>
       <type>2</type>
-      <locationURI>PARENT-3-PROJECT_LOC/SRC/StdPeriphDriver</locationURI>
+      <location>PARENT-3-PROJECT_LOC/SRC/StdPeriphDriver</location>
     </link>
   </linkedResources>
   <filteredResources>

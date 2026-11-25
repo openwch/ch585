@@ -98,7 +98,7 @@ static uint8_t ble_iochub_TxCharProps = GATT_PROP_NOTIFY;
 // Characteristic 2 Value
 static uint8_t ble_iochub_TxCharValue = 0;
 
-// Simple Profile Characteristic 2 User Description
+// ble iochub Characteristic 2 User Description
 static gattCharCfg_t ble_iochub_TxCCCD[4];
 
 /*********************************************************************
@@ -106,7 +106,7 @@ static gattCharCfg_t ble_iochub_TxCCCD[4];
  */
 
 static gattAttribute_t ble_iochub_ProfileAttrTbl[] = {
-    // Simple Profile Service
+    // ble iochub Service
     {
         {ATT_BT_UUID_SIZE, primaryServiceUUID}, /* type */
         GATT_PERMIT_READ,                       /* permissions */
@@ -164,7 +164,7 @@ static void ble_iochub_HandleConnStatusCB(uint16_t connHandle, uint8_t changeTyp
 /*********************************************************************
  * PROFILE CALLBACKS
  */
-// Simple Profile Service Callbacks
+// ble iochub Service Callbacks
 gattServiceCBs_t ble_iochub_ProfileCBs = {
     ble_iochub_ReadAttrCB,  // Read callback function pointer
     ble_iochub_WriteAttrCB, // Write callback function pointer
@@ -178,7 +178,7 @@ gattServiceCBs_t ble_iochub_ProfileCBs = {
 /*********************************************************************
  * @fn      ble_iochub_AddService
  *
- * @brief   Initializes the Simple Profile service by registering
+ * @brief   Initializes the ble iochub service by registering
  *          GATT attributes with the GATT server.
  *
  * @param   services - services to add. This is a bit map and can
@@ -256,7 +256,7 @@ static bStatus_t ble_iochub_ReadAttrCB(uint16_t connHandle, gattAttribute_t *pAt
 }
 
 /*********************************************************************
- * @fn      simpleProfile_WriteAttrCB
+ * @fn      ble_iochub_WriteAttrCB
  *
  * @brief   Validate attribute data prior to a write operation
  *
@@ -308,7 +308,7 @@ static bStatus_t ble_iochub_WriteAttrCB(uint16_t connHandle, gattAttribute_t *pA
             if(ble_iochub_AppCBs)
             {
                 ble_iochub_evt_t evt;
-                evt.type = BLE_IOCHUB_EVT_BLE_DATA_RECIEVED;
+                evt.type = BLE_IOCHUB_EVT_BLE_DATA_RECEIVED;
                 evt.data.length = (uint16_t)len;
                 evt.data.p_data = pValue;
                 ble_iochub_AppCBs(connHandle, &evt);
@@ -319,9 +319,9 @@ static bStatus_t ble_iochub_WriteAttrCB(uint16_t connHandle, gattAttribute_t *pA
 }
 
 /*********************************************************************
- * @fn          simpleProfile_HandleConnStatusCB
+ * @fn          ble_iochub_HandleConnStatusCB
  *
- * @brief       Simple Profile link status change handler function.
+ * @brief       ble iochub link status change handler function.
  *
  * @param       connHandle - connection handle
  * @param       changeType - type of change
@@ -350,10 +350,9 @@ uint8_t ble_iochub_notify_is_ready(uint16_t connHandle)
     return (GATT_CLIENT_CFG_NOTIFY == GATTServApp_ReadCharCfg(connHandle, ble_iochub_TxCCCD));
 }
 /*********************************************************************
- * @fn          BloodPressure_IMeasNotify
+ * @fn          ble_iochub_notify
  *
- * @brief       Send a notification containing a bloodPressure
- *              measurement.
+ * @brief       Send a notification containing the tx characteristic data.
  *
  * @param       connHandle - connection handle
  * @param       pNoti - pointer to notification structure

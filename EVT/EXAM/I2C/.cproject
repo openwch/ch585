@@ -142,13 +142,13 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.release.1008047074.802142122" name="CH59x_i2c.h" rcbsApplicability="disable" resourcePath="StdPeriphDriver/inc/CH59x_i2c.h" toolsToInvoke=""/>
+					
 					<sourceEntries>
 						<entry excluding="Ld|RVMSIS|Startup|StdPeriphDriver" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Ld"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="RVMSIS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Startup"/>
-						<entry excluding="CH59x_adc.c|CH59x_spi0.c|CH59x_timer0.c|CH59x_timer1.c|CH59x_timer2.c|CH59x_timer3.c|CH59x_uart2.c|CH59x_uart3.c|CH59x_usbdev.c|CH59x_usbhostBase.c|CH59x_usbhostClass.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="StdPeriphDriver"/>
+						<entry excluding="" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="StdPeriphDriver"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

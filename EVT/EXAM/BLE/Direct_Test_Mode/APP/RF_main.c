@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
+ * File Name          : RF_main.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2020/08/06
@@ -35,7 +35,7 @@ const uint8_t MacAddr[6] = {0x84, 0xC2, 0xE4, 0x03, 0x02, 0x02};
  */
 __HIGH_CODE
 __attribute__((noinline))
-void Main_Circulation()
+void Main_Circulation(void)
 {
     while(1)
     {
@@ -54,6 +54,10 @@ int main(void)
 {
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(SYSCLK_FREQ);
+    //¹Ø±ÕHSI
+    sys_safe_access_enable();
+    R8_HFCK_PWR_CTRL &= ~RB_CLK_RC16M_PON;
+    sys_safe_access_disable();
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);
     GPIOPinRemap(ENABLE, RB_PIN_UART0);

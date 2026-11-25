@@ -78,7 +78,7 @@ void USBHS_Host_Init( FunctionalState sta )
     else
     {
         R8_USBHS_PLL_CTRL &= ~USBHS_PLL_EN;
-        R32_PIN_CONFIG &= ~RB_PIN_USB2_EN;
+        R16_PIN_CONFIG &= ~RB_PIN_USB2_EN;
 
         R8_U2H_CFG = USBHS_UD_RST_LINK | USBHS_UD_RST_SIE | USBHS_UD_CLR_ALL;
     }
@@ -689,7 +689,7 @@ uint8_t USBHSH_GetEndpData( uint8_t endp_num, uint16_t *pendp_tog, uint8_t *pbuf
 {
     uint8_t  s;
 
-    s = USBHSH_Transact( ( USB_PID_IN << 4 ) | endp_num, *pendp_tog, 0 );
+    s = USBHSH_Transact( USB_PID_IN | ( endp_num << 4 ), *pendp_tog, 0 );
     if( s == ERR_SUCCESS )
     {
         *plen = R32_U2H_RX_LEN;
@@ -717,7 +717,7 @@ uint8_t USBHSH_SendEndpData( uint8_t endp_num, uint16_t *pendp_tog, uint8_t *pbu
 
     memcpy( TxBuffer, pbuf, len );
     R32_U2H_TX_LEN = len;
-    s = USBHSH_Transact( ( USB_PID_OUT << 4 ) | endp_num, *pendp_tog, 0 );
+    s = USBHSH_Transact( USB_PID_OUT | ( endp_num << 4 ), *pendp_tog, 0 );
     if( s == ERR_SUCCESS )
     {
         *pendp_tog ^= USBHS_UH_T_TOG_DATA1;

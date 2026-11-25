@@ -2,7 +2,7 @@
  * File Name          : CH58x_pwr.c
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : source file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -154,11 +154,11 @@ void PWR_PeriphClkCfg(FunctionalState s, uint16_t perph)
  *                    RB_SLP_GPIO_WAKE  -  GPIO 为唤醒源
  *                    RB_SLP_BAT_WAKE   -  BAT 为唤醒源
  *                    RB_GPIO_EDGE_WAKE -  GPIO不论上沿还是下沿都能唤醒
- * @param   mode    - refer to WakeUP_ModeypeDef
+ * @param   mode    - refer to WakeUP_ModeTypeDef
  *
  * @return  none
  */
-void PWR_PeriphWakeUpCfg(FunctionalState s, uint8_t perph, WakeUP_ModeypeDef mode)
+void PWR_PeriphWakeUpCfg(FunctionalState s, uint8_t perph, WakeUP_ModeTypeDef mode)
 {
     uint8_t m;
 
@@ -203,11 +203,11 @@ void PWR_PeriphWakeUpCfg(FunctionalState s, uint8_t perph, WakeUP_ModeypeDef mod
  * @brief   电源监控
  *
  * @param   s       - 是否打开此功能
- * @param   vl      - refer to VolM_LevelypeDef
+ * @param   vl      - refer to VolM_LevelTypeDef
  *
  * @return  none
  */
-void PowerMonitor(FunctionalState s, VolM_LevelypeDef vl)
+void PowerMonitor(FunctionalState s, VolM_LevelTypeDef vl)
 {
     uint8_t ctrl = R8_BAT_DET_CTRL;
     uint8_t cfg = R8_BAT_DET_CFG;
@@ -387,9 +387,9 @@ void LowPower_Sleep(uint16_t rm)
 
     power_plan = R16_POWER_PLAN & (RB_PWR_DCDC_EN | RB_PWR_DCDC_PRE);
     power_plan |= RB_PWR_PLAN_EN | RB_PWR_CORE | rm | (2<<11);
-    if(chip_info&0x800000)
+    if(!(chip_info&0x0F000000))
     {
-        power_plan &= ~RB_XT_PRE_EN;  //不支持RB_XT_PRE_EN功能
+        power_plan &= ~RB_XT_PRE_EN;
     }
 
     sys_safe_access_enable();
@@ -443,6 +443,7 @@ void LowPower_Sleep(uint16_t rm)
     R8_HFCK_PWR_CTRL = hfck_pwr_ctrl;
     sys_safe_access_disable();
     sys_safe_access_enable();
+    R16_POWER_PLAN &= ~RB_XT_PRE_EN;
     R16_POWER_PLAN &= ~RB_PWR_PLAN_EN;
     sys_safe_access_disable();
 
@@ -452,7 +453,7 @@ void LowPower_Sleep(uint16_t rm)
 /*********************************************************************
  * @fn      LowPower_Shutdown
  *
- * @brief   低功耗-Shutdown模式，此低功耗切到HSI/5时钟运行，唤醒后需要用户自己重新选择系统时钟源
+ * @brief   低功耗-Shutdown模式，此低功耗切到HSE/5时钟运行，唤醒后需要用户自己重新选择系统时钟源
  *          @note 注意调用此函数，DCDC功能强制关闭，唤醒后可以手动再次打开
  *
  * @param   rm      - 供电模块选择
@@ -472,7 +473,7 @@ void LowPower_Shutdown(uint16_t rm)
     x32Kpw = R8_XT32K_TUNE;
     x32Kpw = (x32Kpw & 0xfc) | 0x01; // LSE驱动电流降低到额定电流
 
-    SetSysClock(CLK_SOURCE_HSI_PLL_13MHz);
+    SetSysClock(CLK_SOURCE_HSE_PLL_13MHz);
     sys_safe_access_enable();
     R8_BAT_DET_CTRL = 0; // 关闭电压监控
     sys_safe_access_disable();
@@ -509,7 +510,6 @@ void LowPower_Shutdown(uint16_t rm)
 __HIGH_CODE
 void LowPower_Halt_WFE(void)
 {
-    uint32_t i;
     uint8_t x32Mpw;
 
     FLASH_ROM_SW_RESET();
@@ -565,7 +565,10 @@ void LowPower_Sleep_WFE(uint16_t rm)
     PFIC->SCTLR |= (1 << 2); //deep sleep
     power_plan = R16_POWER_PLAN & (RB_PWR_DCDC_EN | RB_PWR_DCDC_PRE);
     power_plan |= RB_PWR_PLAN_EN | RB_PWR_CORE | rm | (2<<11);
-    power_plan &= ~0x4000;  //不支持RB_XT_PRE_EN功能
+    if(!(chip_info&0x0F000000))
+    {
+        power_plan &= ~RB_XT_PRE_EN;
+    }
 
     sys_safe_access_enable();
     R16_POWER_PLAN = power_plan;
@@ -593,6 +596,7 @@ void LowPower_Sleep_WFE(uint16_t rm)
 
     sys_safe_access_enable();
     R16_POWER_PLAN &= ~RB_PWR_PLAN_EN;
+    R16_POWER_PLAN &= ~RB_XT_PRE_EN;
     sys_safe_access_disable();
 
 //    DelayUs(100); //如果退出函数后运行flash代码，则需要延时100us后退出

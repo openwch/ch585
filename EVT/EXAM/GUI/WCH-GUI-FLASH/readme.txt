@@ -1,0 +1,1 @@
+WCH-GUI-FLASH 是WCH 为旗下微控制器设计的轻量级图形用户界面库。该库专为嵌入式系统优化，以Flash 存储为核心载体，界面资源与程序代码可高效整合于片外Flash 中（GUI_ExternalFlash），也可部署于片内Flash（GUI_Onflash），无需强制依赖外部存储器即可运行完整GUI，灵活适配不同硬件方案，通过刷新存储器中预生成的图片，显著降低对CPU 的占用；同时提供直观的API 接口，支持丰富的UI 控件类型，搭配WCHGUIDesigner.exe使用，使开发者能够快速构建美观的图形界面应用。

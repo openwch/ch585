@@ -62,7 +62,7 @@ extern "C" {
 #define BLE_SEND_SEC        0xCC
 
 #define BLE_HEAD_LEN        2
-#define BLE_FOMRAT_LEN   4
+#define BLE_FORMAT_LEN   4
 #define BLE_TAIL_LEN          1
 
 #define DP_ID_LIGHT           0x01      //µÆ¿Ø

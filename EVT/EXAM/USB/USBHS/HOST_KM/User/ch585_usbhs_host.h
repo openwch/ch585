@@ -35,7 +35,7 @@ extern __attribute__((aligned(4))) uint8_t  TxBuffer[ ];
 #define DEFAULT_ENDP0_SIZE          8          // default maximum packet size for endpoint 0
 #endif
 #ifndef USBHS_MAX_PACKET_SIZE
-#define USBHS_MAX_PACKET_SIZE      64
+#define USBHS_MAX_PACKET_SIZE      512
 #endif
 
 /*******************************************************************************/

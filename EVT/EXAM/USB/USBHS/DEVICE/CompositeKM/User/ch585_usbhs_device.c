@@ -79,6 +79,13 @@ void USB_TestMode_Deal( void )
     /* start test */
     USBHS_Test_Flag &= ~0x80;
 
+    sys_safe_access_enable();
+    (*((PUINT32V)0x40001048)) |= 0x00000007;
+    sys_safe_access_disable(); 
+
+    // Very short cables such as high-speed dongles (<3 m) also need adjustment
+    (*((PUINT32V)0x40009204)) &= ~0x000000C3; // Adjust the signal amplitude and slew rate
+
     if( USBHS_SetupReqIndex == 0x0100 )
     {
         /* Test_J */
@@ -156,7 +163,6 @@ void USBHS_Device_Init ( FunctionalState sta )
 {
     if( sta )
     {
-        R16_CLK_SYS_CFG |= (RB_CLK_SYS_MOD & 0x40) | RB_XROM_SCLK_SEL | RB_OSC32M_SEL;
         R8_USBHS_PLL_CTRL = USBHS_PLL_EN;
         R16_PIN_CONFIG |= RB_PIN_USB2_EN;
 
@@ -171,7 +177,7 @@ void USBHS_Device_Init ( FunctionalState sta )
     {
         R16_CLK_SYS_CFG &= ~((RB_CLK_SYS_MOD & 0x40) | RB_XROM_SCLK_SEL | RB_OSC32M_SEL);
         R8_USBHS_PLL_CTRL &= ~USBHS_PLL_EN;
-        R32_PIN_CONFIG &= ~RB_PIN_USB2_EN;
+        R16_PIN_CONFIG &= ~RB_PIN_USB2_EN;
 
         R8_USB2_CTRL |= USBHS_UD_RST_SIE;
         R8_USB2_CTRL &= ~USBHS_UD_RST_SIE;

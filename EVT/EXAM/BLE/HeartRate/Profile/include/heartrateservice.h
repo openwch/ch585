@@ -108,7 +108,7 @@ extern void HeartRate_Register(heartRateServiceCB_t pfnServiceCB);
  * HeartRate_SetParameter - Set a Heart Rate parameter.
  *
  *    param - Profile parameter ID
- *    len - length of data to right
+ *    len - length of data to write
  *    value - pointer to data to write.  This is dependent on
  *          the parameter ID and WILL be cast to the appropriate
  *          data type (example: data type of uint16_t will be cast to

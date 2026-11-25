@@ -49,7 +49,7 @@
  
  【SNV】
  BLE_SNV                                    - 是否开启SNV功能，用于储存绑定信息( 默认:TRUE )
- BLE_SNV_ADDR                               - SNV信息保存地址，使用data flash最后512字节( 默认:0x77E00 )
+ BLE_SNV_ADDR                               - SNV信息保存地址，使用data flash最后512字节( 默认:0x77000 )
  BLE_SNV_BLOCK                              - SNV信息保存块大小( 默认:256 )
  BLE_SNV_NUM                                - SNV信息保存数量( 默认:1 )
 
@@ -111,7 +111,7 @@
 #define BLE_SNV                             TRUE
 #endif
 #ifndef BLE_SNV_ADDR
-#define BLE_SNV_ADDR                        0x77000-FLASH_ROM_MAX_SIZE
+#define BLE_SNV_ADDR                        (0x77000-FLASH_ROM_MAX_SIZE)
 #endif
 #ifndef BLE_SNV_BLOCK
 #define BLE_SNV_BLOCK                       256
@@ -126,7 +126,7 @@
 #define BLE_MEMHEAP_SIZE                    (1024*6)
 #endif
 #ifndef BLE_BUFF_MAX_LEN
-#define BLE_BUFF_MAX_LEN                    27
+#define BLE_BUFF_MAX_LEN                    251
 #endif
 #ifndef BLE_BUFF_NUM
 #define BLE_BUFF_NUM                        5
@@ -135,7 +135,7 @@
 #define BLE_TX_NUM_EVENT                    1
 #endif
 #ifndef BLE_TX_POWER
-#define BLE_TX_POWER                        LL_TX_POWEER_0_DBM
+#define BLE_TX_POWER                        LL_TX_PWR_0_DBM
 #endif
 #ifndef PERIPHERAL_MAX_CONNECTION
 #define PERIPHERAL_MAX_CONNECTION           1

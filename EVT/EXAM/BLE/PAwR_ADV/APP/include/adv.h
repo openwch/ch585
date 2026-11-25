@@ -1,15 +1,15 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : central.h
+ * File Name          : adv.h
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/11/12
- * Description        : ¹Û²ìÓ¦ÓÃÖ÷º¯Êý¼°ÈÎÎñÏµÍ³³õÊ¼»¯
+ * Description        : ï¿½Û²ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½Ê¼ï¿½ï¿½
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 
-#ifndef CENTRAL_H
-#define CENTRAL_H
+#ifndef ADV_H
+#define ADV_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +23,7 @@ extern "C" {
  * CONSTANTS
  */
 
-// Simple BLE Ceentral Task Events
+// Simple BLE Central Task Events
 #define START_DEVICE_EVT           (1 << 0)
 #define START_DISCOVERY_EVT        (1 << 1)
 #define START_SCAN_EVT             (1 << 2)

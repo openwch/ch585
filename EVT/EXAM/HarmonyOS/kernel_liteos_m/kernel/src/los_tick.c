@@ -64,7 +64,7 @@ LITE_OS_SEC_TEXT STATIC VOID OsUpdateSysTimeBase(VOID)
 
 LITE_OS_SEC_TEXT VOID OsTickTimerBaseReset(UINT64 currTime)
 {
-    LOS_ASSERT(currTime > g_tickTimerBase);
+    LOS_ASSERT(currTime >= g_tickTimerBase);
 
     g_tickTimerBase = currTime;
 }

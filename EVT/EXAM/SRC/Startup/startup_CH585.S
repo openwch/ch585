@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : startup_CH59x.s
+ * File Name          : startup_CH585.S
  * Author             : WCH
  * Version            : V1.0.0
- * Date               : 2021/02/25
+ * Date               : 2026/10/16
  * Description        :
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.

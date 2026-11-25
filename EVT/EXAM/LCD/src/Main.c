@@ -40,7 +40,7 @@ void PM_LowPower_Sleep(void)
     DelayUs(300);
 }
 
-int main()
+int main(void)
 {
     uint32_t VER = 0;
 
@@ -66,9 +66,9 @@ int main()
 
     /* LCD + sleep Ê¾Àý */
 #if 1
-    /* ÅäÖÃ»½ÐÑÔ´Îª GPIO - PA5 */
-    GPIOA_ModeCfg(GPIO_Pin_5, GPIO_ModeIN_PU);
-    GPIOA_ITModeCfg(GPIO_Pin_5, GPIO_ITMode_FallEdge); // ÏÂ½µÑØ»½ÐÑ
+    /* ÅäÖÃ»½ÐÑÔ´Îª GPIO - PA6 */
+    GPIOA_ModeCfg(GPIO_Pin_6, GPIO_ModeIN_PU);
+    GPIOA_ITModeCfg(GPIO_Pin_6, GPIO_ITMode_FallEdge); // ÏÂ½µÑØ»½ÐÑ
     PFIC_EnableIRQ(GPIO_A_IRQn);
     PWR_PeriphWakeUpCfg(ENABLE, RB_SLP_GPIO_WAKE, Long_Delay);
     PM_LowPower_Sleep();
@@ -90,5 +90,5 @@ __INTERRUPT
 __HIGH_CODE
 void GPIOA_IRQHandler(void)
 {
-    GPIOA_ClearITFlagBit(GPIO_Pin_5);
+    GPIOA_ClearITFlagBit(GPIO_Pin_6);
 }

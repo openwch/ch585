@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2020. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2014-2021. All rights reserved.
  * Licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,8 +9,12 @@
  * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
  * See the Mulan PSL v2 for more details.
  * Description: strncpy_s  function
- * Author: lishunda
  * Create: 2014-02-25
+ */
+/*
+ * [Standardize-exceptions] Use unsafe function: Performance-sensitive
+ * [reason] Always used in the performance critical path,
+ *          and sufficient input validation is performed before calling
  */
 
 #include "securecutil.h"
@@ -49,7 +53,7 @@ SECUREC_INLINE errno_t CheckSrcCountRange(char *strDest, size_t destMax, const c
 }
 
 /*
- * Handling errors, when dest euqal src return EOK
+ * Handling errors, when dest equal src return EOK
  */
 errno_t strncpy_error(char *strDest, size_t destMax, const char *strSrc, size_t count)
 {
@@ -135,7 +139,7 @@ errno_t strncpy_s(char *strDest, size_t destMax, const char *strSrc, size_t coun
     return strncpy_error(strDest, destMax, strSrc, count);
 }
 
-#if SECUREC_IN_KERNEL
+#if SECUREC_EXPORT_KERNEL_SYMBOL
 EXPORT_SYMBOL(strncpy_s);
 #endif
 

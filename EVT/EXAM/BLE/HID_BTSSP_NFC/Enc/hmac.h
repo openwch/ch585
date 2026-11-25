@@ -57,7 +57,7 @@
  *              tc_hmac_update can be called as many times as needed to process
  *              all of the segments of the input; the order is important.
  *
- *              4) call tc_hmac_final to out put the tag.
+ *              4) call tc_hmac_final to output the tag.
  */
 
 #ifndef __TC_HMAC_H__

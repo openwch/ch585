@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : startup_CH59x.s
+ * File Name          : startup_CH585.s
  * Author             : WCH
  * Version            : V1.0.0
  * Date               : 2021/02/25

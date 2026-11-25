@@ -67,7 +67,7 @@ extern void peripheralChar2Notify( uint8_t *pValue, uint16_t len );
 
 extern void peripheralStartAdv(void);
 
-extern void peripheralStoptAdv(void);
+extern void peripheralStopAdv(void);
 
 /*********************************************************************
 *********************************************************************/

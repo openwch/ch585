@@ -39,7 +39,7 @@ void nfca_pcd_ctr_init(void)
     R32_PA_PD_DRV |= GPIO_Pin_7;    /* 打开下拉 */
     R32_PA_DIR |= (GPIO_Pin_7);     /* 默认输出方向 */
     R32_PA_CLR = GPIO_Pin_7;        /* 只会输出低，不可输出高 */
-
+    GPIOADigitalCfg(DISABLE, GPIO_Pin_7);
     nfca_pcd_set_lp_ctrl(NFCA_PCD_LP_CTRL_0_5_VDD);
 }
 
@@ -311,7 +311,7 @@ void nfca_pcd_lpcd_calibration(void)
     R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (SampleFreq_8_or_4 << 6) | (ADC_PGA_1_4 << 4);   /* -12DB采样 ADC_PGA_1_4*/
     R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
     R8_ADC_CONVERT &= ~(3 << 4);  /* 4个Tadc */
-    mDelayuS(100);
+
     for(i = 0; i < 10; i++)
     {
         R8_ADC_CONVERT |= RB_ADC_START;

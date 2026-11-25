@@ -195,7 +195,7 @@ static gapEccCBs_t eccCB =
  */
 
 static void    hidEmu_ProcessTMOSMsg(tmos_event_hdr_t *pMsg);
-static void    hidEmuSendConsumerReport(uint8_t volume_up, uint8_t volume_dowm);
+static void    hidEmuSendConsumerReport(uint8_t volume_up, uint8_t volume_down);
 static uint8_t hidEmuRptCB(uint8_t id, uint8_t type, uint16_t uuid,
                            uint8_t oper, uint16_t *pLen, uint8_t *pData);
 static void    hidEmuEvtCB(uint8_t evt);
@@ -219,18 +219,18 @@ static hidDevCB_t hidEmuHidCBs = {
 /*********************************************************************
  * @fn      HidEmu_Init
  *
- * @brief   Initialization function for the HidEmuKbd App Task.
+ * @brief   Initialization function for the HidEmuConsumer App Task.
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
  *
  * @return  none
  */
-void HidEmu_Init()
+void HidEmu_Init(void)
 {
     hidEmuTaskId = TMOS_ProcessEventRegister(HidEmu_ProcessEvent);
 
@@ -294,7 +294,7 @@ void HidEmu_Init()
         Batt_SetParameter(BATT_PARAM_CRITICAL_LEVEL, sizeof(uint8_t), &critical);
     }
 
-    // Set up HID keyboard service
+    // Set up HID consumer service
     Hid_AddService();
 
     // Register for HID Dev callback
@@ -309,7 +309,7 @@ void HidEmu_Init()
 /*********************************************************************
  * @fn      HidEmu_ProcessEvent
  *
- * @brief   HidEmuKbd Application Task event processor.  This function
+ * @brief   HidEmuConsumer Application Task event processor.  This function
  *          is called to process all events for the task.  Events
  *          include timers, messages and any other user defined events.
  *
@@ -405,16 +405,16 @@ static void hidEmu_ProcessTMOSMsg(tmos_event_hdr_t *pMsg)
  * @brief   Build and send a HID consumer report.
  *
  * @param   volume_up - consumer volume up
- *					volume_dowm - consumer volume dowm
+ *					@param   volume_down - consumer volume down
  *
  * @return  none
  */
-static void hidEmuSendConsumerReport(uint8_t volume_up, uint8_t volume_dowm)
+static void hidEmuSendConsumerReport(uint8_t volume_up, uint8_t volume_down)
 {
     uint8_t buf[HID_CONSUMER_IN_RPT_LEN];
 
     buf[0] = volume_up;   // volume up
-    buf[1] = volume_dowm; // volume dowm
+    buf[1] = volume_down; // volume down
 
     HidDev_Report(HID_RPT_ID_CONSUMER_IN, HID_REPORT_TYPE_INPUT,
                   HID_CONSUMER_IN_RPT_LEN, buf);
@@ -467,7 +467,7 @@ static void hidEmuStateCB(gapRole_States_t newState, gapRoleEvent_t *pEvent)
             cfg.le_sc_confirm = ble_p256_ecdh_data.confirm;
             cfg.le_sc_random = ble_p256_ecdh_data.random;
 
-            cfg.other_adv_data = (uint8_t *)other_adv_data;;
+            cfg.other_adv_data = (uint8_t *)other_adv_data;
             cfg.other_adv_data_len = sizeof(other_adv_data);
 
             cfg.local_name_complete = (uint8_t *)attDeviceName;
@@ -523,6 +523,7 @@ static void hidEmuStateCB(gapRole_States_t newState, gapRoleEvent_t *pEvent)
             }
             else if(pEvent->gap.opcode == GAP_LINK_TERMINATED_EVENT)
             {
+                hidEmuConnHandle = GAP_CONNHANDLE_INIT;
                 PRINT("Disconnected.. Reason:%x\n", pEvent->linkTerminate.reason);
             }
             else if(pEvent->gap.opcode == GAP_LINK_ESTABLISHED_EVENT)

@@ -45,7 +45,7 @@
 // Connection supervision timeout in 10ms
 #define DEFAULT_CONNECTION_TIMEOUT          100
 
-// Discovey mode (limited, general, all)
+// Discovery mode (limited, general, all)
 #define DEFAULT_DISCOVERY_MODE              DEVDISC_MODE_ALL
 
 // TRUE to use active scan
@@ -151,7 +151,7 @@ static uint8_t centralScanRes;
 static gapDevRec_t centralDevList[DEFAULT_MAX_SCAN_RES];
 
 // Peer device address
-static uint8_t PeerAddrDef[B_ADDR_LEN] = {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84};
+static uint8_t PeerAddrDef[B_ADDR_LEN] = {0x02, 0x02, 0x03, 0xE4, 0xC2, 0x84|0xC0};
 
 // RSSI polling state
 static uint8_t centralRssi = TRUE;
@@ -232,7 +232,7 @@ static gapBondCBs_t centralBondCB = {
  *
  * @return  none
  */
-void Central_Init()
+void Central_Init(void)
 {
     centralTaskId = TMOS_ProcessEventRegister(Central_ProcessEvent);
 
@@ -455,7 +455,10 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
         else
         {
             // After a successful read, display the read value
-            PRINT("Read rsp: %x\n", *pMsg->msg.readRsp.pValue);
+            if(pMsg->msg.readRsp.len > 0)
+            {
+                PRINT("Read rsp: %x\n", *pMsg->msg.readRsp.pValue);
+            }
         }
         centralProcedureInProgress = FALSE;
     }
@@ -471,7 +474,7 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
         }
         else
         {
-            // After a succesful write, display the value that was written and increment value
+            // After a successful write, display the value that was written and increment value
             PRINT("Write sent: %x\n", centralCharVal);
         }
 
@@ -479,7 +482,10 @@ static void centralProcessGATTMsg(gattMsgEvent_t *pMsg)
     }
     else if(pMsg->method == ATT_HANDLE_VALUE_NOTI)
     {
-        PRINT("Receive noti: %x\n", *pMsg->msg.handleValueNoti.pValue);
+        if(pMsg->msg.handleValueNoti.len > 0)
+        {
+            PRINT("Receive noti: %x\n", *pMsg->msg.handleValueNoti.pValue);
+        }
     }
     else if(centralDiscState != BLE_DISC_STATE_IDLE)
     {
@@ -534,7 +540,10 @@ static void centralEventCB(gapRoleEvent_t *pEvent)
     {
         case GAP_DEVICE_INIT_DONE_EVENT:
         {
+            uint8_t ownAddr[6];
             PRINT("Discovering...\n");
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             GAPRole_CentralStartDiscovery(DEFAULT_DISCOVERY_MODE,
                                           DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                           DEFAULT_DISCOVERY_WHITE_LIST);
@@ -659,7 +668,7 @@ static void centralEventCB(gapRoleEvent_t *pEvent)
 }
 
 /*********************************************************************
- * @fn      pairStateCB
+ * @fn      centralPairStateCB
  *
  * @brief   Pairing state callback.
  *
@@ -707,7 +716,7 @@ static void centralPairStateCB(uint16_t connHandle, uint8_t state, uint8_t statu
  *
  * @brief   Passcode callback.
  *
- * @return  noney
+ * @return  none
  */
 static void centralPasscodeCB(uint8_t *deviceAddr, uint16_t connectionHandle,
                               uint8_t uiInputs, uint8_t uiOutputs)

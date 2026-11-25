@@ -14,7 +14,7 @@
 /*********************************************************************
  * @fn      SwitchImageFlag
  *
- * @brief   切换dataflash里的Flag,若想切换到IAP，则将该flag设置为ImageFlag_USER_PROGRAM_CALL_IAP，跳转到0位置即可
+ * @brief   切换dataflash里的Flag,若想切换到IAP，则将该flag设置为FLAG_USER_CALL_IAP，跳转到0位置即可
  *
  * @param   new_flag    - 切换的Flag
  *

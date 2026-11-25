@@ -30,16 +30,16 @@ const uint8_t HIDDescr[] = {  0x06, 0x00,0xff,
                               0x09, 0x01,
                               0xa1, 0x01,                                                   //集合开始
                               0x09, 0x02,                                                   //Usage Page  用法
-                              0x15, 0x00,                                                   //Logical  Minimun
-                              0x26, 0x00,0xff,                                              //Logical  Maximun
+                              0x15, 0x00,                                                   //Logical  Minimum
+                              0x26, 0x00,0xff,                                              //Logical  Maximum
                               0x75, 0x08,                                                   //Report Size
-                              0x95, 0x40,                                                   //Report Counet
+                              0x95, 0x40,                                                   //Report Count
                               0x81, 0x06,                                                   //Input
                               0x09, 0x02,                                                   //Usage Page  用法
-                              0x15, 0x00,                                                   //Logical  Minimun
-                              0x26, 0x00,0xff,                                              //Logical  Maximun
+                              0x15, 0x00,                                                   //Logical  Minimum
+                              0x26, 0x00,0xff,                                              //Logical  Maximum
                               0x75, 0x08,                                                   //Report Size
-                              0x95, 0x40,                                                   //Report Counet
+                              0x95, 0x40,                                                   //Report Count
                               0x91, 0x06,                                                   //Output
                               0xC0};
 
@@ -479,7 +479,7 @@ void DevWakeup(void)
 {
     R16_PIN_CONFIG &= ~(RB_UDP_PU_EN);
     R8_UDEV_CTRL |= RB_UD_LOW_SPEED;
-    mDelaymS(2);
+    mDelaymS(8);
     R8_UDEV_CTRL &= ~RB_UD_LOW_SPEED;
     R16_PIN_CONFIG |= RB_UDP_PU_EN;
 }
@@ -507,7 +507,7 @@ void DebugInit(void)
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint8_t s;
     HSECFG_Capacitance(HSECap_18p);

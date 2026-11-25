@@ -37,7 +37,6 @@
 #include "los_interrupt.h"
 #include "los_membox.h"
 #include "los_memory.h"
-#include "los_task.h"
 #include "los_sched.h"
 #include <stdint.h>
 
@@ -167,6 +166,8 @@ static UINT32 OsQueueCreate(const CHAR *queueName,
         unusedQueue = LOS_DL_LIST_FIRST(&(g_freeQueueList));
     }
 #else
+    (void)staticMem;
+
     queue = (UINT8 *)LOS_MemAlloc(m_aucSysMem0, (UINT32)len * msgSize);
     if (queue == NULL) {
         return LOS_ERRNO_QUEUE_CREATE_NO_MEMORY;
@@ -451,6 +452,10 @@ LITE_OS_SEC_TEXT UINT32 LOS_QueueReadCopy(UINT32 queueID,
     }
 
     operateType = OS_QUEUE_OPERATE_TYPE(OS_QUEUE_READ, OS_QUEUE_HEAD, OS_QUEUE_NOT_POINT);
+
+    OsHookCall(LOS_HOOK_TYPE_QUEUE_READ_COPY, (LosQueueCB *)GET_QUEUE_HANDLE(queueID),
+               operateType, *bufferSize, timeOut);
+
     return OsQueueOperate(queueID, operateType, bufferAddr, bufferSize, timeOut);
 }
 
@@ -485,6 +490,10 @@ LITE_OS_SEC_TEXT UINT32 LOS_QueueWriteCopy(UINT32 queueID,
     }
 
     operateType = OS_QUEUE_OPERATE_TYPE(OS_QUEUE_WRITE, OS_QUEUE_TAIL, OS_QUEUE_NOT_POINT);
+
+    OsHookCall(LOS_HOOK_TYPE_QUEUE_WRITE_COPY, (LosQueueCB *)GET_QUEUE_HANDLE(queueID),
+               operateType, bufferSize, timeOut);
+
     return OsQueueOperate(queueID, operateType, bufferAddr, &bufferSize, timeOut);
 }
 

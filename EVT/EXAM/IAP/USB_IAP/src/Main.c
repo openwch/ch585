@@ -23,7 +23,7 @@
  * @return  none
  */
 __HIGH_CODE
-void mySetSysClock()
+void mySetSysClock(void)
 {
     R32_SAFE_MODE_CTRL |= RB_XROM_312M_SEL;
     R8_SAFE_MODE_CTRL &= ~RB_SAFE_AUTO_EN;
@@ -54,7 +54,7 @@ void mySetSysClock()
  * @return  None.
  */
 __attribute__((section(".highcode")))
-void Main_Circulation()
+void Main_Circulation(void)
 {
     uint16_t j = 0;
     while (1)
@@ -87,7 +87,7 @@ IAPDataFlashInfo_t p_image_flash;
  *
  * @return  none
  */
-int main()
+int main(void)
 {
     uint16_t i;
     uint8_t  s;

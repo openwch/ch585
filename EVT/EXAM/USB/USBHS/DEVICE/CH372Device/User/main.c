@@ -29,7 +29,7 @@
 /*********************************************************************
  * @fn      DebugInit
  *
- * @brief   µ÷ÊÔ³õÊ¼»¯
+ * @brief   Debug initialization
  *
  * @return  none
  */

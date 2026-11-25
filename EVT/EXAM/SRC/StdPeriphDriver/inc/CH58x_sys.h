@@ -2,7 +2,7 @@
  * File Name          : CH58x_SYS.h
  * Author             : WCH
  * Version            : V1.2
- * Date               : 2021/11/17
+ * Date               : 2026/10/16
  * Description        : head file(ch585/ch584)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -29,7 +29,7 @@ typedef enum
     RST_STATUS_WTR,    // 看门狗超时复位
     RST_STATUS_MR,     // 外部手动复位
     RST_STATUS_LRM0,   // 唤醒复位-软复位引起
-    RST_STATUS_GPWSM,  // 下电模式唤醒复位
+    RST_STATUS_GRWSM,  // 下电模式唤醒复位
     RST_STATUS_LRM1,   //	唤醒复位-看门狗引起
     RST_STATUS_LRM2,   //	唤醒复位-手动复位引起
 

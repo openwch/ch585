@@ -1,5 +1,5 @@
 
-Nanjing Qinheng Microelectronics Co., Ltd. 2025.05
+Nanjing Qinheng Microelectronics Co., Ltd. 2026.10
 
 http://wch-ic.com
 
@@ -11,142 +11,187 @@ Directory
   |      |      |-- EXAM: 
   |      |      |      |-- SRC  
   |      |      |      |      |-- Ld: link file
-  |      |      |      |      |-- RVMSIS: kernal system header file
+  |      |      |      |      |-- RVMSIS: kernel system header file
   |      |      |      |      |-- Startup: CH58x startup file
   |      |      |      |      |-- StdPeriphDriver: basic peripheral driver source file and header file
-  |      |      |      |-- ADC: ADC sampling routines, including temperature detection, single channel detection, differential channel detection, TouchKey detection and interrupt sampling
-  |      |      |      |-- FLASH: on-chip flash routines: erase/read/write Code area and DataFlash area
-  |      |      |      |-- FreeRTOS: FreeRTOS porting routine
-  |      |      |      |-- HarmonyOS: HarmonyOS porting routine
-  |      |      |      |-- RT-Thread: RT-Thread porting routine
-  |      |      |      |-- I2C: I2C routines, master/slave mode, data transceiver
-  |      |      |      |-- LCD: LCD routines, including LCD display and LCD sleep
-  |      |      |      |-- LED LED routines, LED screen controller interface demonstration
+  |      |      |      |-- ADC
+  |      |      |      |      |-- ADC_DMA: ADC single-channel DMA sampling routine, PA4(AIN0) automatically samples 40 points continuously
+  |      |      |      |      |-- ADC_Differential: ADC differential channel sampling routine, PA4(AIN0)-PA12(AIN2) differential input
+  |      |      |      |      |-- ADC_Interrupt: ADC single-channel interrupt sampling routine, PA5(AIN1) samples 20 points
+  |      |      |      |      |-- ADC_Scan: ADC scan mode routine, automatic scanning of 14 channels + DMA (print pin is PB7 in scan mode)
+  |      |      |      |      |-- ADC_SingleChannel: ADC single-channel sampling routine, PA4(AIN0) with coarse calibration
+  |      |      |      |      |-- ADC_Temperature: ADC temperature detection routine, internal temperature sensor sampling and temperature conversion
+  |      |      |      |      |-- ADC_TouchKey: ADC TouchKey sampling routine, ADC channel 2 corresponding to PA12
+  |      |      |      |-- CC: CrossConnect routine, a one-stop development platform for IoT developers, see https://iot.wch.cn/ach/resources/overview/ for details
+  |      |      |      |-- FLASH: on-chip flash routines: erase/read/write and verification of Flash-ROM and Data-Flash (EEPROM), with valid address range check
+  |      |      |      |-- FreeRTOS: FreeRTOS-Kernel V11.3.0 porting routine for the QingKe V3C RISC-V core, hardware stacking by default, optional interrupt nesting, multi-task demo
+  |      |      |      |-- HarmonyOS: kernel_liteos_m (OpenHarmony-6.1-LTS) porting routine for the QingKe V3C RISC-V core, hardware stacking by default, optional interrupt nesting, multi-task demo
+  |      |      |      |-- RT-Thread: RT-Thread Nano V4.1.1 porting routine for the QingKe V3C RISC-V core, hardware stacking by default, optional interrupt nesting, multi-thread demo
+  |      |      |      |-- I2C: I2C routines, master/slave mode selected by macro, data transceiver, refer to the PDF document in the routine directory for details
+  |      |      |      |-- LCD: LCD routine, configures duty/bias and writes display data, demonstrates LCD display and LCD sleep (sleep driver runs in RAM)
+  |      |      |      |-- LED: LED routine, LED screen controller interface demonstration, drives LED screen in serial mode, supports DMA transmission, data bit order and output polarity configuration
   |      |      |      |-- NFCA
-  |      |      |      |      |-- NFCA_LIB: ISO14443-3A and Universal M1 Encryption Algorithm Library Universal File
-  |      |      |      |      |-- PCD: 
-  |      |      |      |      |      |-- PCD_COMMON: NFC-A PCD Reader Universal Code File
-  |      |      |      |      |      |-- MifareClassic: MifareClassic Card Operation Example Project
-  |      |      |      |      |-- PCD_SOFT:
-  |      |      |      |      |      |-- PCD_SOFT_COMMON: NFC-A PCD Software Decoding Reader Universal Code File
-  |      |      |      |      |      |-- SoftPCDMifareClassic: PCD Software-Decoding Reader Example Project for Mifare Classic Cards
-  |      |      |      |      |-- PICC: 
-  |      |      |      |      |      |-- PICC_COMMON: NFC Card Mode Universal Code File
-  |      |      |      |      |      |-- PICC_M1: NFC card mode simulation M1 card example project
-  |      |      |      |      |      |-- PICC_T2T: NFC Card Mode Emulation of NFC Forum Type 2 Tag Example Project
+  |      |      |      |      |-- NFCA_LIB: NFCA code library files and ISO14443-3A protocol files
+  |      |      |      |      |-- PCD: NFC-A PCD reader routines (hardware decoding)
+  |      |      |      |      |      |-- PCD_COMMON: NFC-A PCD reader universal code file
+  |      |      |      |      |      |-- MifareClassic: PCD reader example project for MifareClassic card operations
+  |      |      |      |      |      |-- NTAG21x: PCD reader example project for NTAG21x card operations
+  |      |      |      |      |-- PCD_SOFT: NFC-A PCD reader routines (software decoding)
+  |      |      |      |      |      |-- PCD_SOFT_COMMON: NFC-A PCD software-decoding reader universal code file
+  |      |      |      |      |      |-- SoftPCDMifareClassic: PCD software-decoding reader example project for MifareClassic card operations
+  |      |      |      |      |      |-- SoftPCDNTAG21x: PCD software-decoding reader example project for NTAG21x card operations
+  |      |      |      |      |-- PICC: NFC card mode routines
+  |      |      |      |      |      |-- PICC_COMMON: NFC card mode universal code file
+  |      |      |      |      |      |-- PICC_M1: NFC card mode M1 card emulation example project
+  |      |      |      |      |      |-- PICC_T2T: NFC card mode NFC Forum Type2 tag emulation example project
   |      |      |      |      |-- CH585 NFC Card Reader Application Guide.pdf
+  |      |      |      |      |-- NFC-Reader Antenna Tuning Tool.xlsx
   |      |      |      |-- IAP
-  |      |      |      |      |-- APP: APP program routine used with IAP 
-  |      |      |      |      |-- USB_IAP: Routine to update on-chip program via USB 
-  |      |      |      |      |-- USBHS_IAP: Routine to update on-chip program via High-speed USB 
-  |      |      |      |      |-- UART_IAP: Routines to update the on-chip program via UART 
+  |      |      |      |      |-- APP: APP program routine used with IAP, switches between IAP/APP by the DataFlash flag, and demonstrates jumping to IAP
+  |      |      |      |      |-- USB_IAP: IAP routine that receives firmware via USB and updates the on-chip program
+  |      |      |      |      |-- USBHS_IAP: IAP routine that receives firmware via high-speed USB and updates the on-chip program
+  |      |      |      |      |-- UART_IAP: IAP routine that receives firmware via UART and updates the on-chip program
   |      |      |      |      |-- WCHMcuIAP_WinAPP: IAP PC tools and source code
-  |      |      |      |-- PM: Syetem sleep mode and wake-up routine: GPIOA_5 as wake-up source, four power consumption levels
-  |      |      |      |-- PWMX: PWM4-11 output routine
-  |      |      |      |-- SPI: SPI routine, master/slave mode, data transceiver
-  |      |      |      |-- TMR: Timer routine  
+  |      |      |      |-- PM: system sleep mode and wake-up routine: GPIOA_5 as wake-up source, demonstrates IDLE/Halt/Sleep/Shutdown four sleep levels in turn
+  |      |      |      |-- WWDG: system watchdog routine, demonstrates periodic feeding and system reset triggered by stopping feeding, and prints the last reset cause
+  |      |      |      |-- IWDG: independent watchdog routine driven by the internal dedicated low-speed clock, demonstrates periodic feeding and system reset triggered by stopping feeding
+  |      |      |      |-- PWMX
+  |      |      |      |      |-- PWMX_8Bit: PWM4-PWM10 8-bit resolution PWM output routine
+  |      |      |      |      |-- PWMX_16Bit: PWM4-PWM9 16-bit resolution PWM output routine
+  |      |      |      |-- SPI
+  |      |      |      |      |-- SPI0_8Bit: SPI0 routine: normal mode (8bit) data transceiver, single-byte/FIFO multi-byte/DMA mode, master/slave selected by macro
+  |      |      |      |      |-- SPI1_8Bit: SPI1 routine: master mode (8bit) data transceiver, single-byte/FIFO multi-byte (only CH585 supports SPI1)
+  |      |      |      |-- TMR
+  |      |      |      |      |-- TMR0_TimerInterrupt: TMR0 timer interrupt routine, toggles PB15 LED every 100ms
+  |      |      |      |      |-- TMR1_Capture: TMR1 capture routine, PA10 edge capture + DMA storage (PA10 is the LSE crystal pin, LSE needs to be turned off)
+  |      |      |      |      |-- TMR2_DMAPWM: TMR2 DMA PWM routine, remapped output on PB11, DMA cyclically changes the duty cycle
+  |      |      |      |      |-- TMR2_ExternalCount: TMR2 external pulse counting routine, remapped input on PB11, interrupt when the count reaches 1000
+  |      |      |      |      |-- TMR3_PWM: TMR3 PWM output routine, PB22 outputs 100us period and 50% duty cycle
   |      |      |      |-- TOUCH
-  |      |      |      |      |-- TKYLIB: Touch library files and their header files
-  |      |      |      |      |-- Touch_EX001: Comprehensive demonstration of touch applications, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB
-  |      |      |      |      |-- Touch_EX001_ble: Comprehensive demonstration of touch applications integrated with Bluetooth communication, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB. It supports reporting touch key values, touch wheel position values, and touch slider position values to debugging devices via Bluetooth connection
-  |      |      |      |      |-- Touch_EX002: Demonstration of 8-channel touch button application for touch functionality, designed for use with EVB
-  |      |      |      |      |-- Touch_EX002_ble: Demonstration of 8-channel touch button application integrated with Bluetooth communication, designed for use with EVB. It supports reporting touch button values to debugging devices via Bluetooth connection
-  |      |      |      |      |-- WCH Touch Library User Manual.PDF
-  |      |      |      |-- UART1: UART1 receive/transmit routine
+  |      |      |      |      |-- TKYLIB: touch library files and their header files
+  |      |      |      |      |-- Touch_EX001: comprehensive demonstration of touch applications, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB
+  |      |      |      |      |-- Touch_EX001_ble: comprehensive demonstration of touch applications integrated with Bluetooth communication, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB. It supports reporting touch key values, touch wheel position values, and touch slider position values to debugging devices via Bluetooth connection
+  |      |      |      |      |-- Touch_EX002: demonstration of 8-channel touch button application, designed for use with EVB
+  |      |      |      |      |-- Touch_EX002_ble: demonstration of 8-channel touch button application integrated with Bluetooth communication, designed for use with EVB. It supports reporting touch button values to debugging devices via Bluetooth connection
+  |      |      |      |      |-- Touch_EX002_ble_CS10: demonstration of 8-channel touch button application integrated with Bluetooth communication (CS10 scheme), designed for use with EVB. It supports reporting touch button values to debugging devices via Bluetooth connection
+  |      |      |      |      |-- WCH Touch Library User Manual.pdf
+  |      |      |      |-- TOUCH_CT
+  |      |      |      |      |-- TKYLIB: charge-transfer touch library files and their header files
+  |      |      |      |      |-- Touch_EX001_CT: comprehensive demonstration of charge-transfer touch applications, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB
+  |      |      |      |      |-- Touch_EX001_ble_CT: comprehensive demonstration of charge-transfer touch applications integrated with Bluetooth communication, including touch slider, touch wheel, touch button, and proximity sensing, designed for use with EVB. It supports reporting touch key values, touch wheel position values, and touch slider position values to debugging devices via Bluetooth connection
+  |      |      |      |      |-- Touch_EX002_CT: demonstration of 8-channel touch button application for charge-transfer touch functionality, designed for use with EVB
+  |      |      |      |      |-- Touch_EX002_ble_CT: demonstration of 8-channel charge-transfer touch button application integrated with Bluetooth communication, designed for use with EVB. It supports reporting touch button values to debugging devices via Bluetooth connection
+  |      |      |      |      |-- Touch_Example: demonstrates the lowest-level channel data sampling of the charge-transfer touch library, using the underlying API directly without the encapsulation layer (Touch.c)
+  |      |      |      |      |-- WCH_touch_V3 Library User Guide.pdf
+  |      |      |      |-- UART1: UART1 transceiver routine, sends string by polling, receives and echoes data by interrupt
+  |      |      |      |-- SDI_Printf: SDI debug print routine, outputs printf messages through the SDI interface, view prints inside the IDE with the MounRiver debugger, no UART occupied
   |      |      |      |-- USB
   |      |      |      |      |-- Device
-  |      |      |      |      |      |-- COM: USB simulate CDC device routines
+  |      |      |      |      |      |-- COM: USB simulate CDC device routine, enumerates as a virtual serial port for bidirectional data transceiving, macro switchable to custom CH372 device mode
   |      |      |      |      |      |-- VendorDefinedDev: simulate custom USB devices (CH372 device) routine, provide eight non-zero channels (upload + download), implement that data is first downloaded, and then the data content is reversed and uploaded
-  |      |      |      |      |      |-- CompoundDev: simulate keyboard/mouse routine, support HID class commands 
-  |      |      |      |      |      |-- CompoundU2Dev: USB2 simulate keyboard/mouse routine, support HID class commands 
-  |      |      |      |      |      |-- HID_CompliantDev: USB simulate HID compliant device routines
+  |      |      |      |      |      |-- CompoundDev: USB simulate keyboard/mouse compound device routine, uploads keyboard and mouse reports, supports USB remote wakeup and HID class commands
+  |      |      |      |      |      |-- HID_CompliantDev: USB simulate HID compliant device routine, custom HID report, 64-byte interrupt endpoint upload/download
+  |      |      |      |      |      |-- MSC_U-Disk_FS: USB full-speed device U-disk routine, supports on-chip Flash and external SPI-Flash on SPI0 as storage medium (selected by STORAGE_MEDIUM macro in SW_UDISK.h)
   |      |      |      |      |-- Host
-  |      |      |      |      |      |-- HostEnum:  simple enumeration procedure routine for USB devices
-  |      |      |      |      |      |-- HostAOA: USB host application routine, support connect to Android devices and communicate with APP
+  |      |      |      |      |      |-- HostEnum: USB host enumeration routine, enumerates HID keyboard/mouse and other devices on ROOT-HUB and the secondary ports of external HUB, and polls the interrupt endpoints for data transceiving
+  |      |      |      |      |      |-- HostAOA: USB host routine, connects to Android device and initiates AOA accessory mode, communicates with the APP
   |      |      |      |      |      |-- U_DISK: U disk file system routine
-  |      |      |      |      |      |      |-- EXAM1.C: C Programming Language exam, read/write file in bytes, including creating files, deleting files, modifying file attribute, and modifying file name  
-  |      |      |      |      |      |      |-- EXAM10.C: C Programming Language exam, including creating files, deleting files, modifying file attribute, and modifying file name  
-  |      |      |      |      |      |      |-- EXAM11.C: C Programming Language exam, enumerate files in the root directory or specified directory  
-  |      |      |      |      |      |      |-- EXAM13.C: C Programming Language exam, create files with long file name  
+  |      |      |      |      |      |      |-- EXAM1.C: C example source program, read/write file in bytes, including creating files, deleting files, modifying file attribute, and modifying file name  
+  |      |      |      |      |      |      |-- EXAM10.C: C example source program, including creating files, deleting files, modifying file attribute, and modifying file name  
+  |      |      |      |      |      |      |-- EXAM11.C: C example source program, enumerate files in the root directory or specified directory  
+  |      |      |      |      |      |      |-- EXAM13.C: C example source program, create files with long file name  
   |      |      |      |      |      |-- USB_LIB: U disk file system library file
-  |      |      |      |      |-- USBHS 
+  |      |      |      |      |-- USBHS
   |      |      |      |      |      |-- DEVICE
-  |      |      |      |      |      |      |-- CH372:Simulates a custom USB device (CH372 device) with endpoints 1, 3 down and 2, 4 up. Data down from endpoint 1 is uploaded from endpoint 3 and not reversed, and data down from endpoint 2 is uploaded from endpoint 4 and reversed.
-  |      |      |      |      |      |      |-- Compatibility_HID:Simulates HID devices, with data transmitted up and down through the serial port.
-  |      |      |      |      |      |      |-- CompositeKM:Simulate keyboard and mouse, use IO to simulate keystrokes, while simulated data can be uploaded through serial port 2.
-  |      |      |      |      |      |      |-- MSC_U-Disk: Smulates a simple USB flash drive, optionally using on-chip Flash or external SPI-Flash
-  |      |      |      |      |      |      |-- MSC_CD-ROM: Simulate CDROM, need external SPI-Flash
-  |      |      |      |      |      |      |-- SimulateCDC:Simulate a CDC serial port and use serial port 2 to send and receive.
-  |      |      |      |      |      |      |-- SimulateCDC-HID:Simulate a CDC serial port, use serial port 2 to send and receive, HID interrupt endpoints to send and receive data to reverse and upload.  
+  |      |      |      |      |      |      |-- CH372Device: simulates a custom USB device (CH372 device) with endpoints 1, 3 down and 2, 4 up. Data down from endpoint 1 is uploaded from endpoint 3 and not reversed, and data down from endpoint 2 is uploaded from endpoint 4 and reversed
+  |      |      |      |      |      |      |-- CompatibilityHID: simulates HID devices, with data transmitted up and down through the serial port
+  |      |      |      |      |      |      |-- CompositeKM: simulates keyboard and mouse, uses IO to simulate keystrokes, while simulated data can be uploaded through serial port 2
+  |      |      |      |      |      |      |-- MSC_U-Disk: simulates a simple USB flash drive, optionally using on-chip Flash or external SPI-Flash
+  |      |      |      |      |      |      |-- MSC_CD-ROM: simulates CDROM, needs external SPI-Flash
+  |      |      |      |      |      |      |-- SimulateCDC: simulates a CDC serial port and uses serial port 2 to send and receive
+  |      |      |      |      |      |      |-- SimulateCDC-HID: simulates a CDC serial port, uses serial port 2 to send and receive, HID interrupt endpoint receiving data reversed and uploading
   |      |      |      |      |      |-- HOST_IAP
-  |      |      |      |      |      |      |-- APP: APP used with HOST_IAP, the project has modified the starting location of the program, after compilation, you need to convert the file into a bin file and rename it to APP.bin
-  |      |      |      |      |      |      |-- HOST_IAP:  The host U disk IAP routine based on the U disk read file routine finishing, read the file with the name bit APP.bin from the U disk, write it to the internal flash, check it and jump automatically.
-  |      |      |      |      |      |-- HOST_KM: The host operates the keypad, gets the data of the endpoints uploaded by the keypad and prints it, supports U-port under level 1 hub
-  |      |      |      |      |      |-- HOST_MTP_FileSystem:Enumeration process of a USB host to a device that supports MTP and PTP protocols, supports MTP and PTP protocols, and reads its files
-  |      |      |      |      |      |-- Host_Udisk:USB host operation USB disk routine 
-  |      |      |      |      |      |-- Udisk_Lib:U disk file system library file 
+  |      |      |      |      |      |      |-- HOST_APP: APP used with HOST_IAP, the project has modified the starting location of the program, after compilation, you need to convert the file into a bin file and rename it to APP.bin
+  |      |      |      |      |      |      |-- HOST_IAP: host U disk IAP routine based on the U disk file reading routine, reads the file named APP.bin from the U disk, writes it to the internal flash, and jumps automatically after verification
+  |      |      |      |      |      |-- HOST_KM: host operates keyboard/mouse, gets the data of the endpoints uploaded by the keyboard/mouse and prints it, supports level 1 hub under the USB port
+  |      |      |      |      |      |-- HOST_MTP_FileSystem: USB host enumerates a device supporting MTP and PTP protocols, and reads its files
+  |      |      |      |      |      |-- Host_UDisk_Exams: USB host operating U disk routine
+  |      |      |      |      |      |-- Udisk_Lib: U disk file system library file
+  |      |      |      |-- GUI
+  |      |      |      |      |-- WCH-GUI-FLASH: GUI library (FLASH resource page version), with a companion host computer tool to generate static resource pages, deployable in external Flash (GUI_ExternalFlash) or in on-chip Flash (GUI_Onflash); low CPU usage, image-blitting oriented
+  |      |      |      |      |-- WCH-GUI-LIVE: Lightweight real-time drawing GUI library; widget appearances are drawn in real time at MCU runtime, saving storage resources; drawing oriented
   |      |      |      |-- BLE
-  |      |      |      |      |-- Broadcaster: broadcaster routine, always broadcast when in broadcast status
-  |      |      |      |      |-- CyclingSensor: cycling sensor routine, upload speed and cadence regularly after connected to the host
-  |      |      |      |      |-- CentPeri: central-peripheral routine, integrate the function of central routine and peripheral routine and run simultaneously
-  |      |      |      |      |-- Central: central routine, actively scan surrounding devices, conect to the specified peripheral address, search custom service and characteristic, execute read/write commands, peripheral routine is needed, and modify the peripheral address to the routine target address, (84:C2:E4:03:02:02) by default
-  |      |      |      |      |-- HeartRate: heart rate routine, upload heart rate regularly after connected to the central
-  |      |      |      |      |-- Peripheral: peripheral role routine, custom including five services with different  attributes, including read attribute, write attribute, notify attribute, read/write attribute, and safe and readable attribute
-  |      |      |      |      |-- peripheral_ancs_client: peripheral role routine, including Apple Notification Center Service
-  |      |      |      |      |-- RunningSensor: running sensor routine,upload rate regularly after connected to the central 
-  |      |      |      |      |-- HID_Keyboard: BLE keyboard routine, simulate a keyboard device, upload key value regularly after connected to the central
-  |      |      |      |      |-- HID_Mouse: BLE mouse routine, simulate a mouse device, upload key value regularly after connected to the central
-  |      |      |      |      |-- HID_Consumer: BLE consumer routine, simulate user control device, upload volume key down key regularly after connected to the central
-  |      |      |      |      |-- HID_Touch: BLE touch routine, simulate a touch pencil device,  upload touch value regularly after connected to the central
-  |      |      |      |      |-- HID_BTSSP_NFC: NFC Swipe for Secure Bluetooth HID Connection Example Routine
-  |      |      |      |      |-- MultiCentral: multicentral routine, actively scan surrounding devices, conect to the specified three peripheral addresses, search custom services and characteristics, execute read/write commands, peripheral routine is needed, and modify the peripheral address to this routine target address, the addresses of these peripherals are (84:C2:E4:03:02:02), (84:C2:E4:03:02:03) and (84:C2:E4:03:02:04) by default
-  |      |      |      |      |-- Observer: observer routine, scan regularly, print the scanned broadcast address if the scanning result is not empty
-  |      |      |      |      |-- Direct_Test_Mode£ºDTM test routine, combined with RF test tools
-  |      |      |      |      |-- RF_Basic: basic mode transmission and reception routine by 2.4G library 
-  |      |      |      |      |-- RF_PHY: non-standard wireless transceiver routines
-  |      |      |      |      |-- RF_PHY_Hop: non-standard wireless frequency hopping transceiver routine
-  |      |      |      |      |-- IoCHub-Net: BLE+IoChub Simple Light Control Switch Routine
+  |      |      |      |      |-- Broadcaster: broadcaster routine, always broadcasts in the broadcasting state
+  |      |      |      |      |-- CyclingSensor: cycling sensor routine, uploads speed and cadence regularly after connected to the host
+  |      |      |      |      |-- CentPeri: central-peripheral routine, integrates the functions of the central routine and the peripheral routine and runs simultaneously
+  |      |      |      |      |-- Central: central routine, actively scans surrounding devices, connects to the specified peripheral address, searches custom service and characteristic, executes read/write commands, peripheral routine is needed, and modify the peripheral address to the routine target address, (84:C2:E4:03:02:02) by default
+  |      |      |      |      |-- HeartRate: heart rate routine, uploads heart rate regularly after connected to the central
+  |      |      |      |      |-- Peripheral: peripheral role routine, custom including five services with different attributes, including read attribute, write attribute, notify attribute, read/write attribute, and safe and readable attribute
+  |      |      |      |      |-- Peripheral_ancs_client: peripheral role routine, including Apple Notification Center Service (ANCS)
+  |      |      |      |      |-- RunningSensor: running sensor routine, uploads speed regularly after connected to the central
+  |      |      |      |      |-- HID_Keyboard: BLE keyboard routine, simulates a keyboard device, uploads key value regularly after connected to the central
+  |      |      |      |      |-- HID_Mouse: BLE mouse routine, simulates a mouse device, uploads key value regularly after connected to the central
+  |      |      |      |      |-- HID_Consumer: BLE consumer routine, simulates user control device, uploads volume key down key regularly after connected to the central
+  |      |      |      |      |-- HID_Touch: BLE touch routine, simulates a touch pencil device, uploads touch value regularly after connected to the central
+  |      |      |      |      |-- HID_BTSSP_NFC: NFC swipe for secure Bluetooth HID connection routine, emulates an NFC Forum Type2 tag storing Bluetooth information, supported devices can connect by swiping
+  |      |      |      |      |-- HID_CompositeKMCS: BLE composite HID remote control routine, keyboard, mouse, consumer and system control HID reports combined in one device
+  |      |      |      |      |-- HID_MobileController: BLE HID remote control routine, after a phone connects over BLE the keys map to Android touchscreen slide/tap and volume key actions, usable for video scrolling and photo taking, camera touch point calibratable and saved to DataFlash
+  |      |      |      |      |-- MultiCentPeri: multi-central multi-peripheral routine, supports connecting three centrals and three peripherals simultaneously
+  |      |      |      |      |-- MultiCentral: multi-connection central routine, actively scans surrounding devices, connects to the specified three peripheral addresses, searches custom services and characteristics, executes read/write commands, peripheral routines are needed, and modify the peripheral addresses to the routine target addresses, the addresses of these peripherals are (84:C2:E4:03:02:02), (84:C2:E4:03:02:03) and (84:C2:E4:03:02:04) by default
+  |      |      |      |      |-- Observer: observer routine, scans regularly, prints the scanned broadcast address if the scanning result is not empty
+  |      |      |      |      |-- Direct_Test_Mode: DTM test routine, combined with RF test tools
+  |      |      |      |      |-- RF_Basic_Rx: basic mode receive test routine by 2.4G library (RX role)
+  |      |      |      |      |-- RF_Basic_Tx: basic mode transmit test routine by 2.4G library (TX role)
+  |      |      |      |      |-- RF_PHY_Rx: non-standard wireless receive routine (RX role), used with RF_PHY_Tx
+  |      |      |      |      |-- RF_PHY_Tx: non-standard wireless transmit routine (TX role), used with RF_PHY_Rx
+  |      |      |      |      |-- IoCHub_NET: BLE+IoChub simple light control switch routine, the mobile phone connects to the development board through the IoChub gateway to control the light, and the physical key switch state is reported
+  |      |      |      |      |-- LWNS: LWNS lightweight wireless network stack routine, supports CSMA/Bluetooth Mesh/no-MAC adapters, provides examples of broadcast, unicast, multicast, controlled flood, mesh networking, etc.
   |      |      |      |      |-- MESH
-  |      |      |      |      |      |-- adv_ali_light: Tmall Genie light routine, devices can be found and provisioned network via Tmall Genie, to control the switch state. By default, only switch attribute can be controlled. If other attributes (brightness, power, temperature, etc.) are needed, add the corresponding processing function and status report function according to the attribute description of the Alibaba Cloud product configuration.
-  |      |      |      |      |      |-- adv_ali_light_add_lightness: MESH general attribute adding routine. On the basis of the Tmall Genie light routine, the brightness attribute is added, which is used to compare the original Tmall Genie light routine to quickly become familiar with the method of adding other MESH general attributes.
-  |      |      |      |      |      |-- adv_ali_light_add_windspeed: Tmall definition attribute adding routine. On the basis of the Tmall Genie light routine, the wind speed attribute is added, which is used to compare the original Tmall Genie light routine to quickly become familiar with the method of adding other Tmall definition attributes.
-  |      |      |      |      |      |-- adv_ali_light_multi_element: Multi-element fan lamp, which is used to compare the original Tmall Genie light routine to quickly become familiar with the method of adding multi-element Tmall definition attributes.
-  |      |      |      |      |      |-- adv_ali_light_with_peripheral: Based on the Tmall Genie light routine, add brightness and color temperature controls, it supports the connection control of BLE debugging tool on the mobile phone.
-  |      |      |      |      |      |-- adv_proxy: proxy node routine, which can be used to provision network through the PV_GATT layer (BLE connection).
-  |      |      |      |      |      |-- adv_vendor: vendor-defined model routine, used with provisioner_vendor, supports two communication attributes of response transmission and non-response transparent transmission, and develops the communication protocol by yourself.
-  |      |      |      |      |      |-- adv_vendor_friend: based on vendor-defined model routine, support friend node function
-  |      |      |      |      |      |-- adv_vendor_low_power: On the basis of the vendor custom model routine, support low-power node functions and should be used with friend nodes
-  |      |      |      |      |      |-- adv_vendor_self_provision: On the basis of the vendor custom model routine, support local provision
-  |      |      |      |      |      |-- adv_vendor_self_provision_IAP£ºMESH backup wireless upgrade IAP routine, detect the current code flag, judge whether to move the backup area code to the user area and run the user area code
-  |      |      |      |      |      |-- adv_vendor_self_provision_JumpIAP£ºMESH backup wireless upgrade jump IAP routines, placed at the start address of the code,  for jumping to the IAP program
-  |      |      |      |      |      |-- adv_vendor_self_provision_with_peripheral: MESH backup wireless upgrade user routine, On the basis of the vendor custom model routine, supports the connection control of the mobile phone BLE debugging assistant, receives the distribution network information through BLE and distributes the network itself. It is suitable for terminal control networking applications. It can formulate the communication protocol by itself to realize the mobile phone control all devices in the mesh network.
-  |      |      |      |      |      |-- provisioner_vendor: vendor-defined model self-provisioning network initiator routine, used with adv_vendor, automatically provision network to the surrounding devices without network, and add it to its own mesh network, support provision network to six devices by default . The default configuration device is bound with single APPKEY, which is used for response transmission and non-response transparent transmission, and the configuration device is bound with single subscription address, which is used for mass sending of unanswered messages
-  |      |      |      |      |      |-- provisioner_vendor_with_peripheral: Based on the vendor-defined model self-provisioning network initiator routine, can be connected and controlled by BLE debugging tool on the mobile phone, transfer the communication between the mobile phone and the mesh network, and can draw up the communication protocol to implement that all devices in mesh network can be controlled the mobile phone.
+  |      |      |      |      |      |-- adv_ali_light: Tmall Genie light routine, devices can be found and provisioned via Tmall Genie, to control the switch state. By default, only the switch attribute can be controlled. If other attributes (brightness, power, temperature, etc.) are needed, add the corresponding processing function and status report function according to the attribute description of the Alibaba Cloud product configuration.
+  |      |      |      |      |      |-- adv_ali_light_add_lightness: MESH general attribute adding routine. On the basis of the Tmall Genie light routine, the brightness attribute is added, which is used to compare with the original Tmall Genie light routine to quickly become familiar with the method of adding other MESH general attributes.
+  |      |      |      |      |      |-- adv_ali_light_add_windspeed: Tmall defined attribute adding routine. On the basis of the Tmall Genie light routine, the wind speed attribute is added, which is used to compare with the original Tmall Genie light routine to quickly become familiar with the method of adding other Tmall defined attributes.
+  |      |      |      |      |      |-- adv_ali_light_multi_element: multi-element Tmall Genie fan light routine, including fan switch/oscillation and light switch/color control, used to compare with the original Tmall Genie light routine to quickly become familiar with the method of adding multiple attributes.
+  |      |      |      |      |      |-- adv_ali_light_with_peripheral: based on the Tmall Genie light routine, adds brightness and color temperature controls, and supports the connection control of the BLE debugging assistant on the mobile phone.
+  |      |      |      |      |      |-- adv_proxy: proxy node routine, which can provision the network through the PB_GATT layer (BLE connection).
+  |      |      |      |      |      |-- adv_vendor: vendor-defined model routine, used with provisioner_vendor, supports two communication attributes of acknowledged transmission and unacknowledged transparent transmission, and develops the communication protocol by yourself.
+  |      |      |      |      |      |-- adv_vendor_friend: based on the vendor-defined model routine, supports the friend node function
+  |      |      |      |      |      |-- adv_vendor_low_power: based on the vendor-defined model routine, supports the low-power node function, and should be used with friend nodes
+  |      |      |      |      |      |-- adv_vendor_self_provision: based on the vendor-defined model routine, supports local self-provisioning, suitable for special application scenarios such as no provisioner or simplified provisioning process
+  |      |      |      |      |      |-- adv_vendor_self_provision_IAP: MESH backup wireless upgrade IAP routine, detects the current code flag, judges whether to move the backup area code to the user area and run the user area code
+  |      |      |      |      |      |-- adv_vendor_self_provision_JumpIAP: MESH backup wireless upgrade jump IAP routine, placed at the start address of the code, for jumping to the IAP program
+  |      |      |      |      |      |-- adv_vendor_self_provision_with_peripheral: MESH backup wireless upgrade user routine, based on the vendor-defined model routine, supports the connection control of the mobile phone BLE debugging assistant, receives the provisioning information through BLE and provisions itself, suitable for terminal control networking applications, can formulate the communication protocol by itself to realize the mobile phone controlling all devices in the mesh network.
+  |      |      |      |      |      |-- provisioner_vendor: vendor-defined model self-provisioning initiator routine, used with adv_vendor, automatically provisions the surrounding unprovisioned devices and adds them to its own mesh network, supports provisioning 6 devices by default. The default configuration device is bound with one APPKEY, used for acknowledged transmission and unacknowledged transparent transmission, and the configured device is bound with one subscription address, used for group sending of unacknowledged messages
+  |      |      |      |      |      |-- provisioner_vendor_with_peripheral: based on the vendor-defined model self-provisioning initiator routine, supports the connection control of the mobile phone BLE debugging assistant, relays the communication between the mobile phone and the mesh network, and can formulate the communication protocol to realize the mobile phone controlling all devices in the mesh network.
   |      |      |      |      |      |-- MESH_LIB: MESH protocol stack library file and header file
-  |      |      |      |      |      |-- Qinheng MESH APP Management Distribution Network Application Manual.pdf
+  |      |      |      |      |      |-- Qinheng MESH APP Management and Provisioning Application Manual.pdf
   |      |      |      |      |      |-- Qinheng Low Energy Bluetooth MESH Software Development Reference Manual.pdf
-  |      |      |      |      |-- BackupUpgrade_IAP: backup wireless upgrade IAP routine, detect the current code flag, judge whether to move the backup area code to the user area and run the user area code
-  |      |      |      |      |-- BackupUpgrade_JumpIAP: backup wireless upgrade jump IAP routines, placed at the start address of the code,  for jumping to the IAP program
-  |      |      |      |      |-- BackupUpgrade_OTA: backup wireless upgrade user routine, add OTA function based on peripheral slave routines, store the upgraded firmware to the backup area and jump to the IAP program to upgrade
-  |      |      |      |      |-- OnlyUpdateApp_IAP: the only library wireless upgrade IAP routine, with OTA function, upgrade the user area code after receiving the upgraded firmware
-  |      |      |      |      |-- OnlyUpdateApp_JumpIAP: the only library wireless upgrade and jump IAP routine, placed at the start address of the codes, for jumping to the IAP program
-  |      |      |      |      |-- OnlyUpdateApp_Peripheral: the only library wireless upgrade user routine, on the basis of peripheral routine, the jumping to IAP program is added for subsequent upgrades
-  |      |      |      |      |-- PAwR_ADV: Periodic advertising with response, advertising side routine
-  |      |      |      |      |-- PAwR_RSP: Periodic advertising with response, response side routine
-  |      |      |      |      |-- BLE_UART: BLE and UART transparent transmission routine, for detailed instructions, please refer to the <description.txt> document in the root directory
-  |      |      |      |      |-- BLE_USB: Bluetooth with USB routine, USB emulation 340 device forwards bluetooth data 
+  |      |      |      |      |-- BackupUpgrade_IAP: backup wireless upgrade IAP routine, detects the current code flag, judges whether to move the backup area code to the user area and run the user area code
+  |      |      |      |      |-- BackupUpgrade_JumpIAP: backup wireless upgrade jump IAP routine, placed at the start address of the code, for jumping to the IAP program
+  |      |      |      |      |-- BackupUpgrade_OTA: backup wireless upgrade user routine, adds OTA function based on the peripheral slave routine, stores the upgraded firmware to the backup area and jumps to the IAP program to upgrade
+  |      |      |      |      |-- OnlyUpdateApp_IAP: fixed-library wireless upgrade IAP routine, with OTA function, upgrades the user area code after receiving the upgraded firmware
+  |      |      |      |      |-- OnlyUpdateApp_JumpIAP: fixed-library wireless upgrade jump IAP routine, placed at the start address of the code, for jumping to the IAP program
+  |      |      |      |      |-- OnlyUpdateApp_Peripheral: fixed-library wireless upgrade user routine, adds jumping to the IAP program for subsequent upgrades based on the peripheral slave routine
+  |      |      |      |      |-- PAwR_ADV: periodic advertising with responses, advertising side routine
+  |      |      |      |      |-- PAwR_RSP: periodic advertising with responses, response side routine
+  |      |      |      |      |-- BLE_UART: BLE and UART transparent transmission routine, two 128-bit UUIDs correspond to serial receive/send by write-without-response and notify respectively, adaptive MTU (20-247), refer to the description document in the routine directory for details
+  |      |      |      |      |-- BLE_USB: Bluetooth with USB routine, USB simulates a CH340 device to forward Bluetooth data
   |      |      |      |      |-- SpeedTest_Peripheral: Bluetooth speed measurement slave routine
   |      |      |      |      |-- SpeedTest_Central: Bluetooth speed measurement host routine
-  |      |      |      |      |-- SYNC_ADV: cycle synchronization advertising routine
-  |      |      |      |      |-- SYNC_SCAN: cycle synchronization scanning routine
-  |      |      |      |      |-- HAL: Hardware-related files shared by routines
+  |      |      |      |      |-- SpeedTest_RF_Basic_Rx: 2.4G basic mode speed test receive routine (RX role), used with SpeedTest_RF_Basic_Tx
+  |      |      |      |      |-- SpeedTest_RF_Basic_Tx: 2.4G basic mode speed test transmit routine (TX role), used with SpeedTest_RF_Basic_Rx
+  |      |      |      |      |-- SYNC_ADV: periodic advertising synchronization transmit routine
+  |      |      |      |      |-- SYNC_SCAN: periodic advertising synchronization scanning routine
+  |      |      |      |      |-- HAL: hardware-related files shared by routines
   |      |      |      |      |-- LIB: BLE protocol stack library file and header file
-  |      |      |      |      |-- Qinheng Low Energy Bluetooth Software Development Reference Manual.pdf
   |      |      |      |      |-- WCH Bluetooth Over-the-Air Upgrade (BLE OTA).PDF
+  |      |      |      |      |-- Qinheng Low Energy Bluetooth Software Development Reference Manual.PDF
+  |      |      |      |      |-- WCH 2.4G User Guide.PDF
+  |      |      |      |      |-- WCH Development Tool Download.txt: centralized download and management of development tools, covering compilation, programming, debugging and analysis, basic drivers and auxiliary tools, with download navigation for Windows, macOS and Android platforms (https://www.wch.cn/downloads/WCHToolKit_ZIP.html)
   |      |      |      |      |-- BLE Certification: Product: WCH CH58x QDID: 179771
   |      |      |-- PUB
-  |      |      |      |-- SCHPCB: Reference schematic and PCB files
+  |      |      |      |-- SCHPCB: evaluation board and application reference schematics and PCB files
   |      |      |      |-- CH585 Evaluation Board Schematic (CH585SCH.pdf)
   |      |      |      |-- CH585 Evaluation Board User Manual.pdf
   |      |      |      |-- Important Considerations for Circuit and PCB Design of Bluetooth Chip.pdf
+  |      |      |      |-- Important Considerations for Touch Button PCB Layout Design.pdf
   |

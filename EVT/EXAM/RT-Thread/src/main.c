@@ -103,6 +103,8 @@ int main()
 {
     rt_enter_critical();
 
+    rt_kprintf("\n\nProgram build on: %s, %s\n\n", __DATE__, __TIME__);
+
     rt_thread_init(&task1_thread,
                    "task1",
                    task1_entry,

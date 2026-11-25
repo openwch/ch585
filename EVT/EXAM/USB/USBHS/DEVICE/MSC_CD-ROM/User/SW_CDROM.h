@@ -9,6 +9,9 @@
 * Attention: This software (modified or not) and binary are used for 
 * microcontroller manufactured by Nanjing Qinheng Microelectronics.
 *******************************************************************************/
+#ifndef __SW_CDROM_H
+#define __SW_CDROM_H
+
 #include "stdio.h"
 #include "stdlib.h"
 
@@ -145,4 +148,6 @@ extern void CDROM_Down_OnePack( uint8_t *pbuf, uint16_t packlen );
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

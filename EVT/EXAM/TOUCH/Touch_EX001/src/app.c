@@ -1,9 +1,9 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : app_tmos.C
+ * File Name          : app.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2023/8/5
- * Description        : ¥•√˛∞¥º¸¿˝≥Ã
+ * Description        : Ëß¶Êë∏ÊåâÈîÆ‰æãÁ®ã
  *******************************************************************************/
 
 /*********************************************************************
@@ -11,7 +11,7 @@
  */
 #include "Touch.h"
 #include "app.h"
-#include "LED.h"
+#include "backlight.h"
 /*********************
  *      DEFINES
  *********************/
@@ -20,8 +20,6 @@
  *      VARIABLES
  **********************/
 uint8_t volatile timerFlag = 0;
-uint8_t volatile TKY_ScanFlag = 0;
-extern volatile uint8_t led_scanflag;
 
 static const uint8_t touch_key_ch[ TOUCH_KEY_ELEMENTS ] = {TOUCH_KEY_CHS};
 KEY_T s_tBtn[TOUCH_KEY_ELEMENTS] = {0};
@@ -29,7 +27,7 @@ KEY_T s_tBtn[TOUCH_KEY_ELEMENTS] = {0};
 static const uint8_t touch_wheel_ch[ TOUCH_WHEEL_ELEMENTS ] = {TOUCH_WHEEL_CHS};
 uint16_t wheel_data[ TOUCH_WHEEL_ELEMENTS ] = {0};
 
-static const uint8_t touch_slidel_ch[ TOUCH_SLIDER_ELEMENTS ] = {TOUCH_SLIDER_CHS};
+static const uint8_t touch_slider_ch[ TOUCH_SLIDER_ELEMENTS ] = {TOUCH_SLIDER_CHS};
 uint16_t slider_data[ TOUCH_SLIDER_ELEMENTS ] = {0};
 
 touch_button_cfg_t p_selfkey = 
@@ -42,15 +40,15 @@ touch_button_cfg_t p_selfkey =
 touch_wheel_cfg_t p_wheel = {
     .num_elements = TOUCH_WHEEL_ELEMENTS,
     .p_elem_index = touch_wheel_ch,
-    .threshold = 200,
+    .threshold = 80,
     .decimal_point_percision = TOUCH_DECIMAL_POINT_PRECISION,
     .wheel_resolution = TOUCH_WHEEL_RESOLUTION,
     .pdata = wheel_data};
 
 touch_slider_cfg_t p_slider = {
     .num_elements = TOUCH_SLIDER_ELEMENTS,
-    .p_elem_index = touch_slidel_ch,
-    .threshold = 100,
+    .p_elem_index = touch_slider_ch,
+    .threshold = 50,
     .decimal_point_percision = TOUCH_DECIMAL_POINT_PRECISION,
     .slider_resolution = TOUCH_SLIDER_RESOLUTION,
     .pdata = slider_data
@@ -75,7 +73,7 @@ void TKY_WheelSliderLedProcess (uint16_t pros);
 /*********************************************************************
  * @fn      TKY_dataProcess
  *
- * @brief   ¥•√˛ ˝æ›¥¶¿Ì∫Ø ˝£®¬„≈‹£©£¨¥Ú”°ªÒ»°µΩµƒ∞¥º¸¥•∑¢«Èøˆ
+ * @brief   Ëß¶Êë∏Êï∞ÊçÆÂ§ÑÁêÜÂáΩÊï∞ÔºàË£∏Ë∑ëÔºâÔºåÊâìÂç∞Ëé∑ÂèñÂà∞ÁöÑÊåâÈîÆËß¶ÂèëÊÉÖÂÜµ
  *
  * @return  none
  */
@@ -96,7 +94,6 @@ void TKY_dataProcess (void)
 #if PRINT_EN
             touch_InfoDebug();
 #endif
-            touch_Recalibrate();
         }
         recal_time++;
     }
@@ -107,15 +104,15 @@ void TKY_dataProcess (void)
         case KEY_0_LONG :
             key_val = 0;
             touchinsflag |= 1 << 0;
-            TKY_KeyBacklightOut (0, !getBacklightState(0));
+            TKY_KeyBacklightOut (0, !TKY_GetBacklightState(0));
             break;
         case KEY_1_DOWN :
         case KEY_1_LONG :
             key_val = 1;
-            if (!(touchinsflag & 0x0C))//µ±ª¨¬÷ µ¿˝ªÚ’ﬂœﬂ–‘ª¨Ãı µ¿˝‘⁄¥•∑¢ ±£¨≤ª¥•∑¢µ±«∞∞¥º¸ µ¿˝
+            if (!(touchinsflag & 0x0C))//ÂΩìÊªëËΩÆÂÆû‰æãÊàñËÄÖÁ∫øÊÄßÊªëÊù°ÂÆû‰æãÂú®Ëß¶ÂèëÊó∂Ôºå‰∏çËß¶ÂèëÂΩìÂâçÊåâÈîÆÂÆû‰æã
             {
                 touchinsflag |= 1 << 1;
-                TKY_KeyBacklightOut (7, !getBacklightState(7));
+                TKY_KeyBacklightOut (7, !TKY_GetBacklightState(7));
             }
             break;
         case KEY_NONE :
@@ -135,7 +132,7 @@ void TKY_dataProcess (void)
             break;
     }
 
-    if (!(touchinsflag & 0x0A))//µ±∞¥º¸ µ¿˝ªÚ’ﬂœﬂ–‘ª¨Ãı µ¿˝‘⁄¥•∑¢ ±£¨≤ª¥•∑¢µ±«∞ª¨¬÷ µ¿˝
+    if (!(touchinsflag & 0x0A))//ÂΩìÊåâÈîÆÂÆû‰æãÊàñËÄÖÁ∫øÊÄßÊªëÊù°ÂÆû‰æãÂú®Ëß¶ÂèëÊó∂Ôºå‰∏çËß¶ÂèëÂΩìÂâçÊªëËΩÆÂÆû‰æã
     {
         Wheel_pros = touch_GetWheelSliderData();
         if (Wheel_pros < TOUCH_OFF_VALUE)
@@ -149,7 +146,7 @@ void TKY_dataProcess (void)
         TKY_WheelSliderLedProcess(Wheel_pros);
     }
 
-    if (!(touchinsflag & 0x06))//µ±∞¥º¸ µ¿˝ªÚ’ﬂª¨¬÷ µ¿˝‘⁄¥•∑¢ ±£¨≤ª¥•∑¢µ±«∞œﬂ–‘ª¨Ãı µ¿˝
+    if (!(touchinsflag & 0x06))//ÂΩìÊåâÈîÆÂÆû‰æãÊàñËÄÖÊªëËΩÆÂÆû‰æãÂú®Ëß¶ÂèëÊó∂Ôºå‰∏çËß¶ÂèëÂΩìÂâçÁ∫øÊÄßÊªëÊù°ÂÆû‰æã
     {
         Slider_pros = touch_GetLineSliderData();
         if (Slider_pros < TOUCH_OFF_VALUE)
@@ -167,21 +164,28 @@ void TKY_dataProcess (void)
 /*********************************************************************
  * @fn      TKY_Init
  *
- * @brief   ¥•√˛≥ı ºªØ∫Ø ˝£®≤ª π”√tmos£¨–Ë“™…Ë±∏ø™∆Ù∂® ±∆˜£©
+ * @brief   Ëß¶Êë∏ÂàùÂßãÂåñÂáΩÊï∞Ôºà‰∏ç‰ΩøÁî®tmosÔºåÈúÄË¶ÅËÆæÂ§áÂºÄÂêØÂÆöÊó∂Âô®Ôºâ
  *
  * @return  none
  */
 void TKY_Init(void)
 {
-	TKY_PeripheralInit();       /* ≥ı ºªØÕ‚…Ë£¨¿˝»Á±≥π‚∫Õ∑‰√˘∆˜µ» */
+	TKY_PeripheralInit();       /* ÂàùÂßãÂåñÂ§ñËÆæÔºàËÉåÂÖâÔºâ */
+    TKY_SetVarDetectParams( 0,3,5,TKY_MAX_QUEUE_NUM+1);
+	touch_Init(&touch_cfg);		/* ÂàùÂßãÂåñËß¶Êë∏Â∫ì */
 
-	touch_Init(&touch_cfg);		/* ≥ı ºªØ¥•√˛ø‚ */
+    TKY_SetSleepStatusValue(0); /* 0=ÊâÄÊúâÈòüÂàóÂ§Ñ‰∫éÂî§ÈÜíÊÄÅ */
 
-    TKY_SetSleepStatusValue( ~tkyQueueAll );
-
-    TMR0_TimerInit(FREQ_SYS/1000);               //∂® ±÷‹∆⁄Œ™1ms
+    TMR0_TimerInit(FREQ_SYS/1000);               //ÂÆöÊó∂Âë®Êúü‰∏∫1ms
     TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
     PFIC_EnableIRQ( TMR0_IRQn );
+
+    for(int i=0;i<100;i++){
+        TKY_LoadAndRun();
+        TKY_PollForFilter();
+        TKY_SaveAndStop();
+    }
+    touch_ScanWakeUp();
 
     dg_log("Touch Key init Finish!\n");
 }
@@ -194,7 +198,7 @@ void TKY_Init(void)
 /*********************************************************************
  * @fn      TKY_PeripheralInit
  *
- * @brief   ¥•√˛œ‡πÿÕ‚…Ë≥ı ºªØ∫Ø ˝
+ * @brief   Ëß¶Êë∏Áõ∏ÂÖ≥Â§ñËÆæÂàùÂßãÂåñÂáΩÊï∞
  *
  * @return  none
  */
@@ -224,7 +228,6 @@ void TKY_LineSliderLedProcess (uint16_t pros)
                 TKY_KeyBacklightOut (i, DISABLE);
             }
         }
-        printf("%d\n",pros);
     }
     else
     {
@@ -268,7 +271,7 @@ void TKY_WheelSliderLedProcess (uint16_t pros)
 /*********************************************************************
  * @fn      TMR0_IRQHandler
  *
- * @brief   ∂® ±∆˜0÷–∂œ∑˛ŒÒ∫Ø ˝
+ * @brief   ÂÆöÊó∂Âô®0‰∏≠Êñ≠ÊúçÂä°ÂáΩÊï∞
  *
  * @return  none
  */
@@ -283,7 +286,7 @@ void TMR0_IRQHandler( void )
         if (led_scanflag)
         {
             /*led scan*/
-            TKY_BacklightProcess();          // poll±≥π‚◊¥Ã¨
+            TKY_BacklightProcess();          // pollËÉåÂÖâÁä∂ÊÄÅ
         }
     }
 }

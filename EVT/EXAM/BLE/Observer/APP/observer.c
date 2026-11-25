@@ -30,7 +30,7 @@
 // Scan duration in (625us)
 #define DEFAULT_SCAN_DURATION            4800
 
-// Discovey mode (limited, general, all)
+// Discovery mode (limited, general, all)
 #define DEFAULT_DISCOVERY_MODE           DEVDISC_MODE_ALL
 
 // TRUE to use active scan
@@ -58,7 +58,6 @@
 /*********************************************************************
  * LOCAL VARIABLES
  */
-uint8_t gStatus;
 
 // Task ID for internal task/event processing
 static uint8_t ObserverTaskId;
@@ -103,7 +102,7 @@ static const gapRoleObserverCB_t ObserverRoleCB = {
  *
  * @return  none
  */
-void Observer_Init()
+void Observer_Init(void)
 {
     ObserverTaskId = TMOS_ProcessEventRegister(Observer_ProcessEvent);
 
@@ -201,6 +200,12 @@ static void ObserverEventCB(gapRoleEvent_t *pEvent)
     {
         case GAP_DEVICE_INIT_DONE_EVENT:
         {
+            uint8_t ownAddr[6];
+            PRINT("Discovering...\n");
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
+            // 开始新的发现周期，复位扫描结果计数，避免跨周期累积
+            ObserverScanRes = 0;
             GAPRole_ObserverStartDiscovery(DEFAULT_DISCOVERY_MODE,
                                            DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                            DEFAULT_DISCOVERY_WHITE_LIST);
@@ -234,6 +239,8 @@ static void ObserverEventCB(gapRoleEvent_t *pEvent)
                 }
             }
 
+            // 重启发现前复位扫描结果计数，避免 8 项后永久占满
+            ObserverScanRes = 0;
             GAPRole_ObserverStartDiscovery(DEFAULT_DISCOVERY_MODE,
                                            DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                            DEFAULT_DISCOVERY_WHITE_LIST);

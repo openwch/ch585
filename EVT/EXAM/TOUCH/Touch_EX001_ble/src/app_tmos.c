@@ -1,9 +1,9 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : app_tmos.C
+ * File Name          : app_tmos.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2023/8/5
- * Description        : ´¥Ãş°´¼üÀı³Ì
+ * Description        : è§¦æ‘¸æŒ‰é”®ä¾‹ç¨‹
  *******************************************************************************/
 
 /*********************************************************************
@@ -27,8 +27,7 @@
  **********************/
 tmosTaskID TouchKey_TaskID = 0x00;
 uint16_t triggerTime = SLEEP_TRIGGER_TIME;
-extern volatile uint8_t led_scanflag;
-volatile uint8_t tky_flag = 0;
+
 
 static const uint8_t touch_key_ch[ TOUCH_KEY_ELEMENTS ] = {TOUCH_KEY_CHS};
 KEY_T s_tBtn[TOUCH_KEY_ELEMENTS] = {0};
@@ -36,7 +35,7 @@ KEY_T s_tBtn[TOUCH_KEY_ELEMENTS] = {0};
 static const uint8_t touch_wheel_ch[ TOUCH_WHEEL_ELEMENTS ] = {TOUCH_WHEEL_CHS};
 uint16_t wheel_data[ TOUCH_WHEEL_ELEMENTS ] = {0};
 
-static const uint8_t touch_slidel_ch[ TOUCH_SLIDER_ELEMENTS ] = {TOUCH_SLIDER_CHS};
+static const uint8_t touch_slider_ch[ TOUCH_SLIDER_ELEMENTS ] = {TOUCH_SLIDER_CHS};
 uint16_t slider_data[ TOUCH_SLIDER_ELEMENTS ] = {0};
 
 touch_button_cfg_t p_selfkey = 
@@ -49,15 +48,15 @@ touch_button_cfg_t p_selfkey =
 touch_wheel_cfg_t p_wheel = {
     .num_elements = TOUCH_WHEEL_ELEMENTS,
     .p_elem_index = touch_wheel_ch,
-    .threshold = 200,
+    .threshold = 80,
     .decimal_point_percision = TOUCH_DECIMAL_POINT_PRECISION,
     .wheel_resolution = TOUCH_WHEEL_RESOLUTION,
     .pdata = wheel_data};
 
 touch_slider_cfg_t p_slider = {
     .num_elements = TOUCH_SLIDER_ELEMENTS,
-    .p_elem_index = touch_slidel_ch,
-    .threshold = 100,
+    .p_elem_index = touch_slider_ch,
+    .threshold = 50,
     .decimal_point_percision = TOUCH_DECIMAL_POINT_PRECISION,
     .slider_resolution = TOUCH_SLIDER_RESOLUTION,
     .pdata = slider_data
@@ -85,7 +84,7 @@ void TKY_WheelSliderLedProcess (uint16_t pros);
 /*********************************************************************
  * @fn      tky_on_TMOS_dataProcess
  *
- * @brief   ´¥ÃşÊı¾İ´¦Àíº¯Êı£¨»ùÓÚTMOS£©£¬À¶ÑÀÁ¬½Ó³É¹¦ºó½«»ñÈ¡µ½¼üÖµÒÔÍ¨ÖªµÄĞÎÊ½ÉÏ±¨¸øÉÏÎ»»úÀ¶ÑÀ
+ * @brief   è§¦æ‘¸æ•°æ®å¤„ç†å‡½æ•°ï¼ˆåŸºäºTMOSï¼‰ï¼Œè“ç‰™è¿æ¥æˆåŠŸåå°†è·å–åˆ°é”®å€¼ä»¥é€šçŸ¥çš„å½¢å¼ä¸ŠæŠ¥ç»™ä¸Šä½æœºè“ç‰™
  *
  * @return  none
  */
@@ -103,7 +102,7 @@ void tky_on_TMOS_dataProcess(void)
     {
         if (bleConnectState )
         {
-            peripheralChar2Notify( &key_val, 1 );//½«¼üÖµÉÏ±¨¸øÉÏÎ»»úÀ¶ÑÀ
+            peripheralChar2Notify( &key_val, 1 );//å°†é”®å€¼ä¸ŠæŠ¥ç»™ä¸Šä½æœºè“ç‰™
         }
     }
 
@@ -113,15 +112,15 @@ void tky_on_TMOS_dataProcess(void)
         case KEY_0_LONG :
             key_val = 0;
             touchinsflag |= 1 << 0;
-            TKY_KeyBacklightOut (0, !getBacklightState(0));
+            TKY_KeyBacklightOut (0, !TKY_GetBacklightState(0));
             break;
         case KEY_1_DOWN :
         case KEY_1_LONG :
             key_val = 1;
-            if (!(touchinsflag & 0x0C))//µ±»¬ÂÖÊµÀı»òÕßÏßĞÔ»¬ÌõÊµÀıÔÚ´¥·¢Ê±£¬²»´¥·¢µ±Ç°°´¼üÊµÀı
+            if (!(touchinsflag & 0x0C))//å½“æ»‘è½®å®ä¾‹æˆ–è€…çº¿æ€§æ»‘æ¡å®ä¾‹åœ¨è§¦å‘æ—¶ï¼Œä¸è§¦å‘å½“å‰æŒ‰é”®å®ä¾‹
             {
                 touchinsflag |= 1 << 1;
-                TKY_KeyBacklightOut (7, !getBacklightState(7));
+                TKY_KeyBacklightOut (7, !TKY_GetBacklightState(7));
             }
             break;
         case KEY_NONE :
@@ -141,7 +140,7 @@ void tky_on_TMOS_dataProcess(void)
             break;
     }
 
-    if (!(touchinsflag & 0x0A))//µ±°´¼üÊµÀı»òÕßÏßĞÔ»¬ÌõÊµÀıÔÚ´¥·¢Ê±£¬²»´¥·¢µ±Ç°»¬ÂÖÊµÀı
+    if (!(touchinsflag & 0x0A))//å½“æŒ‰é”®å®ä¾‹æˆ–è€…çº¿æ€§æ»‘æ¡å®ä¾‹åœ¨è§¦å‘æ—¶ï¼Œä¸è§¦å‘å½“å‰æ»‘è½®å®ä¾‹
     {
         Wheel_pros = touch_GetWheelSliderData();
 
@@ -151,7 +150,7 @@ void tky_on_TMOS_dataProcess(void)
 
             if (bleConnectState )
             {
-                peripheralChar3Notify( (uint8_t *)&Wheel_pros, 2 );//½«¼üÖµÉÏ±¨¸øÉÏÎ»»úÀ¶ÑÀ
+                peripheralChar3Notify( (uint8_t *)&Wheel_pros, 2 );//å°†é”®å€¼ä¸ŠæŠ¥ç»™ä¸Šä½æœºè“ç‰™
             }
         }
         else
@@ -161,7 +160,7 @@ void tky_on_TMOS_dataProcess(void)
         TKY_WheelSliderLedProcess(Wheel_pros);
     }
 
-    if (!(touchinsflag & 0x06))//µ±°´¼üÊµÀı»òÕß»¬ÂÖÊµÀıÔÚ´¥·¢Ê±£¬²»´¥·¢µ±Ç°ÏßĞÔ»¬ÌõÊµÀı
+    if (!(touchinsflag & 0x06))//å½“æŒ‰é”®å®ä¾‹æˆ–è€…æ»‘è½®å®ä¾‹åœ¨è§¦å‘æ—¶ï¼Œä¸è§¦å‘å½“å‰çº¿æ€§æ»‘æ¡å®ä¾‹
     {
         Slider_pros = touch_GetLineSliderData();
         if (Slider_pros < TOUCH_OFF_VALUE)
@@ -170,7 +169,7 @@ void tky_on_TMOS_dataProcess(void)
 
             if (bleConnectState )
             {
-                peripheralChar4Notify( (uint8_t *)&Slider_pros, 2 );//½«¼üÖµÉÏ±¨¸øÉÏÎ»»úÀ¶ÑÀ
+                peripheralChar4Notify( (uint8_t *)&Slider_pros, 2 );//å°†é”®å€¼ä¸ŠæŠ¥ç»™ä¸Šä½æœºè“ç‰™
             }
         }
         else
@@ -186,56 +185,45 @@ void tky_on_TMOS_dataProcess(void)
 /*********************************************************************
  * @fn      PeriodicDealData
  *
- * @brief    ´¥ÃşĞİÃß×´Ì¬´¦Àí
+ * @brief    è§¦æ‘¸ä¼‘çœ çŠ¶æ€å¤„ç†
  *
  * @return  none
  */
 void PeriodicDealData(void)
 {
     uint16_t scandata,keydata;
-    TKY_LoadAndRun(); //---ÔØÈëĞİÃßÇ°±£´æµÄ²¿·ÖÉèÖÃ---
-//    GPIOTK_PinSleep(  );
 
-    //---»½ĞÑÌ¬£¬»½ĞÑÊ±·½¿ÉÇĞ»»ÏÔÊ¾ÄÚÈİ¡ª¡ª»ùÏß»ò²âÁ¿Öµ£¬Ã¿´ÎÓĞ´¥ÃşÊ±£¬»½ĞÑ10¸öwakeupÊ±¼ä£¬°´´Ë¶¨Ê±Æ÷ÉèÖÃÊ±¼äÎª5s---
+    //---å”¤é†’æ€ï¼Œå”¤é†’æ—¶æ–¹å¯åˆ‡æ¢æ˜¾ç¤ºå†…å®¹â€”â€”åŸºçº¿æˆ–æµ‹é‡å€¼ï¼Œæ¯æ¬¡æœ‰è§¦æ‘¸æ—¶ï¼Œå”¤é†’10ä¸ªwakeupæ—¶é—´ï¼ŒæŒ‰æ­¤å®šæ—¶å™¨è®¾ç½®æ—¶é—´ä¸º5s---
     if (wakeUpCount)
     {
         wakeUpCount--;
-//        dg_log("wakeUpCount: :%d\n", wakeUpCount);
-        //---wakeUpCount¼ÆÊıÎª0£¬»½ĞÑÌ¬¼´½«×ªĞİÃß---
+        dg_log("wakeUpCount: :%d\n", wakeUpCount);
+        //---wakeUpCountè®¡æ•°ä¸º0ï¼Œå”¤é†’æ€å³å°†è½¬ä¼‘çœ ---
         if (wakeUpCount == 0)
         {
-        	touch_ScanEnterSleep();
-
+            
             tmos_stop_task(TouchKey_TaskID, WAKEUP_DATA_DEAL_EVT);
             triggerTime = SLEEP_TRIGGER_TIME;
             /*-------------------------
              * Call your peripherals sleep function
              * -----------------------*/
             peripherals_EnterSleep();
+            touch_ScanEnterSleep();
+            
         }
     }
-    else //---ĞİÃß×´Ì¬Ê±£¬ĞÑÀ´¼ä¸ô½øĞĞÉ¨Ãè---
+    else //---ä¼‘çœ çŠ¶æ€æ—¶ï¼Œé†’æ¥é—´éš”è¿›è¡Œæ‰«æ---
     {
         dg_log("wake up...\n");
-
-        if(!tky_flag)
+        TKY_LoadAndRun(); //---è½½å…¥ä¼‘çœ å‰ä¿å­˜çš„éƒ¨åˆ†è®¾ç½®---
+        scandata = TKY_ScanForWakeUp(tkyQueueAll); //---å¯¹æ‰€é€‰æ‹©çš„é˜Ÿåˆ—é€šé“è¿›è¡Œæ‰«æ---
+        if (scandata) //---å¦‚æ‰«ææœ‰å¼‚å¸¸ï¼Œåˆ™è°ƒç”¨æ­£å¼æ‰«æå‡½æ•°æ¨¡å¼3~4---
         {
-            for(uint8_t m = 0; m < TKY_MAX_QUEUE_NUM; m++)
-            {
-                TKY_SetCurQueueBaseLine(m, TKY_GetCurQueueRealVal(m));
-            }
-        }
-
-        scandata = TKY_ScanForWakeUp(tkyQueueAll); //---¶ÔËùÑ¡ÔñµÄ¶ÓÁĞÍ¨µÀ½øĞĞÉ¨Ãè---
-        if (scandata) //---ÈçÉ¨ÃèÓĞÒì³££¬Ôòµ÷ÓÃÕıÊ½É¨Ãèº¯ÊıÄ£Ê½3~4---
-        {
-            for (uint8_t i = 0; i < 40; i++) //---²¢·ÇÒ»¶¨ÒªÉ¨Âë64´Î£¬20´ÎÒÔÉÏ½Ô¿É£¬²¢ÇÒÏÂÃæ´úÂëÖĞÓĞµ±É¨ÃèÓĞ°´¼ü°´ÏÂ£¬ÔòÍË³öÑ­»·£¬Æô¶¯»½ĞÑÉ¨Ãè---
+            for (uint8_t i = 0; i < 40; i++) //---å¹¶éä¸€å®šè¦æ‰«ç 64æ¬¡ï¼Œ20æ¬¡ä»¥ä¸Šçš†å¯ï¼Œå¹¶ä¸”ä¸‹é¢ä»£ç ä¸­æœ‰å½“æ‰«ææœ‰æŒ‰é”®æŒ‰ä¸‹ï¼Œåˆ™é€€å‡ºå¾ªç¯ï¼Œå¯åŠ¨å”¤é†’æ‰«æ---
             {
                 keydata = TKY_PollForFilter();
-                if (keydata) //---Ò»µ©¼ì²âµ½ÓĞ°´¼ü°´ÏÂ£¬ÔòÍË³öÑ­»·É¨Ãè---
+                if (keydata) //---ä¸€æ—¦æ£€æµ‹åˆ°æœ‰æŒ‰é”®æŒ‰ä¸‹ï¼Œåˆ™é€€å‡ºå¾ªç¯æ‰«æ---
                 {
-                    tky_flag = 1;
-                	touch_ScanWakeUp();
                     triggerTime = TRIGGER_TIME;
                     tky_DealData_start();
                     tmos_start_task(TouchKey_TaskID, WAKEUP_DATA_DEAL_EVT, 0);
@@ -243,19 +231,21 @@ void PeriodicDealData(void)
                      * Call your peripherals WakeUp function
                      * -----------------------*/
                     peripherals_WakeUp();
+                    touch_ScanWakeUp();
                     break;
                 }
             }
-        }
+        } 
+        TKY_SaveAndStop(); //---å¯¹ç›¸å…³å¯„å­˜å™¨è¿›è¡Œä¿å­˜---
     }
-    TKY_SaveAndStop(); //---¶ÔÏà¹Ø¼Ä´æÆ÷½øĞĞ±£´æ---
+   
 }
 
 
 /*********************************************************************
  * @fn      tky_DealData_start
  *
- * @brief   ´¥ÃşÉ¨Ãè¿ªÆôº¯Êı
+ * @brief   è§¦æ‘¸æ‰«æå¼€å¯å‡½æ•°
  *
  * @return  none
  */
@@ -267,7 +257,7 @@ void tky_DealData_start(void)
 /*********************************************************************
  * @fn      tky_DealData_stop
  *
- * @brief   ´¥ÃşÉ¨ÃèÍ£Ö¹º¯Êı
+ * @brief   è§¦æ‘¸æ‰«æåœæ­¢å‡½æ•°
  *
  * @return  none
  */
@@ -280,14 +270,12 @@ void tky_DealData_stop(void)
 /*********************************************************************
  * @fn      Touch_Key_ProcessEvent
  *
- * @brief   ´¥Ãş°´¼ü´¦Àíº¯Êı
+ * @brief   è§¦æ‘¸æŒ‰é”®å¤„ç†å‡½æ•°
  *
  * @return  none
  */
 tmosEvents Touch_Key_ProcessEvent(tmosTaskID task_id, tmosEvents events)
 {
-    uint16_t res;
-
     if (events & WAKEUP_DATA_DEAL_EVT)
     {
         touch_Scan();
@@ -321,7 +309,6 @@ tmosEvents Touch_Key_ProcessEvent(tmosTaskID task_id, tmosEvents events)
 
     if (events & TKY_RECALIBRATE_EVT)
     {
-        touch_Recalibrate();
         tmos_start_task(TouchKey_TaskID, TKY_RECALIBRATE_EVT,SLEEP_TRIGGER_TIME);
         return (events ^ TKY_RECALIBRATE_EVT);
     }
@@ -338,20 +325,21 @@ tmosEvents Touch_Key_ProcessEvent(tmosTaskID task_id, tmosEvents events)
 /*********************************************************************
  * @fn      touch_on_TMOS_init
  *
- * @brief   ´¥Ãş³õÊ¼»¯º¯Êı£¨»ùÓÚTMOS£©
+ * @brief   è§¦æ‘¸åˆå§‹åŒ–å‡½æ•°ï¼ˆåŸºäºTMOSï¼‰
  *
  * @return  none
  */
 void touch_on_TMOS_init(void)
 {
     TouchKey_TaskID = TMOS_ProcessEventRegister(Touch_Key_ProcessEvent);
-    TKY_PeripheralInit();       /* ³õÊ¼ÍâÉè£¬ÀıÈç±³¹âºÍ·äÃùÆ÷µÈ */
-    touch_Init(&touch_cfg);				/* ³õÊ¼»¯´¥Ãş¿â  */
+    TKY_PeripheralInit();       /* åˆå§‹åŒ–å¤–è®¾ï¼ˆèƒŒå…‰ï¼‰ */
+    TKY_SetVarDetectParams( 0,3,5,TKY_MAX_QUEUE_NUM+1);
+    touch_Init(&touch_cfg);				/* åˆå§‹åŒ–è§¦æ‘¸åº“  */
 
-    wakeUpCount = 50; // »½ĞÑºó³ÖĞøÊ±¼ä£¬µ¥Î»TRIGGER_TIME(100ms)
-    wakeupflag = 1;   // ÖÃ³É»½ĞÑ×´Ì¬
+    wakeUpCount = 50; // å”¤é†’åæŒç»­æ—¶é—´ï¼Œå•ä½TRIGGER_TIME(100ms)
+    wakeupflag = 1;   // ç½®æˆå”¤é†’çŠ¶æ€
     triggerTime = TRIGGER_TIME;
-    TKY_SetSleepStatusValue(~tkyQueueAll);
+    TKY_SetSleepStatusValue(0); /* 0=æ‰€æœ‰é˜Ÿåˆ—å¤„äºå”¤é†’æ€ */
 #if TKY_SLEEP_EN
     tky_DealData_start();
 #else
@@ -365,9 +353,16 @@ void touch_on_TMOS_init(void)
     tmos_set_event(TouchKey_TaskID, TKY_RECALIBRATE_EVT);
     tmos_set_event(TouchKey_TaskID, TKY_KEEPALIVE_EVENT);
 
-    TMR0_TimerInit(FREQ_SYS/1000);               //¶¨Ê±ÖÜÆÚÎª1ms
+    TMR0_TimerInit(FREQ_SYS/1000);               //å®šæ—¶å‘¨æœŸä¸º1ms
     TMR0_ITCfg(ENABLE, TMR0_3_IT_CYC_END);
     PFIC_EnableIRQ( TMR0_IRQn );
+
+    for(int i=0;i<100;i++){
+        TKY_LoadAndRun();
+        TKY_PollForFilter();
+        TKY_SaveAndStop();
+    }
+    touch_ScanWakeUp();// ç½®æˆå”¤é†’çŠ¶æ€
 
     dg_log("Touch Key init Finish!\n");
 }
@@ -381,7 +376,7 @@ void touch_on_TMOS_init(void)
 /*********************************************************************
  * @fn      TKY_PeripheralInit
  *
- * @brief   ´¥ÃşÍâÉè³õÊ¼»¯º¯Êı£¬ÓÃÓÚ³õÊ¼»¯Óë´¥Ãş¹¦ÄÜÏà¹ØµÄÍâÉè¹¦ÄÜ
+ * @brief   è§¦æ‘¸å¤–è®¾åˆå§‹åŒ–å‡½æ•°ï¼Œç”¨äºåˆå§‹åŒ–ä¸è§¦æ‘¸åŠŸèƒ½ç›¸å…³çš„å¤–è®¾åŠŸèƒ½
  *
  * @return  none
  */
@@ -412,7 +407,6 @@ void TKY_LineSliderLedProcess (uint16_t pros)
                 TKY_KeyBacklightOut (i, DISABLE);
             }
         }
-        printf("%d\n",pros);
     }
     else
     {
@@ -458,7 +452,7 @@ void TKY_WheelSliderLedProcess (uint16_t pros)
 /*********************************************************************
  * @fn      peripherals_EnterSleep
  *
- * @brief   ÍâÉèË¯Ãßº¯Êı£¬ÔÚ´¥Ãş×¼±¸ĞİÃßÊ±µ÷ÓÃ
+ * @brief   å¤–è®¾ç¡çœ å‡½æ•°ï¼Œåœ¨è§¦æ‘¸å‡†å¤‡ä¼‘çœ æ—¶è°ƒç”¨
  *
  * @return  none
  */
@@ -467,7 +461,6 @@ static void peripherals_EnterSleep(void)
     /*You code here*/
     TKY_BacklightTaskStop();
     PFIC_DisableIRQ( TMR0_IRQn );
-    tmos_stop_task(TouchKey_TaskID, TKY_RECALIBRATE_EVT);
     tmos_stop_task(TouchKey_TaskID, TKY_KEEPALIVE_EVENT);
 }
 
@@ -475,7 +468,7 @@ static void peripherals_EnterSleep(void)
 /*********************************************************************
  * @fn      peripherals_WakeUp
  *
- * @brief   ÍâÉè»½ĞÑº¯Êı£¬ÔÚ´¥Ãş±»»½ĞÑÊ±µ÷ÓÃ
+ * @brief   å¤–è®¾å”¤é†’å‡½æ•°ï¼Œåœ¨è§¦æ‘¸è¢«å”¤é†’æ—¶è°ƒç”¨
  *
  * @return  none
  */
@@ -491,7 +484,7 @@ static void peripherals_WakeUp(void)
 /*********************************************************************
  * @fn      TMR0_IRQHandler
  *
- * @brief   ¶¨Ê±Æ÷0ÖĞ¶Ï·şÎñº¯Êı
+ * @brief   å®šæ—¶å™¨0ä¸­æ–­æœåŠ¡å‡½æ•°
  *
  * @return  none
  */
@@ -505,7 +498,7 @@ void TMR0_IRQHandler( void )
         if (led_scanflag)
         {
             /*led scan*/
-            TKY_BacklightProcess();          // poll±³¹â×´Ì¬
+            TKY_BacklightProcess();          // pollèƒŒå…‰çŠ¶æ€
         }
     }
 }

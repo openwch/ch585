@@ -266,7 +266,7 @@ void peripheral_ancs_client_init(void)
 }
 
 /*********************************************************************
- * @fn      Central_ProcessEvent
+ * @fn      ANCS_ProcessEvent
  *
  * @brief   Central Application Task event processor.  This function
  *          is called to process all events for the task.  Events
@@ -301,26 +301,26 @@ uint16_t ANCS_ProcessEvent(uint8_t task_id, uint16_t events)
         return (events ^ START_DEVICE_EVT);
     }
 
-    if(events & START_SUBSCRIPE_NOTIDATA_EVT)
+    if(events & START_SUBSCRIBE_NOTIDATA_EVT)
     {
         int err ;
         if((err = bt_ancs_subscribe_data_source(&ancs_c,
                 bt_ancs_subscribe->data_source)) != SUCCESS){
             if(err != -EALREADY)
-                tmos_start_task(ancs_taskid, START_SUBSCRIPE_NOTIDATA_EVT, MS1_TO_SYSTEM_TIME(100));
+                tmos_start_task(ancs_taskid, START_SUBSCRIBE_NOTIDATA_EVT, MS1_TO_SYSTEM_TIME(100));
         }
-        return (events ^ START_SUBSCRIPE_NOTIDATA_EVT);
+        return (events ^ START_SUBSCRIBE_NOTIDATA_EVT);
     }
 
-    if(events & START_SUBSCRIPE_NOTISRC_EVT)
+    if(events & START_SUBSCRIBE_NOTISRC_EVT)
     {
         int err ;
         if((err = bt_ancs_subscribe_notification_source(&ancs_c,
                 bt_ancs_subscribe->notification_source)) != SUCCESS){
             if(err != -EALREADY)
-                tmos_start_task(ancs_taskid, START_SUBSCRIPE_NOTISRC_EVT, MS1_TO_SYSTEM_TIME(100));
+                tmos_start_task(ancs_taskid, START_SUBSCRIBE_NOTISRC_EVT, MS1_TO_SYSTEM_TIME(100));
         }
-        return (events ^ START_SUBSCRIPE_NOTISRC_EVT);
+        return (events ^ START_SUBSCRIBE_NOTISRC_EVT);
     }
 
 
@@ -359,7 +359,7 @@ uint16_t ANCS_ProcessEvent(uint8_t task_id, uint16_t events)
 
 
 /*********************************************************************
- * @fn      centralProcessGATTMsg
+ * @fn      AncsProcessGATTMsg
  *
  * @brief   Process GATT messages
  *
@@ -403,7 +403,7 @@ static void AncsProcessGATTMsg(gattMsgEvent_t *pMsg)
 }
 
 /*********************************************************************
- * @fn      central_ProcessTMOSMsg
+ * @fn      AncsProcessTMOSMsg
  *
  * @brief   Process an incoming task message.
  *
@@ -585,7 +585,7 @@ static void AncsStateNotificationCB(gapRole_States_t newState, gapRoleEvent_t *p
 }
 
 /*********************************************************************
- * @fn      pairStateCB
+ * @fn      AncsPairStateCB
  *
  * @brief   Pairing state callback.
  *
@@ -632,7 +632,7 @@ static void AncsPairStateCB(uint16_t connHandle, uint8_t state, uint8_t status)
 }
 
 /*********************************************************************
- * @fn      centralPasscodeCB
+ * @fn      AncsPasscodeCB
  *
  * @brief   Passcode callback.
  *
@@ -658,7 +658,7 @@ static void AncsPasscodeCB(uint8_t *deviceAddr, uint16_t connectionHandle,
 
 
 /*********************************************************************
- * @fn      centralGATTDiscoveryEvent
+ * @fn      AncsApp_discoverService
  *
  * @brief   Process GATT discovery event
  *
@@ -728,7 +728,7 @@ static void AncsApp_discoverService(gattMsgEvent_t *pMsg)
         {
           // Characteristics found, chache them
           uint8_t   *pHandleValuePairList;
-          uint16_t  handle;
+          uint16_t  handle = 0;
           uint16_t  uuid;
           if (pMsg->method == ATT_READ_BY_TYPE_RSP &&
               pMsg->msg.readByTypeRsp.numPairs > 0 &&
@@ -823,7 +823,9 @@ static void AncsApp_discoverService(gattMsgEvent_t *pMsg)
             }
           }
           // Discover all characteristics of ANCS service until end handle
-          else
+          // handle 仅在成功解析到特征对时被赋值；异常响应下为 0，
+          // 故此处校验 handle!=0，避免用未初始化句柄继续发现。
+          else if (handle != 0)
           {
             GATT_DiscAllChars(pMsg->connHandle, handle+1,
                               Ancs_svcEndHdl, ancs_taskid);
@@ -892,8 +894,8 @@ static void AncsApp_discoverService(gattMsgEvent_t *pMsg)
               discoveryState = DISC_IDLE;
               value_bit_set(&ancs_c.state, ANCS_BT_DISCOVERY_COMPLETE,TRUE);
               PRINT("discover complete\n");
-              tmos_set_event(ancs_taskid, START_SUBSCRIPE_NOTIDATA_EVT);
-              tmos_start_task(ancs_taskid, START_SUBSCRIPE_NOTISRC_EVT, 300);
+              tmos_set_event(ancs_taskid, START_SUBSCRIBE_NOTIDATA_EVT);
+              tmos_start_task(ancs_taskid, START_SUBSCRIBE_NOTISRC_EVT, 300);
 
             }
           }

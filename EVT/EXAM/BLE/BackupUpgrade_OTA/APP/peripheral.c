@@ -1,5 +1,5 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : Peripheral.C
+ * File Name          : peripheral.c
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
@@ -15,9 +15,9 @@
  */
 #include "CONFIG.h"
 #include "devinfoservice.h"
-#include "GATTprofile.h"
-#include "Peripheral.h"
-#include "OTA.h"
+#include "gattprofile.h"
+#include "peripheral.h"
+#include "ota.h"
 #include "OTAprofile.h"
 
 /*********************************************************************
@@ -107,7 +107,7 @@ static uint8_t scanRspData[31] = {
 };
 
 // GAP - Advertisement data (max size = 31 bytes, though this is
-// best kept short to conserve power while advertisting)
+// best kept short to conserve power while advertising)
 static uint8_t advertData[] = {
     // Flags; this sets the device to use limited discoverable
     // mode (advertises for 30 seconds at a time) instead of general
@@ -133,17 +133,14 @@ OTA_IAP_CMD_t iap_rec_data;
 
 /* OTA解析结果 */
 uint32_t OpParaDataLen = 0;
-uint32_t OpAdd = 0;
+uint32_t OpAddr = 0;
 
-/* flash的数据临时存储 */
+/* flash的数据临时存储（仅使用前4字节） */
 __attribute__((aligned(8))) uint8_t block_buf[16];
 
-/* Image跳转函数地址定义 */
-typedef int (*pImageTaskFn)(void);
-pImageTaskFn user_image_tasks;
 
 /* Flash 擦除过程 */
-uint32_t EraseAdd = 0;      //擦除地址
+uint32_t EraseAddr = 0;      //擦除地址
 uint32_t EraseBlockNum = 0; //需要擦除的块数
 uint32_t EraseBlockCnt = 0; //擦除的块计数
 
@@ -183,13 +180,13 @@ static simpleProfileCBs_t Peripheral_SimpleProfileCBs = {
     simpleProfileChangeCB // Charactersitic value change callback
 };
 
-// Simple GATT Profile Callbacks
+// OTA GATT Profile Callbacks
 static OTAProfileCBs_t Peripheral_OTA_IAPProfileCBs = {
     OTA_IAPReadDataComplete, // Charactersitic value change callback
     OTA_IAPWriteData
 };
 
-// Callback when the connection parameteres are updated.
+// Callback when the connection parameters are updated.
 void PeripheralParamUpdate(uint16_t connInterval, uint16_t connSlaveLatency, uint16_t connTimeout);
 
 gapRolesParamUpdateCB_t PeripheralParamUpdate_t = NULL;
@@ -205,7 +202,7 @@ gapRolesParamUpdateCB_t PeripheralParamUpdate_t = NULL;
  *          This is called during initialization and should contain
  *          any application specific initialization (ie. hardware
  *          initialization/setup, table initialization, power up
- *          notificaiton ... ).
+ *          notification ... ).
  *
  * @param   task_id - the ID assigned by TMOS.  This ID should be
  *                    used to send messages and set timers.
@@ -361,8 +358,8 @@ uint16_t Peripheral_ProcessEvent(uint8_t task_id, uint16_t events)
     {
         uint8_t status;
 
-        PRINT("ERASE:%08x num:%d\r\n", (int)(EraseAdd + EraseBlockCnt * FLASH_BLOCK_SIZE), (int)EraseBlockCnt);
-        status = FLASH_ROM_ERASE(EraseAdd + EraseBlockCnt * FLASH_BLOCK_SIZE, FLASH_BLOCK_SIZE);
+        PRINT("ERASE:%08x num:%d\r\n", (int)(EraseAddr + EraseBlockCnt * FLASH_BLOCK_SIZE), (int)EraseBlockCnt);
+        status = FLASH_ROM_ERASE(EraseAddr + EraseBlockCnt * FLASH_BLOCK_SIZE, FLASH_BLOCK_SIZE);
 
         /* 擦除失败 */
         if(status != SUCCESS)
@@ -420,8 +417,13 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
     switch(newState)
     {
         case GAPROLE_STARTED:
+        {
+            uint8_t ownAddr[6];
+            GAPRole_GetParameter(GAPROLE_BD_ADDR, ownAddr);
+            GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, ownAddr);
             PRINT("Initialized..\n");
             break;
+        }
 
         case GAPROLE_ADVERTISING:
             PRINT("Advertising..\n");
@@ -473,7 +475,7 @@ static void peripheralStateNotificationCB(gapRole_States_t newState, gapRoleEven
  * @fn      performPeriodicTask
  *
  * @brief   Perform a periodic application task. This function gets
- *          called every five seconds as a result of the SBP_PERIODIC_EVT
+ *          called every 1 seconds as a result of the SBP_PERIODIC_EVT
  *          TMOS event. In this example, the value of the third
  *          characteristic in the SimpleGATTProfile service is retrieved
  *          from the profile, and then copied into the value of the
@@ -583,20 +585,17 @@ void OTA_IAP_CMDErrDeal(void)
  */
 void SwitchImageFlag(uint8_t new_flag)
 {
-    uint16_t i;
-    uint32_t ver_flag;
-
     /* 读取第一块 */
-    EEPROM_READ(OTA_DATAFLASH_ADD, (uint32_t *)&block_buf[0], 4);
+    EEPROM_READ(OTA_DATAFLASH_ADDR, (uint32_t *)&block_buf[0], 4);
 
     /* 擦除第一块 */
-    EEPROM_ERASE(OTA_DATAFLASH_ADD, EEPROM_PAGE_SIZE);
+    EEPROM_ERASE(OTA_DATAFLASH_ADDR, EEPROM_PAGE_SIZE);
 
     /* 更新Image信息 */
     block_buf[0] = new_flag;
 
     /* 编程DataFlash */
-    EEPROM_WRITE(OTA_DATAFLASH_ADD, (uint32_t *)&block_buf[0], 4);
+    EEPROM_WRITE(OTA_DATAFLASH_ADDR, (uint32_t *)&block_buf[0], 4);
 }
 
 /*********************************************************************
@@ -625,20 +624,26 @@ void Rec_OTA_IAP_DataDeal(void)
         /* 编程 */
         case CMD_IAP_PROM:
         {
-            uint32_t i;
             uint8_t  status;
 
             OpParaDataLen = iap_rec_data.program.len;
-            OpAdd = (uint32_t)(iap_rec_data.program.addr[0]);
-            OpAdd |= ((uint32_t)(iap_rec_data.program.addr[1]) << 8);
-            OpAdd = OpAdd * 16;
+            OpAddr = (uint32_t)(iap_rec_data.program.addr[0]);
+            OpAddr |= ((uint32_t)(iap_rec_data.program.addr[1]) << 8);
+            OpAddr = OpAddr * 16;
 
-            OpAdd += IMAGE_A_SIZE;
+            OpAddr += IMAGE_A_SIZE;
 
-            PRINT("IAP_PROM: %08x len:%d \r\n", (int)OpAdd, (int)OpParaDataLen);
+            PRINT("IAP_PROM: %08x len:%d \r\n", (int)OpAddr, (int)OpParaDataLen);
+
+            /* 与ERASE命令相同的区间断言，禁止写任意Flash地址 */
+            if(OpAddr < IMAGE_B_START_ADD || (OpAddr + OpParaDataLen) > IMAGE_IAP_START_ADD)
+            {
+                OTA_IAP_SendCMDDealSta(0xFF);
+                break;
+            }
 
             /* 当前是ImageA，直接编程 */
-            status = FLASH_ROM_WRITE(OpAdd, iap_rec_data.program.buf, (uint16_t)OpParaDataLen);
+            status = FLASH_ROM_WRITE(OpAddr, iap_rec_data.program.buf, (uint16_t)OpParaDataLen);
             if(status)             PRINT("IAP_PROM err \r\n");
             OTA_IAP_SendCMDDealSta(status);
             break;
@@ -646,23 +651,23 @@ void Rec_OTA_IAP_DataDeal(void)
         /* 擦除 -- 蓝牙擦除由主机控制 */
         case CMD_IAP_ERASE:
         {
-            OpAdd = (uint32_t)(iap_rec_data.erase.addr[0]);
-            OpAdd |= ((uint32_t)(iap_rec_data.erase.addr[1]) << 8);
-            OpAdd = OpAdd * 16;
+            OpAddr = (uint32_t)(iap_rec_data.erase.addr[0]);
+            OpAddr |= ((uint32_t)(iap_rec_data.erase.addr[1]) << 8);
+            OpAddr = OpAddr * 16;
 
-            OpAdd += IMAGE_A_SIZE;
+            OpAddr += IMAGE_A_SIZE;
 
             EraseBlockNum = (uint32_t)(iap_rec_data.erase.block_num[0]);
             EraseBlockNum |= ((uint32_t)(iap_rec_data.erase.block_num[1]) << 8);
-            EraseAdd = OpAdd;
+            EraseAddr = OpAddr;
             EraseBlockCnt = 0;
 
             /* 检验就放在擦除里清0 */
             VerifyStatus = 0;
 
-            PRINT("IAP_ERASE start:%08x num:%d\r\n", (int)OpAdd, (int)EraseBlockNum);
+            PRINT("IAP_ERASE start:%08x num:%d\r\n", (int)OpAddr, (int)EraseBlockNum);
 
-            if(EraseAdd < IMAGE_B_START_ADD || (EraseAdd + (EraseBlockNum - 1) * FLASH_BLOCK_SIZE) > IMAGE_IAP_START_ADD)
+            if(EraseBlockNum < 1 || EraseAddr < IMAGE_B_START_ADD || (EraseAddr + (EraseBlockNum - 1) * FLASH_BLOCK_SIZE) >= IMAGE_IAP_START_ADD)
             {
                 OTA_IAP_SendCMDDealSta(0xFF);
             }
@@ -676,20 +681,26 @@ void Rec_OTA_IAP_DataDeal(void)
         /* 校验 */
         case CMD_IAP_VERIFY:
         {
-            uint32_t i;
             uint8_t  status = 0;
 
             OpParaDataLen = iap_rec_data.verify.len;
 
-            OpAdd = (uint32_t)(iap_rec_data.verify.addr[0]);
-            OpAdd |= ((uint32_t)(iap_rec_data.verify.addr[1]) << 8);
-            OpAdd = OpAdd * 16;
+            OpAddr = (uint32_t)(iap_rec_data.verify.addr[0]);
+            OpAddr |= ((uint32_t)(iap_rec_data.verify.addr[1]) << 8);
+            OpAddr = OpAddr * 16;
 
-            OpAdd += IMAGE_A_SIZE;
-            PRINT("IAP_VERIFY: %08x len:%d \r\n", (int)OpAdd, (int)OpParaDataLen);
+            OpAddr += IMAGE_A_SIZE;
+            PRINT("IAP_VERIFY: %08x len:%d \r\n", (int)OpAddr, (int)OpParaDataLen);
+
+            /* 与ERASE命令相同的区间断言，禁止读任意Flash地址 */
+            if(OpAddr < IMAGE_B_START_ADD || (OpAddr + OpParaDataLen) > IMAGE_IAP_START_ADD)
+            {
+                OTA_IAP_SendCMDDealSta(0xFF);
+                break;
+            }
 
             /* 当前是ImageA，直接读取ImageB校验 */
-            status = FLASH_ROM_VERIFY(OpAdd, iap_rec_data.verify.buf, OpParaDataLen);
+            status = FLASH_ROM_VERIFY(OpAddr, iap_rec_data.verify.buf, OpParaDataLen);
             if(status)
             {
                 PRINT("IAP_VERIFY err \r\n");
@@ -701,6 +712,14 @@ void Rec_OTA_IAP_DataDeal(void)
         /* 编程结束 */
         case CMD_IAP_END:
         {
+            /* 下载过程必须全部校验通过才允许结束，否则保留原APP，防止变砖 */
+            if( VerifyStatus != 0 )
+            {
+                PRINT("IAP_END err, verify status %02x \r\n", VerifyStatus);
+                OTA_IAP_SendCMDDealSta(VerifyStatus);
+                break;
+            }
+
             PRINT("IAP_END \r\n");
 
             /* 当前的是ImageA */
@@ -721,6 +740,7 @@ void Rec_OTA_IAP_DataDeal(void)
             uint8_t send_buf[20];
 
             PRINT("IAP_INFO \r\n");
+            tmos_memset(send_buf, 0, sizeof(send_buf));
 
             /* IMAGE FLAG */
             send_buf[0] = IMAGE_B_FLAG;
@@ -780,12 +800,8 @@ void OTA_IAPReadDataComplete(unsigned char index)
  */
 void OTA_IAPWriteData(unsigned char index, unsigned char *p_data, unsigned char w_len)
 {
-    unsigned char  rec_len;
-    unsigned char *rec_data;
-
-    rec_len = w_len;
-    rec_data = p_data;
-    tmos_memcpy((unsigned char *)&iap_rec_data, rec_data, rec_len);
+    /* 限制拷贝长度，防止异常长度写越界 */
+    tmos_memcpy((unsigned char *)&iap_rec_data, p_data, MIN(w_len, sizeof(iap_rec_data)));
     Rec_OTA_IAP_DataDeal();
 }
 
