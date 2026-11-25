@@ -3,7 +3,7 @@
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2018/12/10
- * Description        : À¶ÑÀ¼üÅÌÓ¦ÓÃ³ÌĞò£¬³õÊ¼»¯¹ã²¥Á¬½Ó²ÎÊı£¬È»ºó¹ã²¥£¬Ö±ÖÁÁ¬½ÓÖ÷»úºó£¬¶¨Ê±ÉÏ´«¼üÖµ
+ * Description        : è“ç‰™é”®ç›˜åº”ç”¨ç¨‹åºï¼Œåˆå§‹åŒ–å¹¿æ’­è¿æ¥å‚æ•°ï¼Œç„¶åå¹¿æ’­ï¼Œç›´è‡³è¿æ¥ä¸»æœºåï¼Œå®šæ—¶ä¸Šä¼ é”®å€¼
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
  * Attention: This software (modified or not) and binary are used for 
@@ -32,7 +32,7 @@
 // HID LED output report length
 #define HID_LED_OUT_RPT_LEN                  1
 
-/* µØÖ·ÀàĞÍÊÇ·ñ¼ÌĞøÅäÖÆ³ÉstaticÀàĞÍ */
+/* åœ°å€ç±»å‹æ˜¯å¦ç»§ç»­é…åˆ¶æˆstaticç±»å‹ */
 #define NFC_BTSSP_CFG_ADDR_STATIC            1
 
 /*********************************************************************
@@ -103,10 +103,10 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-// 0:Ã»ÓĞÁ¬½Ó; 1:ÒÑÁ¬½Ó
+// 0:æ²¡æœ‰è¿æ¥; 1:å·²è¿æ¥
 volatile uint8_t bleConnectState = 0;
 
-// 0:Í£Ö¹¹ã²¥; 1:ÕıÔÚ¹ã²¥
+// 0:åœæ­¢å¹¿æ’­; 1:æ­£åœ¨å¹¿æ’­
 volatile uint8_t advState = 0;
 
 ble_p256_ecdh_data_t ble_p256_ecdh_data;
@@ -139,9 +139,9 @@ static uint8_t scanRspData[] = {
     'e',
     'y',
     'b',
-    'r',
     'o',
     'a',
+    'r',
     'd',  // connection interval range
     0x05, // length of this data
     GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE,
@@ -302,7 +302,7 @@ void HidEmu_Init()
 
         ble_sm_alg_ecc_init();
 
-        GAPBondMgr_EccInit(&eccCB); /* ±ØĞëÏÈ×¢²á»Øµ÷£¬²ÅÄÜÉèÖÃGAPBOND_PERI_SC_PROTECTIONÎªTRUE£¬·ñÔò»áÊ§°Ü¡£ */
+        GAPBondMgr_EccInit(&eccCB); /* å¿…é¡»å…ˆæ³¨å†Œå›è°ƒï¼Œæ‰èƒ½è®¾ç½®GAPBOND_PERI_SC_PROTECTIONä¸ºTRUEï¼Œå¦åˆ™ä¼šå¤±è´¥ã€‚ */
 
         uint8_t  sc = DEFAULT_SC_PROTECTION;
         GAPBondMgr_SetParameter(GAPBOND_PERI_SC_PROTECTION, sizeof(sc), &sc);
@@ -568,7 +568,7 @@ static void hidEmuStateCB(gapRole_States_t newState, gapRoleEvent_t *pEvent)
             const uint8_t other_adv_data[] = {
                     0x03, GAP_ADTYPE_APPEARANCE, 0xC1, 0x03, 0x02, GAP_ADTYPE_FLAGS, 0x04,
             };
-            uint8_t uid[7] = {0x00, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};    /* NFC 7×Ö½Ú¿¨ºÅ£¬µÚÒ»¸ö×Ö½ÚÎª³§ÉÌ×Ö½Ú£¬0ÎªÎ´Öª³§ÉÌ£¬×Ô¶¨ÒåuidÊ±ĞèÒª×¢Òâ²»¿ÉÇÖÈ¨ */
+            uint8_t uid[7] = {0x00, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};    /* NFC 7å­—èŠ‚å¡å·ï¼Œç¬¬ä¸€ä¸ªå­—èŠ‚ä¸ºå‚å•†å­—èŠ‚ï¼Œ0ä¸ºæœªçŸ¥å‚å•†ï¼Œè‡ªå®šä¹‰uidæ—¶éœ€è¦æ³¨æ„ä¸å¯ä¾µæƒ */
             nfc_btssp_t2t_init_t cfg;
             NFC_BTSSP_T2T_INIT_ERR_t res;
 
@@ -576,7 +576,7 @@ static void hidEmuStateCB(gapRole_States_t newState, gapRoleEvent_t *pEvent)
 
             cfg.bd_addr = hid_bd_addr;
 
-#if NFC_BTSSP_CFG_ADDR_STATIC       /* ÊÇ·ñ½«µØÖ·ÅäÖÃ³É¾²Ì¬µØÖ· */
+#if NFC_BTSSP_CFG_ADDR_STATIC       /* æ˜¯å¦å°†åœ°å€é…ç½®æˆé™æ€åœ°å€ */
             hid_bd_addr[5] |= 0xc0;
             GAP_ConfigDeviceAddr(ADDRTYPE_STATIC, hid_bd_addr);
             cfg.bd_addr_type = ADDRTYPE_STATIC;
